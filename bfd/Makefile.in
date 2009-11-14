@@ -221,7 +221,6 @@ PACKAGE_BUGREPORT = @PACKAGE_BUGREPORT@
 PACKAGE_NAME = @PACKAGE_NAME@
 PACKAGE_STRING = @PACKAGE_STRING@
 PACKAGE_TARNAME = @PACKAGE_TARNAME@
-PACKAGE_URL = @PACKAGE_URL@
 PACKAGE_VERSION = @PACKAGE_VERSION@
 PATH_SEPARATOR = @PATH_SEPARATOR@
 PKGVERSION = @PKGVERSION@
@@ -423,6 +422,7 @@ ALL_MACHINES = \
 	cpu-tic30.lo \
 	cpu-tic4x.lo \
 	cpu-tic54x.lo \
+	cpu-tic6x.lo \
 	cpu-tic80.lo \
 	cpu-v850.lo \
 	cpu-vax.lo \
@@ -494,6 +494,7 @@ ALL_MACHINES_CFILES = \
 	cpu-tic30.c \
 	cpu-tic4x.c \
 	cpu-tic54x.c \
+	cpu-tic6x.c \
 	cpu-tic80.c \
 	cpu-v850.c \
 	cpu-vax.c \
@@ -543,6 +544,7 @@ BFD32_BACKENDS = \
 	coff-tic30.lo \
 	coff-tic4x.lo \
 	coff-tic54x.lo \
+	coff-tic6x.lo \
 	coff-tic80.lo \
 	coff-u68k.lo \
 	coff-w65.lo \
@@ -726,6 +728,7 @@ BFD32_BACKENDS_CFILES = \
 	coff-tic30.c \
 	coff-tic4x.c \
 	coff-tic54x.c \
+	coff-tic6x.c \
 	coff-tic80.c \
 	coff-u68k.c \
 	coff-w65.c \
@@ -1208,6 +1211,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/coff-tic30.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/coff-tic4x.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/coff-tic54x.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/coff-tic6x.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/coff-tic80.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/coff-u68k.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/coff-w65.Plo@am__quote@
@@ -1279,6 +1283,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cpu-tic30.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cpu-tic4x.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cpu-tic54x.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cpu-tic6x.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cpu-tic80.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cpu-v850.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cpu-vax.Plo@am__quote@
