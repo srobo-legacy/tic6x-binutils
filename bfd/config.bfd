@@ -368,7 +368,7 @@ case "${targ}" in
     ;;
 
   c6x*-*-*coff* | tic6x*-*-*coff*)
-    targ_defvec=tic6x_coff0_vec
+    targ_defvec=tic6x_coff2_vec
     targ_underscore=yes
     ;;
 
