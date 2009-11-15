@@ -1,5 +1,4 @@
-/* As binutils decided to visit the sins of the fathers upon their descendents,
- * insert GPL header here. Hi Rob! */
+/* Insert copyright header here */
 
 #include "sysdep.h"
 #include "bfd.h"
