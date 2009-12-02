@@ -39,7 +39,7 @@ const bfd_target tic64x_coff2_vec =
 
 	/* Functions to byte swap data. */
 	bfd_getl64, bfd_getl_signed_64, bfd_putl64, /* data gets/sets */
-	tic64x_getl32, tic64x_getl_signed_32, tic64x_putl32,
+	bfd_getl32, bfd_getl_signed_32, bfd_putl32,
 	bfd_getl16, bfd_getl_signed_16, bfd_putl16,
 	bfd_getl64, bfd_getl_signed_64, bfd_putl64, /* header gets/sets */
 	bfd_getl32, bfd_getl_signed_32, bfd_putl32,
