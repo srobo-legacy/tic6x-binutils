@@ -13,6 +13,10 @@
 /* XXX - dictated by coff/ti.h, but ti's docs say F_LSYMS remains 0x8 */
 
 static void rtype2howto(arelent *internal, struct internal_reloc *dst);
+static bfd_boolean tic64x_set_arch_mach(bfd *b, enum bfd_architecture a,
+		unsigned long);
+static bfd_boolean tic64x_set_section_contents(bfd *b, sec_ptr section,
+		const PTR location, file_ptr offset, bfd_size_type bytes);
 
 /* Customize + include coffcode.h */
 #define BADMAG(x) COFF2_BADMAG(x)
@@ -80,3 +84,23 @@ const bfd_target tic64x_coff2_vec =
 	NULL,
 	&ticoff2_swap_table
 };
+
+static bfd_boolean
+tic64x_set_arch_mach(bfd *b, enum bfd_architecture arch, unsigned long machine)
+{
+
+	if (arch == bfd_arch_unknown)
+		arch = bfd_arch_tic64x;
+	else if (arch != bfd_arch_tic64x)
+		return FALSE;
+
+	return bfd_default_set_arch_mach(b, arch, machine);
+}
+
+static bfd_boolean
+tic64x_set_section_contents(bfd *b, sec_ptr section, const PTR location,
+		file_ptr offset, bfd_size_type bytes)
+{
+
+	return coff_set_section_contents(b, section, location, offset, bytes);
+}
