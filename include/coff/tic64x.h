@@ -11,10 +11,6 @@
 #define TICOFF_DEFAULT_MAGIC			TICOFF2MAGIC
 #define TI_TARGET_ID				TIC64X_TARGET_ID
 
-#define R_ABS					0
-#define R_RELBYTE				0xF
-#define R_RELWORD				0x10
-#define R_RELLONG				0x11
 #define R_C60BASE				0x50
 #define R_C60DIR15				0x51
 #define R_C60PCR21				0x52
