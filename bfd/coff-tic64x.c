@@ -89,6 +89,8 @@ static void
 rtype2howto(arelent *internal, struct internal_reloc *dst)
 {
 
+	internal = NULL;
+	dst = NULL;
 	fprintf(stderr, "jmorse: implement rtype2howto\n");
 	exit(1);
 }
