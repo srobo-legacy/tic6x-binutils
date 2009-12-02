@@ -52,13 +52,14 @@ am__aclocal_m4_deps = $(top_srcdir)/../config/acx.m4 \
 	$(top_srcdir)/../config/lead-dot.m4 \
 	$(top_srcdir)/../config/nls.m4 \
 	$(top_srcdir)/../config/override.m4 \
+	$(top_srcdir)/../config/plugins.m4 \
 	$(top_srcdir)/../config/po.m4 \
 	$(top_srcdir)/../config/progtest.m4 \
 	$(top_srcdir)/../config/stdint.m4 $(top_srcdir)/../libtool.m4 \
 	$(top_srcdir)/../ltoptions.m4 $(top_srcdir)/../ltsugar.m4 \
 	$(top_srcdir)/../ltversion.m4 $(top_srcdir)/../lt~obsolete.m4 \
-	$(top_srcdir)/bfd.m4 $(top_srcdir)/acinclude.m4 \
-	$(top_srcdir)/configure.in
+	$(top_srcdir)/bfd.m4 $(top_srcdir)/warning.m4 \
+	$(top_srcdir)/acinclude.m4 $(top_srcdir)/configure.in
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 am__CONFIG_DISTCLEAN_FILES = config.status config.cache config.log \
@@ -210,6 +211,7 @@ MSGFMT = @MSGFMT@
 MSGMERGE = @MSGMERGE@
 NM = @NM@
 NMEDIT = @NMEDIT@
+NO_WERROR = @NO_WERROR@
 OBJDUMP = @OBJDUMP@
 OBJEXT = @OBJEXT@
 OTOOL = @OTOOL@
@@ -219,7 +221,6 @@ PACKAGE_BUGREPORT = @PACKAGE_BUGREPORT@
 PACKAGE_NAME = @PACKAGE_NAME@
 PACKAGE_STRING = @PACKAGE_STRING@
 PACKAGE_TARNAME = @PACKAGE_TARNAME@
-PACKAGE_URL = @PACKAGE_URL@
 PACKAGE_VERSION = @PACKAGE_VERSION@
 PATH_SEPARATOR = @PATH_SEPARATOR@
 PKGVERSION = @PKGVERSION@
@@ -236,6 +237,7 @@ STRIP = @STRIP@
 TDEFINES = @TDEFINES@
 USE_NLS = @USE_NLS@
 VERSION = @VERSION@
+WARN_CFLAGS = @WARN_CFLAGS@
 XGETTEXT = @XGETTEXT@
 abs_builddir = @abs_builddir@
 abs_srcdir = @abs_srcdir@
@@ -255,6 +257,11 @@ bfd_default_target_size = @bfd_default_target_size@
 bfd_file_ptr = @bfd_file_ptr@
 bfd_machines = @bfd_machines@
 bfd_ufile_ptr = @bfd_ufile_ptr@
+@INSTALL_LIBBFD_FALSE@bfdincludedir =
+@INSTALL_LIBBFD_TRUE@bfdincludedir = @bfdincludedir@
+# Empty these so that the respective installation directories will not be created.
+@INSTALL_LIBBFD_FALSE@bfdlibdir =
+@INSTALL_LIBBFD_TRUE@bfdlibdir = @bfdlibdir@
 bindir = @bindir@
 build = @build@
 build_alias = @build_alias@
@@ -316,17 +323,10 @@ SUBDIRS = doc po
 bfddocdir = doc
 libbfd_la_LDFLAGS = $(am__append_1) -release `cat libtool-soversion` \
 	@SHARED_LDFLAGS@ $(am__empty)
-#bfdlibdir = @bfdlibdir@
-#bfdincludedir = @bfdincludedir@
 @INSTALL_LIBBFD_TRUE@bfdlib_LTLIBRARIES = libbfd.la
 @INSTALL_LIBBFD_TRUE@bfdinclude_HEADERS = $(BFD_H) $(INCDIR)/ansidecl.h $(INCDIR)/symcat.h $(INCDIR)/bfdlink.h
-# Empty these so that the respective installation directories will not be created.
-#bfdlibdir =
-#bfdincludedir =
 @INSTALL_LIBBFD_FALSE@rpath_bfdlibdir = @bfdlibdir@
 @INSTALL_LIBBFD_FALSE@noinst_LTLIBRARIES = libbfd.la
-WARN_CFLAGS = @WARN_CFLAGS@
-NO_WERROR = @NO_WERROR@
 AM_CFLAGS = $(WARN_CFLAGS)
 AM_CPPFLAGS = -DBINDIR='"$(bindir)"'
 @PLUGINS_TRUE@LIBDL = -ldl
