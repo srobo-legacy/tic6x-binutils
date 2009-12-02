@@ -12,11 +12,16 @@
 #define F_LSYMS		F_LSYMS_TICOFF
 /* XXX - dictated by coff/ti.h, but ti's docs say F_LSYMS remains 0x8 */
 
+static void rtype2howto(arelent *internal, struct internal_reloc *dst);
+
 /* Customize + include coffcode.h */
 #define BADMAG(x) COFF2_BADMAG(x)
 #ifndef bfd_pe_print_pdata
 #define bfd_pe_print_pdata	NULL
 #endif
+
+#define RTYPE2HOWTO(internal, reloc) rtype2howto(internal, reloc);
+
 #include "coffcode.h"
 
 const bfd_target tic64x_coff2_vec =
