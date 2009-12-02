@@ -375,7 +375,7 @@ case $basic_machine in
 	| sparclite-* \
 	| sparcv8-* | sparcv9-* | sparcv9b-* | sparcv9v-* | strongarm-* | sv1-* | sx?-* \
 	| tahoe-* | thumb-* \
-	| tic30-* | tic4x-* | tic54x-* | tic55x-* | tic6x-* | tic80-* | tile-* \
+	| tic30-* | tic4x-* | tic54x-* | tic55x-* | tic64x-* | tic80-* | tile-* \
 	| tron-* \
 	| v850-* | v850e-* | vax-* \
 	| we32k-* \
@@ -1075,8 +1075,8 @@ case $basic_machine in
 		basic_machine=tic55x-unknown
 		os=-coff
 		;;
-	tic6x | c6x*)
-		basic_machine=tic6x-unknown
+	tic64x | c64x*)
+		basic_machine=tic64x-unknown
 		os=-coff
 		;;
 	tile*)

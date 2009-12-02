@@ -77,7 +77,7 @@ bfin*)		 targ_archs=bfd_bfin_arch ;;
 c30*)		 targ_archs=bfd_tic30_arch ;;
 c4x*)		 targ_archs=bfd_tic4x_arch ;;
 c54x*)		 targ_archs=bfd_tic54x_arch ;;
-c6x*)		 targ_archs=bfd_tic6x_arch ;;
+c64x*)		 targ_archs=bfd_tic64x_arch ;;
 cr16*)		 targ_archs=bfd_cr16_arch ;;
 crisv32)	 targ_archs=bfd_cris_arch ;;
 crx*)		 targ_archs=bfd_crx_arch ;;
@@ -367,8 +367,8 @@ case "${targ}" in
     targ_underscore=yes
     ;;
 
-  c6x*-*-*coff* | tic6x*-*-*coff*)
-    targ_defvec=tic6x_coff2_vec
+  c64x*-*-*coff* | tic64x*-*-*coff*)
+    targ_defvec=tic64x_coff2_vec
     targ_underscore=yes
     ;;
 

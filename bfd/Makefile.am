@@ -128,7 +128,7 @@ ALL_MACHINES = \
 	cpu-tic30.lo \
 	cpu-tic4x.lo \
 	cpu-tic54x.lo \
-	cpu-tic6x.lo \
+	cpu-tic64x.lo \
 	cpu-tic80.lo \
 	cpu-v850.lo \
 	cpu-vax.lo \
@@ -200,7 +200,7 @@ ALL_MACHINES_CFILES = \
 	cpu-tic30.c \
 	cpu-tic4x.c \
 	cpu-tic54x.c \
-	cpu-tic6x.c \
+	cpu-tic64x.c \
 	cpu-tic80.c \
 	cpu-v850.c \
 	cpu-vax.c \
@@ -249,7 +249,7 @@ BFD32_BACKENDS = \
 	coff-tic30.lo \
 	coff-tic4x.lo \
 	coff-tic54x.lo \
-	coff-tic6x.lo \
+	coff-tic64x.lo \
 	coff-tic80.lo \
 	coff-u68k.lo \
 	coff-w65.lo \
@@ -433,7 +433,7 @@ BFD32_BACKENDS_CFILES = \
 	coff-tic30.c \
 	coff-tic4x.c \
 	coff-tic54x.c \
-	coff-tic6x.c \
+	coff-tic64x.c \
 	coff-tic80.c \
 	coff-u68k.c \
 	coff-w65.c \
