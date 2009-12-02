@@ -4,7 +4,7 @@
 #include "bfd.h"
 #include "libbfd.h"
 #include "bfdlink.h"
-#include "coff/tic6x.h"
+#include "coff/tic64x.h"
 #include "coff/internal.h"
 #include "libcoff.h"
 
@@ -19,9 +19,9 @@
 #endif
 #include "coffcode.h"
 
-const bfd_target tic6x_coff2_vec =
+const bfd_target tic64x_coff2_vec =
 {
-	"coff2-c6x",				/* Name */
+	"coff2-c64x",				/* Name */
 	bfd_target_coff_flavour,
 	BFD_ENDIAN_LITTLE,			/* data */
 	BFD_ENDIAN_LITTLE,			/* header */
@@ -34,7 +34,7 @@ const bfd_target tic6x_coff2_vec =
 
 	/* Functions to byte swap data. */
 	bfd_getl64, bfd_getl_signed_64, bfd_putl64, /* data gets/sets */
-	tic6x_getl32, tic6x_getl_signed_32, tic6x_putl32,
+	tic64x_getl32, tic64x_getl_signed_32, tic64x_putl32,
 	bfd_getl16, bfd_getl_signed_16, bfd_putl16,
 	bfd_getl64, bfd_getl_signed_64, bfd_putl64, /* header gets/sets */
 	bfd_getl32, bfd_getl_signed_32, bfd_putl32,
@@ -69,7 +69,7 @@ const bfd_target tic6x_coff2_vec =
 	BFD_JUMP_TABLE_ARCHIVE(_bfd_archive_coff),
 	BFD_JUMP_TABLE_SYMBOLS(coff),
 	BFD_JUMP_TABLE_RELOCS(coff),
-	BFD_JUMP_TABLE_WRITE(tic6x),
+	BFD_JUMP_TABLE_WRITE(tic64x),
 	BFD_JUMP_TABLE_LINK(coff),
 	BFD_JUMP_TABLE_DYNAMIC(_bfd_nodynamic),
 	NULL,
