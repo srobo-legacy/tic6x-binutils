@@ -11,6 +11,27 @@
 #define TICOFF_DEFAULT_MAGIC			TICOFF2MAGIC
 #define TI_TARGET_ID				TIC64X_TARGET_ID
 
+#define R_ABS					0
+#define R_RELBYTE				0xF
+#define R_RELWORD				0x10
+#define R_RELLONG				0x11
+#define R_C60BASE				0x50
+#define R_C60DIR15				0x51
+#define R_C60PCR21				0x52
+#define R_C60PCR10				0x53
+#define R_C60LO16				0x54
+#define R_C60HI16				0x55
+#define R_C60SECT				0x56
+#define R_C60S16				0x57
+#define R_C60PCR7				0x70
+#define R_C60PCR12				0x71
+
 #include "coff/ti.h"
+
+/* c6000 uses 10 byte relocation struct (although its named v0): */
+#undef RELOC
+#undef RELSZ
+#define RELOC struct external_reloc_v0
+#define RELSZ RELSZ_V0
 
 #endif /* COFF_TIC64X_H */
