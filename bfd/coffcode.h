@@ -5134,7 +5134,7 @@ coff_slurp_reloc_table (bfd * abfd, sec_ptr asect, asymbol ** symbols)
   for (idx = 0; idx < asect->reloc_count; idx++)
     {
       struct internal_reloc dst;
-      struct external_reloc *src;
+      RELOC *src;
 #ifndef RELOC_PROCESSING
       asymbol *ptr;
 #endif
