@@ -1969,9 +1969,9 @@ enum bfd_architecture
   bfd_arch_tic4x,     /* Texas Instruments TMS320C3X/4X */
 #define bfd_mach_tic3x         30
 #define bfd_mach_tic4x         40
-#define bfd_mach_tic6x         60
+#define bfd_mach_tic64x        60
   bfd_arch_tic54x,    /* Texas Instruments TMS320C54X */
-  bfd_arch_tic6x,     /* Texas Instruments TMS320C6X */
+  bfd_arch_tic64x,    /* Texas Instruments TMS320C64X */
   bfd_arch_tic80,     /* TI TMS320c80 (MVP) */
   bfd_arch_v850,      /* NEC V850 */
 #define bfd_mach_v850          1
