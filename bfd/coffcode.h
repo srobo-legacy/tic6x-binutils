@@ -2363,7 +2363,7 @@ coff_set_arch_mach_hook (bfd *abfd, void * filehdr)
 #endif
 #endif
 
-#ifdef TICOFF1MAGIC
+#if defined(TICOFF1MAGIC) || defined(TICOFF2MAGIC)
       /* This TI COFF section should be used by all new TI COFF v1/2 targets.  */
       /* TI COFF1 and COFF2 use the target_id field to specify which arch.  */
     case TICOFF1MAGIC:
