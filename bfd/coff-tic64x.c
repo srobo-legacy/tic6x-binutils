@@ -85,6 +85,14 @@ const bfd_target tic64x_coff2_vec =
 	&ticoff2_swap_table
 };
 
+static void
+rtype2howto(arelent *internal, struct internal_reloc *dst)
+{
+
+	fprintf(stderr, "jmorse: implement rtype2howto\n");
+	exit(1);
+}
+
 static bfd_boolean
 tic64x_set_arch_mach(bfd *b, enum bfd_architecture arch, unsigned long machine)
 {
