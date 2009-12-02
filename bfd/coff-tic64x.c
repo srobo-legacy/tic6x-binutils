@@ -28,6 +28,15 @@ static bfd_boolean tic64x_set_section_contents(bfd *b, sec_ptr section,
 
 #include "coffcode.h"
 
+/* FIXME: coffcode defines ticoff{0,1}_swap_table, however we don't use
+ * this for any target vectors. So gcc -Wextra complains that we're not using
+ * a static function. To solve this, make some dummy pointers to those values.
+ * Real fix should be switches to specify which tables we want to pull in,
+ * but I don't understand the binutils situation for ticoff */
+
+bfd_coff_backend_data *dummy_backend_0 = &ticoff0_swap_table;
+bfd_coff_backend_data *dummy_backend_1 = &ticoff1_swap_table;
+
 const bfd_target tic64x_coff2_vec =
 {
 	"coff2-c64x",				/* Name */
