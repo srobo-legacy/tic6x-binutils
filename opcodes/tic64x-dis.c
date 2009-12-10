@@ -6,7 +6,7 @@
 #include "coff/tic64x.h"
 
 int
-print_insn_tic64x(bfd_vma addr, disassemble_info *info)
+print_insn_tic64x(bfd_vma addr, struct disassemble_info *info)
 {
 
 	fprintf(stderr, "Congratulations, you've got binutils working to a "
@@ -15,9 +15,9 @@ print_insn_tic64x(bfd_vma addr, disassemble_info *info)
 	exit(1);
 }
 
-int
-tic64x_get_insn(disassemble_info *info, bfd_vma addr, unsigned short mdata,
-			int *size)
+const insn_template *
+tic64x_get_insn(struct disassemble_info *info, bfd_vma addr,
+		unsigned short mdata, int *size)
 {
 
 	fprintf(stderr, "Congratulations, you've got binutils working to a "
