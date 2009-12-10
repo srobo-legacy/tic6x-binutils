@@ -7,8 +7,9 @@
  * format, and what facilities are exported to gas / whatever. To all be
  * implemented whenever its all understood. For now, declare get_insn */
 
+typedef int insn_template; /* Build hack, not intended for functional use */
 struct disassemble_info;
-extern const insn_template *tic64x_get_insn (struct disassemble_info * dis,
+extern const insn_template *tic64x_get_insn (struct disassemble_info *dis,
 					bfd_vma, unsigned short, int *);
 
 #endif /* _OPCODE_TIC64X_H_ */
