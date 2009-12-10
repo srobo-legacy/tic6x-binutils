@@ -203,6 +203,8 @@ TARGET_LIBOPCODES_CFILES = \
 	tic4x-dis.c \
 	tic54x-dis.c \
 	tic54x-opc.c \
+	tic64x-dis.c \
+	tic64x-opc.c \
 	tic80-dis.c \
 	tic80-opc.c \
 	v850-dis.c \
