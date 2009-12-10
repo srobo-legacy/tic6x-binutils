@@ -90,6 +90,7 @@ CPU_TYPES = \
 	tic30 \
 	tic4x \
 	tic54x \
+	tic64x \
 	v850 \
 	vax \
 	xc16x \
@@ -293,6 +294,7 @@ TARGET_CPU_CFILES = \
 	config/tc-tic30.c \
 	config/tc-tic4x.c \
 	config/tc-tic54x.c \
+	config/tc-tic64x.c \
 	config/tc-vax.c \
 	config/tc-v850.c \
 	config/tc-xstormy16.c \
@@ -355,6 +357,7 @@ TARGET_CPU_HFILES = \
 	config/tc-tic30.h \
 	config/tc-tic4x.h \
 	config/tc-tic54x.h \
+	config/tc-tic64x.h \
 	config/tc-vax.h \
 	config/tc-v850.h \
 	config/tc-xstormy16.h \
