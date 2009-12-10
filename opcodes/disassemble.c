@@ -397,7 +397,7 @@ disassembler (abfd)
       break;
 #endif
 #ifdef ARCH_tic64x:
-    case bfd_arch_tic65x:
+    case bfd_arch_tic64x:
       disassemble = print_insn_tic64x;
       break;
 #endif
