@@ -79,6 +79,7 @@
 #define ARCH_tic30
 #define ARCH_tic4x
 #define ARCH_tic54x
+#define ARCH_tic64x
 #define ARCH_tic80
 #define ARCH_v850
 #define ARCH_vax
