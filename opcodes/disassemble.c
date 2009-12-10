@@ -396,6 +396,11 @@ disassembler (abfd)
       disassemble = print_insn_tic54x;
       break;
 #endif
+#ifdef ARCH_tic64x:
+    case bfd_arch_tic65x:
+      disassemble = print_insn_tic64x;
+      break;
+#endif
 #ifdef ARCH_tic80
     case bfd_arch_tic80:
       disassemble = print_insn_tic80;
