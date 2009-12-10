@@ -399,6 +399,7 @@ case ${generic_target} in
   tic30-*-*coff*)			fmt=coff bfd_gas=yes ;;
   tic4x-*-* | c4x-*-*)			fmt=coff bfd_gas=yes ;;
   tic54x-*-* | c54x*-*-*)		fmt=coff bfd_gas=yes need_libm=yes;;
+  tic64x-*-* | c64x*-*-*)		fmt=coff bfd_gas=yes need_libm=yes;;
 
   v850-*-*)				fmt=elf ;;
   v850e-*-*)				fmt=elf ;;
