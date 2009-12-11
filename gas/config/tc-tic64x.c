@@ -77,3 +77,38 @@ md_undefined_symbol(char *name)
 	UNUSED(name);
 	return NULL;
 }
+
+int
+md_estimate_size_before_relax(fragS *frag, segT seg)
+{
+
+	/* tic54x doesn't implement this either; we'll see if its needed */
+	UNUSED(frag);
+	UNUSED(seg);
+	return 0;
+}
+
+void
+md_apply_fix(fixS *fixP, valueT *valP, segT seg)
+{
+
+	UNUSED(valP);
+	UNUSED(seg);
+	switch(fixP->fx_r_type) {
+	default:
+		as_fatal("Bad relocation type %X\n", fixP->fx_r_type);
+		return;
+	}
+	return;
+}
+
+void
+md_assemble(char *line)
+{
+
+	fprintf(stderr, "Congratulations! You've got as far as assembling "
+			"lines, now you just need to implement the assembling "
+			"part\n");
+	UNUSED(line);
+	exit(1);
+}
