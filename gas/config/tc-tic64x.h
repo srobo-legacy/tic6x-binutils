@@ -21,7 +21,7 @@
 /* Enable the "||" specifier on a line to indicate parallel execution */
 #define DOUBLEBAR_PARALLEL 1
 
-/* Not defining md_number_to_chars yet, we don't know enough about byte
- * ordering for different items yet */
+/* AFAIK everything we want to deal with will be treated little endianly */
+#define md_number_to_chars(b,v,n) number_to_chars_littleendian(b,v,n)
 
 #endif /* _TC_TIC64X_H_ */
