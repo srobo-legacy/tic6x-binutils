@@ -18,3 +18,11 @@ struct option md_longopts[] =
 size_t md_longopts_size = sizeof(md_longopts);
 
 const char *md_shortopts = "";
+
+int
+md_parse_option(int c, char *arg)
+{
+
+	/* We don't have any command line options right now */
+	return 1;
+}
