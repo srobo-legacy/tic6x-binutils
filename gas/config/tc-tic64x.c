@@ -5,6 +5,8 @@
 #include "opcode/tic64x.h"
 #include "obj-coff.h"
 
+#define UNUSED(x) ((x) = (x))
+
 const char comment_chars[] = ";";
 const char line_comment_chars[] = ";*#";
 const char line_separator_chars[] = "";
@@ -24,5 +26,7 @@ md_parse_option(int c, char *arg)
 {
 
 	/* We don't have any command line options right now */
+	UNUSED(c);
+	UNUSED(arg);
 	return 1;
 }
