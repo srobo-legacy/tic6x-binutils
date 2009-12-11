@@ -53,3 +53,19 @@ md_atof(int type, char *literal, int *size)
 
 	return ieee_md_atof(type, literal, size, TRUE);
 }
+
+symbolS *
+md_undefined_symbol(char *name)
+{
+
+	/*
+	 * Documentation says that this'll be called when gas can't find a
+	 * symbol, to allow for dynamically changing names or predefined
+	 * symbols. I'm not certain how to go about this; we don't know enough
+	 * about TIs assembler to know what varying symbols it uses, tic54x
+	 * says there are "subtle differences" in the way symbols are managed.
+	 */
+	/* So for now do nothing */
+	UNUSED(name);
+	return NULL;
+}
