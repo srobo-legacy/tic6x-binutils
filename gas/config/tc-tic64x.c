@@ -46,3 +46,10 @@ md_begin()
 	fprintf(stderr, "md begin called");
 	return;
 }
+
+char *
+md_atof(int type, char *literal, int *size)
+{
+
+	return ieee_md_atof(type, literal, size, TRUE);
+}
