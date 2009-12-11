@@ -24,6 +24,11 @@ size_t md_longopts_size = sizeof(md_longopts);
 
 const char *md_shortopts = "";
 
+const pseudo_typeS md_pseudo_table[] =
+{
+	{NULL, 		NULL,			0}
+};
+
 int
 md_parse_option(int c, char *arg)
 {
