@@ -30,3 +30,19 @@ md_parse_option(int c, char *arg)
 	UNUSED(arg);
 	return 1;
 }
+
+void
+md_show_usage(FILE *stream)
+{
+
+	fprintf(stream, "TMS320C64x specific command line options: none\n");
+	return;
+}
+
+void
+md_begin()
+{
+
+	fprintf(stderr, "md begin called");
+	return;
+}
