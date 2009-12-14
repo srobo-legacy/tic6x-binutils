@@ -1801,7 +1801,7 @@ etic4xcoff.c: $(srcdir)/emulparams/tic4xcoff.sh \
 etic54xcoff.c: $(srcdir)/emulparams/tic54xcoff.sh \
   $(srcdir)/emultempl/ticoff.em $(srcdir)/scripttempl/tic54xcoff.sc ${GEN_DEPENDS}
 	${GENSCRIPTS} tic54xcoff "$(tdir_tic54xcoff)"
-etic64xcoff.c $(srcdir)/emulparams/tic64xcoff.sh \
+etic64xcoff.c: $(srcdir)/emulparams/tic64xcoff.sh \
   $(srcdir)/emultemp/ticoff.em $(srcdir)/scripttempl/tic64xcoff.sc ${GEN_DEPENDS}
 	${GENSCRIPTS} tic64xcoff "$(tdir_tic64xcoff)"
 etic80coff.c: $(srcdir)/emulparams/tic80coff.sh \
