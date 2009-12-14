@@ -118,6 +118,16 @@ md_convert_frag(bfd *b, segT seg, fragS *frag)
 	exit(1);
 }
 
+arelent *
+tc_gen_reloc(asection *section, fixS *fixP)
+{
+
+	UNUSED(section);
+	UNUSED(fixP);
+	fprintf(stderr, "Unimplemented tc_gen_reloc in tic64x called\n");
+	exit(1);
+}
+
 void
 md_apply_fix(fixS *fixP, valueT *valP, segT seg)
 {
