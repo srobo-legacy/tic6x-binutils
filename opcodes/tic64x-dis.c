@@ -19,7 +19,7 @@ print_insn_tic64x(bfd_vma addr, struct disassemble_info *info)
 	exit(1);
 }
 
-const insn_template *
+const struct tic64x_op_template *
 tic64x_get_insn(struct disassemble_info *info, bfd_vma addr,
 		unsigned short mdata, int *size)
 {

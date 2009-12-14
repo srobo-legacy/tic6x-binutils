@@ -10,9 +10,9 @@ struct tic64x_op_template {
 	/* Insert here - actual data */
 };
 
-typedef int insn_template; /* Build hack, not intended for functional use */
 struct disassemble_info;
-extern const insn_template *tic64x_get_insn (struct disassemble_info *dis,
+extern const struct tic64x_op_template *tic64x_get_insn (
+					struct disassemble_info *dis,
 					bfd_vma, unsigned short, int *);
 
 #endif /* _OPCODE_TIC64X_H_ */
