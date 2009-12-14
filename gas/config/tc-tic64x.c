@@ -88,6 +88,36 @@ md_estimate_size_before_relax(fragS *frag, segT seg)
 	return 0;
 }
 
+long
+md_pcrel_from (fixS *fixP)
+{
+
+	/* Another thing not implemented by tic54x, we probably don't need to
+	 * either */
+	UNUSED(fixP);
+	return 0;
+}
+
+valueT
+md_section_align(segT segment, valueT section_size)
+{
+
+	UNUSED(segment);
+	/* No alignment rules for sections, AFAIK */
+	return section_size;
+}
+
+void
+md_convert_frag(bfd *b, segT seg, fragS *frag)
+{
+
+	UNUSED(b);
+	UNUSED(seg);
+	UNUSED(frag);
+	fprintf(stderr, "Unimplemented md_convert_frag in tic64x called\n");
+	exit(1);
+}
+
 void
 md_apply_fix(fixS *fixP, valueT *valP, segT seg)
 {
