@@ -43,7 +43,6 @@ void
 md_show_usage(FILE *stream)
 {
 
-	fprintf(stream, "TMS320C64x specific command line options: none\n");
 	return;
 }
 
