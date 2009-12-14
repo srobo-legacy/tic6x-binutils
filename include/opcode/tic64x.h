@@ -4,6 +4,7 @@
 #define _OPCODE_TIC64X_H_
 
 struct tic64x_op_template {
+	char *mnemonic;
 	uint32_t opcode;		/* opcode bits */
 	uint32_t opcode_mask;		/* mask of which opcode bits are valid*/
 	/* Insert here - actual data */
