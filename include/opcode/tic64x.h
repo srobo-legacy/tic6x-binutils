@@ -10,6 +10,8 @@ struct tic64x_op_template {
 	/* Insert here - actual data */
 };
 
+extern struct tic64x_op_template tic64x_opcodes[];
+
 struct disassemble_info;
 extern const struct tic64x_op_template *tic64x_get_insn (
 					struct disassemble_info *dis,
