@@ -57,7 +57,9 @@ md_begin()
 	tic64x_ops = hash_new();
 
 	for (op = tic64x_opcodes; op->mnemonic; op++)
-		hash_insert(tic64x_ops, op->mnemonic, (void *)op);
+		if (hash_insert(tic64x_ops, op->mnemonic, (void *)op))
+			as_fatal("md_begin: couldn't enter %s in hash table\n",
+				op->mnemonic);
 
 	return;
 }
