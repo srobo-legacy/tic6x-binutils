@@ -3,9 +3,11 @@
 #ifndef _OPCODE_TIC64X_H_
 #define _OPCODE_TIC64X_H_
 
-/* Placeholder header for information about tic64x instructions and their
- * format, and what facilities are exported to gas / whatever. To all be
- * implemented whenever its all understood. For now, declare get_insn */
+struct tic64x_op_template {
+	uint32_t opcode;		/* opcode bits */
+	uint32_t opcode_mask;		/* mask of which opcode bits are valid*/
+	/* Insert here - actual data */
+};
 
 typedef int insn_template; /* Build hack, not intended for functional use */
 struct disassemble_info;
