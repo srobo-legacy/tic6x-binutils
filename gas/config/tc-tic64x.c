@@ -26,6 +26,7 @@ size_t md_longopts_size = sizeof(md_longopts);
 const char *md_shortopts = "";
 
 static struct hash_control *tic64x_ops;
+static struct hash_control *tic64x_reg_names;
 
 const pseudo_typeS md_pseudo_table[] =
 {
@@ -53,13 +54,20 @@ void
 md_begin()
 {
 	struct tic64x_op_template *op;
+	struct tic64x_register *reg;
 
 	tic64x_ops = hash_new();
+	tic64x_reg_names = hash_new();
 
 	for (op = tic64x_opcodes; op->mnemonic; op++)
 		if (hash_insert(tic64x_ops, op->mnemonic, (void *)op))
 			as_fatal("md_begin: couldn't enter %s in hash table\n",
 				op->mnemonic);
+
+	for (reg = tic64x_regs; reg->name; reg++)
+		if (hash_insert(tic64x_reg_names, reg->name, (void *)reg)
+			as_fatal("md_begin: couldn't enter %s in hash table\n",
+				reg->name);
 
 	return;
 }
