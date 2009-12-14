@@ -4,6 +4,7 @@
 #include "as.h"
 #include "opcode/tic64x.h"
 #include "obj-coff.h"
+#include "struc-symbol.h"
 
 #define UNUSED(x) ((x) = (x))
 
@@ -24,6 +25,8 @@ size_t md_longopts_size = sizeof(md_longopts);
 
 const char *md_shortopts = "";
 
+static struct hash_control *tic64x_ops;
+
 const pseudo_typeS md_pseudo_table[] =
 {
 	{NULL, 		NULL,			0}
@@ -40,7 +43,7 @@ md_parse_option(int c, char *arg)
 }
 
 void
-md_show_usage(FILE *stream)
+md_show_usage(FILE *stream ATTRIBUTE_UNUSED)
 {
 
 	return;
@@ -49,8 +52,13 @@ md_show_usage(FILE *stream)
 void
 md_begin()
 {
+	struct tic64x_op_template *op;
 
-	fprintf(stderr, "md begin called");
+	tic64x_ops = hash_new();
+
+	for (op = tic64x_opcodes; op->mnemonic; op++)
+		hash_insert(tic64x_ops, op->mnemonic, (void *)op);
+
 	return;
 }
 
