@@ -281,10 +281,22 @@ md_apply_fix(fixS *fixP, valueT *valP, segT seg)
 void
 md_assemble(char *line)
 {
+	struct tic64x_op_template *tmpl;
+	char *mnemonic;
 
-	fprintf(stderr, "Congratulations! You've got as far as assembling "
-			"lines, now you just need to implement the assembling "
-			"part\n");
-	UNUSED(line);
-	exit(1);
+	/* Insert here - double bar detection */
+
+	mnemonic = line;
+	while (*line != ' ' && *line != '\t')
+		line++;
+	*line++ = 0;
+
+	/* Is this an instruction we've heard of? */
+	tmpl = hash_find(tic64x_ops, mnemonic);
+	if (!tmpl) {
+		as_bad("Unrecognised mnemonic %s", mnemonic);
+		return;
+	}
+
+	mnemonic = strdup(mnemonic);
 }
