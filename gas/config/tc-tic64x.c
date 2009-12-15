@@ -89,7 +89,7 @@ md_begin()
 				op->mnemonic);
 
 	for (reg = tic64x_regs; reg->name; reg++)
-		if (hash_insert(tic64x_reg_names, reg->name, (void *)reg)
+		if (hash_insert(tic64x_reg_names, reg->name, (void *)reg))
 			as_fatal("md_begin: couldn't enter %s in hash table\n",
 				reg->name);
 
