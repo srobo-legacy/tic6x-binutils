@@ -13,7 +13,9 @@ struct tic64x_op_template {
 	char *mnemonic;
 	uint32_t opcode;		/* opcode bits */
 	uint32_t opcode_mask;		/* mask of which opcode bits are valid*/
-	uint32_t flags;			/* Some flags: */
+	uint32_t flags;			/* Some flags - operands that are always
+					 * in exactly the same place but not
+					 * necessarily present in all insns */
 #define TIC64X_OP_COND		1	/* Has conditional execution field,
 					 * top three bits of insn. Implies
 					 * that there's also a 'z' field */
