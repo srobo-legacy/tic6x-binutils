@@ -156,6 +156,41 @@ tic64x_asg(int x ATTRIBUTE_UNUSED)
 	return;
 }
 
+static void
+tic64x_sect(int x ATTRIBUTE_UNUSED)
+{
+
+	char *name, *sect;
+	int len;
+	char c;
+
+	if (*input_line_pointer == '"') {
+		name = demand_copy_C_string(&len);
+		demand_empty_rest_of_line();
+		name = strdup(name);
+	} else {
+		name = input_line_pointer;
+		c = get_symbol_end();
+		name = strdup(name);
+		*input_line_pointer = c;
+		demand_empty_rest_of_line();
+	}
+
+	sect = malloc(strlen(name) + 5);
+	sprintf(sect, "%s,\"w\"\n", name);
+	free(name);
+
+	/* Knobble subsections. obj_coff doesn't support them, its pretty
+	 * pointless for us to too. */
+	for (name = sect; *name; name++)
+		if (*name == ':')
+			*name = '_';
+
+	input_scrub_insert_line(sect);
+	obj_coff_section(0);
+	/* XXX - when can we free that buffer? */
+}
+
 char *
 md_atof(int type, char *literal, int *size)
 {
