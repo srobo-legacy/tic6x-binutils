@@ -110,15 +110,16 @@ tic64x_fail(int x ATTRIBUTE_UNUSED)
 static void
 tic64x_asg(int x ATTRIBUTE_UNUSED)
 {
-	char *reg, *new;
+	const char *err;
+	char *str, *sym;
 	int dummy;
 	char c;
 
 	if (*input_line_pointer == '"') {
-		reg = demand_copy_C_string(&dummy);
+		str = demand_copy_C_string(&dummy);
 		c = *input_line_pointer++;
 	} else {
-		reg = input_line_pointer;
+		str = input_line_pointer;
 		while (1) {
 			/* XXX - following tic54x, but can this just be
 			 * replaced with a call to get_symbol_end? */
@@ -136,15 +137,21 @@ tic64x_asg(int x ATTRIBUTE_UNUSED)
 		return;
 	}
 
-	new = input_line_pointer;
+	sym = input_line_pointer;
 	c = get_symbol_end();
-	if (!ISALPHA(*new)) {
+	if (!ISALPHA(*sym)) {
 		as_bad("Bad starting character in asg assignment");
 		ignore_rest_of_line();
 		return;
 	}
 
-	/* Asplode */
+	str = strdup(str);
+	sym = strdup(sym);
+	if (!str || !sym)
+		as_fatal("OOM @ %s %d", __FILE__, __LINE__);
+
+	err = hash_jam(tic64x_subsyms, sym, str);
+
 	return;
 }
 
