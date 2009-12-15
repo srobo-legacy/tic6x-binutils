@@ -36,10 +36,10 @@ struct tic64x_register tic64x_regs[] = {
 struct tic64x_op_template tic64x_opcodes[] = {
 {NULL, 		0,		0,		0,
 	{
-		{TIC64X_OPERAND_INVALID,		0,		0},
-		{TIC64X_OPERAND_INVALID,		0,		0},
-		{TIC64X_OPERAND_INVALID,		0,		0},
-		{TIC64X_OPERAND_INVALID,		0,		0}
+		{tic64x_operand_invalid,		0,		0},
+		{tic64x_operand_invalid,		0,		0},
+		{tic64x_operand_invalid,		0,		0},
+		{tic64x_operand_invalid,		0,		0}
 	}
 }
 };
