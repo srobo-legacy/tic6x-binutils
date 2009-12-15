@@ -21,12 +21,19 @@ struct tic64x_op_template {
 	uint32_t flags;			/* Some flags - operands that are always
 					 * in exactly the same place but not
 					 * necessarily present in all insns */
-#define TIC64X_OP_COND		1	/* Has conditional execution field,
+#define TIC64X_OP_UNIT_MASK	3	/* Bit mask for finding instructions
+					 * execution unit */
+#define TIC64X_OP_UNIT_D	0
+#define TIC64X_OP_UNIT_L	1
+#define TIC64X_OP_UNIT_S	2
+#define TIC64X_OP_UNIT_M	3	/* Pretty self explanitory */
+
+#define TIC64X_OP_UNITNO	4	/* Insn has 'y' bit at bit 7, specifying
+					 * unit 1 or 2 */
+#define TIC64X_OP_COND		8	/* Has conditional execution field,
 					 * top three bits of insn. Implies
 					 * that there's also a 'z' field */
-#define TIC64X_OP_UNIT		2	/* Insn has 'y' bit at bit 7, specifying
-					 * unit 1 or 2 */
-#define TIC64X_OP_SIDE		4	/* 'Side' A/B for destination register*/
+#define TIC64X_OP_SIDE		0x10	/* 'Side' A/B for destination register*/
 
 	uint32_t opcode;		/* opcode bits */
 	uint32_t opcode_mask;		/* mask of which opcode bits are valid*/
