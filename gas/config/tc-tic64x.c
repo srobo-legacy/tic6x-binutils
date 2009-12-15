@@ -28,6 +28,7 @@ const char *md_shortopts = "";
 
 static struct hash_control *tic64x_ops;
 static struct hash_control *tic64x_reg_names;
+static struct hash_control *tic64x_subsyms;
 
 static void tic64x_asg(int x);
 static void tic64x_fail(int x);
@@ -83,6 +84,7 @@ md_begin()
 
 	tic64x_ops = hash_new();
 	tic64x_reg_names = hash_new();
+	tic64x_subsyms = hash_new();
 
 	for (op = tic64x_opcodes; op->mnemonic; op++)
 		if (hash_insert(tic64x_ops, op->mnemonic, (void *)op))
