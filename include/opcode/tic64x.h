@@ -9,6 +9,13 @@ struct tic64x_register {
 	int num;
 };
 
+struct tic64x_operand {
+#define TIC64X_OPERAND_INVALID		0	/* Not valid */
+	int type;
+	int position;		/* Location in opcode, bits from zero */
+	int size;		/* Size of operand in bits */
+};
+
 struct tic64x_op_template {
 	char *mnemonic;
 	uint32_t opcode;		/* opcode bits */
@@ -23,6 +30,7 @@ struct tic64x_op_template {
 					 * unit 1 or 2 */
 #define TIC64X_OP_SIDE		4	/* 'Side' A/B for destination register*/
 
+	struct tic64x_operand operands[4];
 };
 
 extern struct tic64x_op_template tic64x_opcodes[];
