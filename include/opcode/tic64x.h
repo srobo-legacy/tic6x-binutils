@@ -18,8 +18,6 @@ struct tic64x_operand {
 
 struct tic64x_op_template {
 	char *mnemonic;
-	uint32_t opcode;		/* opcode bits */
-	uint32_t opcode_mask;		/* mask of which opcode bits are valid*/
 	uint32_t flags;			/* Some flags - operands that are always
 					 * in exactly the same place but not
 					 * necessarily present in all insns */
@@ -29,6 +27,9 @@ struct tic64x_op_template {
 #define TIC64X_OP_UNIT		2	/* Insn has 'y' bit at bit 7, specifying
 					 * unit 1 or 2 */
 #define TIC64X_OP_SIDE		4	/* 'Side' A/B for destination register*/
+
+	uint32_t opcode;		/* opcode bits */
+	uint32_t opcode_mask;		/* mask of which opcode bits are valid*/
 
 	struct tic64x_operand operands[4];
 };
