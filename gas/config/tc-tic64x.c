@@ -2,6 +2,7 @@
 
 #include <limits.h>
 #include "as.h"
+#include "safe-ctype.h"
 #include "opcode/tic64x.h"
 #include "obj-coff.h"
 #include "struc-symbol.h"
@@ -101,6 +102,47 @@ tic64x_fail(int x ATTRIBUTE_UNUSED)
 {
 
 	as_fatal("Encountered supported but unimplemented pseudo-op");
+	return;
+}
+
+static void
+tic64x_asg(int x ATTRIBUTE_UNUSED)
+{
+	char *reg, *new;
+	int dummy;
+	char c;
+
+	if (*input_line_pointer == '"') {
+		reg = demand_copy_C_string(&dummy);
+		c = *input_line_pointer++;
+	} else {
+		reg = input_line_pointer;
+		while (1) {
+			/* XXX - following tic54x, but can this just be
+			 * replaced with a call to get_symbol_end? */
+			c = *input_line_pointer;
+			if (c == ',' || is_end_of_line[(int)c])
+				break;
+			input_line_pointer++;
+		}
+		*input_line_pointer++ = 0;
+	}
+
+	if (c != ',') {
+		as_bad("No comma while parsing .asg");
+		ignore_rest_of_line();
+		return;
+	}
+
+	new = input_line_pointer;
+	c = get_symbol_end();
+	if (!ISALPHA(*new)) {
+		as_bad("Bad starting character in asg assignment");
+		ignore_rest_of_line();
+		return;
+	}
+
+	/* Asplode */
 	return;
 }
 
