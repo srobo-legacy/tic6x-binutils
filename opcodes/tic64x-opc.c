@@ -39,6 +39,7 @@ struct tic64x_op_template tic64x_opcodes[] = {
 		{tic64x_operand_invalid,		0,		0},
 		{tic64x_operand_invalid,		0,		0},
 		{tic64x_operand_invalid,		0,		0},
+		{tic64x_operand_invalid,		0,		0},
 		{tic64x_operand_invalid,		0,		0}
 	}
 }

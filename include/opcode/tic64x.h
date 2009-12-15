@@ -14,7 +14,8 @@ enum tic64x_operand_type {
 	tic64x_operand_addrmode,		/* Addressing mode field */
 	tic64x_operand_dwdest,			/* Doubleword destination */
 	tic64x_operand_basereg,			/* Base address register, l/s */
-	tic64x_operand_rcoffset		/* Register/Constant offset */
+	tic64x_operand_rcoffset,		/* Register/Constant offset */
+	tic64x_operand_scale			/* Scale bit for rcoffset */
 };
 
 struct tic64x_operand {
@@ -44,7 +45,7 @@ struct tic64x_op_template {
 					 * that there's also a 'z' field */
 #define TIC64X_OP_SIDE		0x10	/* 'Side' A/B for destination register*/
 
-	struct tic64x_operand operands[4];
+	struct tic64x_operand operands[5];
 };
 
 extern struct tic64x_op_template tic64x_opcodes[];
