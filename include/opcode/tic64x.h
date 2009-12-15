@@ -9,9 +9,16 @@ struct tic64x_register {
 	int num;
 };
 
+enum tic64x_operand_type {
+	tic64x_operand_invalid = 0,
+	tic64x_operand_addrmode,		/* Addressing mode field */
+	tic64x_operand_dwdest,			/* Doubleword destination */
+	tic64x_operand_basereg,			/* Base address register, l/s */
+	tic64x_operand_rcoffset		/* Register/Constant offset */
+};
+
 struct tic64x_operand {
-#define TIC64X_OPERAND_INVALID		0	/* Not valid */
-	int type;
+	enum tic64x_operand_type type;
 	int position;		/* Location in opcode, bits from zero */
 	int size;		/* Size of operand in bits */
 };
