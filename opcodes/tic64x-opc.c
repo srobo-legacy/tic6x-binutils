@@ -34,5 +34,12 @@ struct tic64x_register tic64x_regs[] = {
 
 /* Dummy table for dummy opcodes */
 struct tic64x_op_template tic64x_opcodes[] = {
-{NULL, 		0,		0}
+{NULL, 		0,		0,		0,
+	{
+		{TIC64X_OPERAND_INVALID,		0,		0},
+		{TIC64X_OPERAND_INVALID,		0,		0},
+		{TIC64X_OPERAND_INVALID,		0,		0},
+		{TIC64X_OPERAND_INVALID,		0,		0}
+	}
+}
 };
