@@ -28,8 +28,32 @@ const char *md_shortopts = "";
 static struct hash_control *tic64x_ops;
 static struct hash_control *tic64x_reg_names;
 
+static void tic64x_asg(int x);
+static void tic64x_fail(int x);
+
+/* A few things we might want to handle - more complete table in tic54x, also
+ * see spru186 for a full reference */
 const pseudo_typeS md_pseudo_table[] =
 {
+	{"align",	tic64x_fail,		0},
+	{"ascii",	tic64x_fail,		0},
+	{"asciz",	tic64x_fail,		0},
+	{"asg", 	tic64x_asg,		0},
+	{"bss",		tic64x_fail,		0},
+	{"byte",	tic64x_fail,		0},
+	{"copy",	tic64x_fail,		0},
+	{"data",	tic64x_fail,		0},
+	{"def",		tic64x_fail,		0},
+	{"global",	tic64x_fail,		0},
+	{"include",	tic64x_fail,		0},
+	{"mlib",	tic64x_fail,		0},
+	{"ref",		tic64x_fail,		0},
+	{"sect",	tic64x_fail,		0},
+	{"set",		tic64x_fail,		0},
+	{"string",	tic64x_fail,		0},
+	{"text",	tic64x_fail,		0},
+	{"usect",	tic64x_fail,		0},
+	{"word",	tic64x_fail,		0},
 	{NULL, 		NULL,			0}
 };
 
@@ -69,6 +93,14 @@ md_begin()
 			as_fatal("md_begin: couldn't enter %s in hash table\n",
 				reg->name);
 
+	return;
+}
+
+static void
+tic64x_fail(int x ATTRIBUTE_UNUSED)
+{
+
+	as_fatal("Encountered supported but unimplemented pseudo-op");
 	return;
 }
 
