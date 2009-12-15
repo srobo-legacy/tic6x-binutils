@@ -308,10 +308,14 @@ md_assemble(char *line)
 {
 	struct tic64x_op_template *tmpl;
 	char *mnemonic, *ex_unit;
-	int unit_num;
+	int unit_num, mem_unit_num;
 	char unit;
 
 	/* Insert here - double bar detection */
+
+	mem_unit_num = -1;
+	unit_num = -1;
+	unit = 0;
 
 	mnemonic = line;
 	while (!ISSPACE(*line) && !is_end_of_line[(int)*line])
@@ -362,7 +366,28 @@ md_assemble(char *line)
 		return;
 	}
 
-	printf("Got mnemonic %s unit %C num %d\n", mnemonic, unit, unit_num);
+	if (tmpl->flags & TIC64X_OP_MEMACCESS) {
+		/* We should find either T1 or T2 at end of unit specifier,
+		 * indicating which data path the loaded/stored data will
+		 * travel through (only address needs to be in same unit) */
+		if (*ex_unit++ != 'T') {
+			as_bad("Expected memory datapath T1/T2 in unit "
+				"specifier for \"%s\"", mnemonic);
+			free(mnemonic);
+			return;
+		}
+
+		mem_unit_num = *ex_unit++ - 0x30;
+		if (mem_unit_num != 1 && mem_unit_num != 2) {
+			as_bad("%d not a valid unit number for memory data path"
+				" in \"%s\"", mem_unit_num, mnemonic);
+			free(mnemonic);
+			return;
+		}
+	}
+
+	printf("Got mnemonic %s unit %C num %d memunit %d\n", mnemonic, unit,
+							unit_num, mem_unit_num);
 	free(mnemonic);
 	return;
 }
