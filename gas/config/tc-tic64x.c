@@ -31,6 +31,7 @@ static struct hash_control *tic64x_reg_names;
 static struct hash_control *tic64x_subsyms;
 
 static void tic64x_asg(int x);
+static void tic64x_sect(int x);
 static void tic64x_fail(int x);
 
 /* A few things we might want to handle - more complete table in tic54x, also
@@ -46,11 +47,11 @@ const pseudo_typeS md_pseudo_table[] =
 	{"copy",	tic64x_fail,		0},
 	{"data",	tic64x_fail,		0},
 	{"def",		tic64x_fail,		0},
-	{"global",	tic64x_fail,		0},
+/*	{"global",	tic64x_fail,		0}, */
 	{"include",	tic64x_fail,		0},
 	{"mlib",	tic64x_fail,		0},
 	{"ref",		tic64x_fail,		0},
-	{"sect",	tic64x_fail,		0},
+	{"sect",	tic64x_sect,		0},
 	{"set",		tic64x_fail,		0},
 	{"string",	tic64x_fail,		0},
 	{"text",	tic64x_fail,		0},
