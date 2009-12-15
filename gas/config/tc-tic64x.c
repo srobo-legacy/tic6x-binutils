@@ -29,6 +29,7 @@ const char *md_shortopts = "";
 static struct hash_control *tic64x_ops;
 static struct hash_control *tic64x_reg_names;
 static struct hash_control *tic64x_subsyms;
+int tic64x_line_had_parallel_prefix;
 
 static void tic64x_asg(int x);
 static void tic64x_sect(int x);
@@ -275,6 +276,30 @@ md_apply_fix(fixS *fixP, valueT *valP, segT seg)
 		as_fatal("Bad relocation type %X\n", fixP->fx_r_type);
 		return;
 	}
+	return;
+}
+
+/* Some kind of convention as to what can be md_blah and what needs to be
+ * #defined to md_blah would be nice... */
+void
+tic64x_start_line_hook(void)
+{
+	char *line;
+
+	/* Only thing we want to know/do is stop gas tripping over "||"
+	 * bars indicating parallel execution */
+	line = input_line_pointer;
+	while (ISSPACE(*line) && !is_end_of_line[(int)*line])
+		line++;
+
+	if (*line == '|' && *(line+1) == '|') {
+		*line++ = ' ';
+		*line++ = ' ';
+		tic64x_line_had_parallel_prefix = 1;
+	} else {
+		tic64x_line_had_parallel_prefix = 0;
+	}
+
 	return;
 }
 

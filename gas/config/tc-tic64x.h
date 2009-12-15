@@ -27,4 +27,8 @@
 /* AFAIK everything we want to deal with will be treated little endianly */
 #define md_number_to_chars(b,v,n) number_to_chars_littleendian(b,v,n)
 
+void tic64x_start_line_hook(void);
+#define md_start_line_hook() tic64x_start_line_hook()
+
+
 #endif /* _TC_TIC64X_H_ */
