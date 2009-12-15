@@ -287,7 +287,7 @@ md_assemble(char *line)
 	/* Insert here - double bar detection */
 
 	mnemonic = line;
-	while (*line != ' ' && *line != '\t')
+	while (!ISSPACE(*line))
 		line++;
 	*line++ = 0;
 
