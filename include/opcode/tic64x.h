@@ -44,6 +44,10 @@ struct tic64x_op_template {
 					 * top three bits of insn. Implies
 					 * that there's also a 'z' field */
 #define TIC64X_OP_SIDE		0x10	/* 'Side' A/B for destination register*/
+#define TIC64X_OP_MEMACCESS	0x20	/* Accesses memory, ie is a load or
+					 * store instruction. Used to work out
+					 * when we should have a T1 or T2 suffix
+					 * to the execution unit specifier */
 
 	struct tic64x_operand operands[5];
 };
