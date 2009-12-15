@@ -13,7 +13,14 @@ struct tic64x_op_template {
 	char *mnemonic;
 	uint32_t opcode;		/* opcode bits */
 	uint32_t opcode_mask;		/* mask of which opcode bits are valid*/
-	/* Insert here - actual data */
+	uint32_t flags;			/* Some flags: */
+#define TIC64X_OP_COND		1	/* Has conditional execution field,
+					 * top three bits of insn. Implies
+					 * that there's also a 'z' field */
+#define TIC64X_OP_UNIT		2	/* Insn has 'y' bit at bit 7, specifying
+					 * unit 1 or 2 */
+#define TIC64X_OP_SIDE		4	/* 'Side' A/B for destination register*/
+
 };
 
 extern struct tic64x_op_template tic64x_opcodes[];
