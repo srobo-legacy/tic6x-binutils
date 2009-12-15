@@ -18,6 +18,8 @@ struct tic64x_operand {
 
 struct tic64x_op_template {
 	char *mnemonic;
+	uint32_t opcode;		/* opcode bits */
+	uint32_t opcode_mask;		/* mask of which opcode bits are valid*/
 	uint32_t flags;			/* Some flags - operands that are always
 					 * in exactly the same place but not
 					 * necessarily present in all insns */
@@ -34,9 +36,6 @@ struct tic64x_op_template {
 					 * top three bits of insn. Implies
 					 * that there's also a 'z' field */
 #define TIC64X_OP_SIDE		0x10	/* 'Side' A/B for destination register*/
-
-	uint32_t opcode;		/* opcode bits */
-	uint32_t opcode_mask;		/* mask of which opcode bits are valid*/
 
 	struct tic64x_operand operands[4];
 };
