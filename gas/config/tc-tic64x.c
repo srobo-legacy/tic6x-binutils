@@ -307,12 +307,14 @@ void
 md_assemble(char *line)
 {
 	struct tic64x_op_template *tmpl;
-	char *mnemonic;
+	char *mnemonic, *ex_unit;
+	int unit_num;
+	char unit;
 
 	/* Insert here - double bar detection */
 
 	mnemonic = line;
-	while (!ISSPACE(*line))
+	while (!ISSPACE(*line) && !is_end_of_line[(int)*line])
 		line++;
 	*line++ = 0;
 
@@ -324,4 +326,43 @@ md_assemble(char *line)
 	}
 
 	mnemonic = strdup(mnemonic);
+
+	/* Next read execution unit */
+	while (ISSPACE(*line) &&  !is_end_of_line[(int)*line])
+		line++;
+	ex_unit = line;
+
+	while (!ISSPACE(*line) &&  !is_end_of_line[(int)*line])
+		line++;
+	*line++ = 0;
+
+	/* Expect ".xn" where x is {D,L,S,M}, and n is {1,2}. Can be followed
+	 * by 'T' specifier saying which memory data path is being used */
+	if (*ex_unit++ != '.') {
+		as_bad("Expected execution unit specifier after \"%s\"",
+							mnemonic);
+		free(mnemonic);
+		return;
+	}
+
+	unit = *ex_unit++;
+	if (unit != 'D' && unit != 'L' && unit != 'S' && unit != 'M') {
+		as_bad("Unrecognised execution unit %C after \"%s\"",
+							unit, mnemonic);
+		free(mnemonic);
+		return;
+	}
+
+	/* I will scream if someone says "what if it isn't ascii" */
+	unit_num = *ex_unit++ - 0x30;
+	if (unit_num != 1 && unit_num != 2) {
+		as_bad("Bad execution unit number %d after \"%s\"",
+							unit_num, mnemonic);
+		free(mnemonic);
+		return;
+	}
+
+	printf("Got mnemonic %s unit %C num %d\n", mnemonic, unit, unit_num);
+	free(mnemonic);
+	return;
 }
