@@ -482,22 +482,6 @@ tic64x_opreader_memaccess(char *line, struct tic64x_insn *insn)
 		}
 	}
 
-	/* At this point we either need to have had + or - at the start, or
-	 * pre/post inc/decrementors. Verify we don't have invalid combination
-	 * (postmodifier nonmodifier), and nothing else is -1 */
-
-	if (nomod_modify == -1 || pos_neg == -1) {
-		as_bad("No addressing mode specified on address register");
-		return;
-	} else if (nomod_modify == TIC64X_ADDRMODE_NOMODIFY &&
-			pre_post == TIC64X_ADDRMODE_POST) {
-		as_bad("Invalid postmodifier (internal error)");
-		return;
-	} else if (pre_post == -1) {
-		as_bad("Bad internal pre/post value in tic64x_parse_memaccess");
-		return;
-	}
-
 	/* Look for offset register of constant */
 	if (*line++ == '[') {
 		offs = line;
@@ -514,6 +498,22 @@ tic64x_opreader_memaccess(char *line, struct tic64x_insn *insn)
 		*line = 0;
 		offsreg = tic64x_sym_to_reg(offs);
 	} /* XXX */
+
+	/* At this point we either need to have had + or - at the start, or
+	 * pre/post inc/decrementors. Verify we don't have invalid combination
+	 * (postmodifier nonmodifier), and nothing else is -1 */
+
+	if (nomod_modify == -1 || pos_neg == -1) {
+		as_bad("No addressing mode specified on address register");
+		return;
+	} else if (nomod_modify == TIC64X_ADDRMODE_NOMODIFY &&
+			pre_post == TIC64X_ADDRMODE_POST) {
+		as_bad("Invalid postmodifier (internal error)");
+		return;
+	} else if (pre_post == -1) {
+		as_bad("Bad internal pre/post value in tic64x_parse_memaccess");
+		return;
+	}
 
 	return;
 }
