@@ -447,8 +447,35 @@ tic64x_opreader_constant(char *line, struct tic64x_insn *insn)
 char *
 tic64x_parse_operand(char *line, struct tic64x_insn *insn, int op_num)
 {
+	enum tic64x_text_operand optype;
+	char *operand;
+	int i;
+	char end;
 
+	/* Read up til end of operand */
+	operand = line;
+	while (*line != ',' && !is_end_of_line[(int)*line])
+		line++;
+
+	/* Mark end of operand */
+	end = *line;
 	*line = 0;
+
+	/* We have some text, lookup what kind of operand we expect, and call
+	 * its parser / handler / whatever */
+	optype = insn->templ->textops[op_num];
+	for (i = 0; tic64x_operand_readers[i].reader != NULL; i++) {
+		if (tic64x_operand_readers[i].type == optype)
+			break;
+	}
+
+	if (tic64x_operand_readers[i].reader) {
+		tic64x_operand_readers[i].reader(operand, insn);
+	} else {
+		as_bad("\"%s\" has unrecognised operand %d",
+				insn->templ->mnemonic, op_num);
+	}
+
 	return line;
 }
 
