@@ -388,6 +388,7 @@ tic64x_opreader_none(char *line, struct tic64x_insn *insn)
 void
 tic64x_opreader_memaccess(char *line, struct tic64x_insn *insn)
 {
+	expressionS expr;
 	char *regname, *offs;
 	struct tic64x_register *reg, *offsreg;
 	int off_reg, pos_neg, pre_post, nomod_modify;
@@ -483,9 +484,10 @@ tic64x_opreader_memaccess(char *line, struct tic64x_insn *insn)
 	}
 
 	/* Look for offset register of constant */
-	if (*line++ == '[') {
+	if (*line == '[' || *line == '(') {
 		offs = line;
-		while (*line != ']' && !is_end_of_line[(int)*line])
+		while (*line != ']' && *line != ')' &&
+				!is_end_of_line[(int)*line])
 			line++;
 
 		if (is_end_of_line[(int)*line]) {
@@ -494,8 +496,13 @@ tic64x_opreader_memaccess(char *line, struct tic64x_insn *insn)
 			return;
 		}
 
+		printf("Dear me: these offsets/locations/exprs whatever are "
+			"a gigantic face. Enjoy your trap\n");
+		__asm__("int $3");
+
 		c = *line;
 		*line = 0;
+		tic64x_parse_expr(line, &expr);
 		offsreg = tic64x_sym_to_reg(offs);
 	} /* XXX */
 
