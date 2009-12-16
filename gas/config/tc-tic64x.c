@@ -46,6 +46,7 @@ int tic64x_line_had_parallel_prefix;
 static void tic64x_asg(int x);
 static void tic64x_sect(int x);
 static void tic64x_fail(int x);
+static struct tic64x_register *tic64x_sym_to_reg(char *name);
 static char *tic64x_parse_operand(char *line, struct tic64x_insn *i,int op_num);
 static void tic64x_opreader_none(char *line, struct tic64x_insn *insn);
 static void tic64x_opreader_memaccess(char *line, struct tic64x_insn *insn);
@@ -310,6 +311,31 @@ md_apply_fix(fixS *fixP, valueT *valP, segT seg)
 	return;
 }
 
+struct tic64x_register *
+tic64x_sym_to_reg(char *regname)
+{
+	char *subsym;
+	struct tic64x_register *reg;
+
+	reg = hash_find(tic64x_reg_names, regname);
+	if (!reg) {
+		subsym = hash_find(tic64x_subsyms, regname);
+		if (!subsym) {
+			as_bad("\"%s\" not a register or symbolic name",
+								regname);
+			return NULL;
+		}
+
+		reg = hash_find(tic64x_reg_names, subsym);
+		if (!reg) {
+			as_bad("\"%s\" is not a register", regname);
+			return NULL;
+		}
+	}
+
+	return reg;
+}
+
 /* Some kind of convention as to what can be md_blah and what needs to be
  * #defined to md_blah would be nice... */
 void
@@ -347,8 +373,8 @@ tic64x_opreader_none(char *line, struct tic64x_insn *insn)
 void
 tic64x_opreader_memaccess(char *line, struct tic64x_insn *insn)
 {
-	char *regname, *subsym;
-	struct tic64x_register *reg;
+	char *regname, *offs;
+	struct tic64x_register *reg, *offsreg;
 	int off_reg, pos_neg, pre_post, nomod_modify;
 	char c;
 
@@ -402,23 +428,18 @@ tic64x_opreader_memaccess(char *line, struct tic64x_insn *insn)
 
 	c = *line;
 	*line = 0;
-	reg = hash_find(tic64x_reg_names, regname);
-	if (!reg) {
-		subsym = hash_find(tic64x_subsyms, regname);
-		if (!subsym) {
-			as_bad("\"%s\" not a register or symbolic name",
-								regname);
+	reg = tic64x_sym_to_reg(regname);
+	*line = c;
+	if (!reg)
+		return;
+
 			return;
 		}
 
-		reg = hash_find(tic64x_reg_names, subsym);
-		if (!reg) {
-			as_bad("\"%s\" is not a register", regname);
 			return;
 		}
 	}
 
-	*line = c;
 	/* We should now have a register to work with */
 
 	return;
