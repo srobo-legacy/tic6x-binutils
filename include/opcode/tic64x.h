@@ -49,8 +49,15 @@ struct tic64x_op_template {
 					 * when we should have a T1 or T2 suffix
 					 * to the execution unit specifier */
 #define TIC64X_OP_LOAD		0x40	/* If memory access, load or store? */
+/* 0x80 unused right now */
+#define TIC64X_OP_MEMSZ_MASK	0x300	/* Mask for finding memory access size
+					 * power */
+#define TIC64X_OP_MEMSZ_BYTE	0x0
+#define TIC64X_OP_MEMSZ_HWORD	0x100
+#define TIC64X_OP_MEMSZ_WORD	0x200
+#define TIC64X_OP_MEMSZ_DWORD	0x300
 
-#define TIC64X_MAX_OPERANDS
+#define TIC64X_MAX_OPERANDS	5
 	struct tic64x_operand operands[TIC64X_MAX_OPERANDS];
 };
 
