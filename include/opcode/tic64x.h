@@ -34,6 +34,15 @@ enum tic64x_text_operand {
 	tic64x_optxt_constant
 };
 
+#define TIC64X_ADDRMODE_NEG		0
+#define TIC64X_ADDRMODE_POS		1
+#define TIC64X_ADDRMODE_PRE		0
+#define TIC64X_ADDRMODE_POST		2
+#define TIC64X_ADDRMODE_OFFSET		0
+#define TIC64X_ADDRMODE_REGISTER	4
+#define TIC64X_ADDRMODE_NOMODIFY	0
+#define TIC64X_ADDRMODE_MODIFY		8
+
 struct tic64x_op_template {
 	char *mnemonic;
 	uint32_t opcode;		/* opcode bits */
