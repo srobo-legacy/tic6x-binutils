@@ -50,7 +50,8 @@ struct tic64x_op_template {
 					 * to the execution unit specifier */
 #define TIC64X_OP_LOAD		0x40	/* If memory access, load or store? */
 
-	struct tic64x_operand operands[5];
+#define TIC64X_MAX_OPERANDS
+	struct tic64x_operand operands[TIC64X_MAX_OPERANDS];
 };
 
 extern struct tic64x_op_template tic64x_opcodes[];
