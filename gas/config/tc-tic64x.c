@@ -407,9 +407,9 @@ md_assemble(char *line)
 		}
 	}
 
-	operand = 0;
+	i = 0;
 	while (!is_end_of_line[(int)*line])
-		line = tic64x_parse_operand(line, operand++);
+		line = tic64x_parse_operand(line, i++);
 
 	printf("Got mnemonic %s unit %C num %d memunit %d\n",
 		insn->templ->mnemonic, unit, unit_num, mem_unit_num);
