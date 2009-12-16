@@ -43,6 +43,7 @@ static struct hash_control *tic64x_reg_names;
 static struct hash_control *tic64x_subsyms;
 int tic64x_line_had_parallel_prefix;
 
+static char *tic64x_parse_expr(char *s, expressionS *exp);
 static void tic64x_asg(int x);
 static void tic64x_sect(int x);
 static void tic64x_fail(int x);
@@ -131,6 +132,20 @@ md_begin()
 				reg->name);
 
 	return;
+}
+
+char *
+tic64x_parse_expr(char *s, expressionS *exp)
+{
+	char *tmp, *end;
+
+	/* This is horrific. */
+	tmp = input_line_pointer;
+	input_line_pointer = s;
+	expression(exp);
+	end = input_line_pointer;
+	input_line_pointer = tmp;
+	return end;
 }
 
 static void
