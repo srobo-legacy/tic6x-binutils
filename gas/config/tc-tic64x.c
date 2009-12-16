@@ -347,10 +347,80 @@ tic64x_opreader_none(char *line, struct tic64x_insn *insn)
 void
 tic64x_opreader_memaccess(char *line, struct tic64x_insn *insn)
 {
+	char *regname, *subsym;
+	struct tic64x_register *reg;
+	int off_reg, pos_neg, pre_post, nomod_modify;
+	char c;
 
-	UNUSED(line);
-	UNUSED(insn);
-	as_bad("Unsupported operand type");
+	off_reg = -1;
+	pos_neg = -1;
+	pre_post = -1;
+	nomod_modify = -1;
+
+	/* We expect firstly to start wih a '*' */
+	if (*line++ != '*') {
+		as_bad("expected '*' before memory operand");
+		return;
+	}
+
+	/* See page 79 of spru732h for table of address modes */
+	if (*line == '+') {
+		if (*(line+1) == '+') {
+			/* Preincrement */
+			nomod_modify = TIC64X_ADDRMODE_MODIFY;
+			pos_neg = TIC64X_ADDRMODE_POS;
+			pre_post = TIC64X_ADDRMODE_PRE;
+			line += 2;
+		} else {
+			nomod_modify = TIC64X_ADDRMODE_NOMODIFY;
+			pos_neg = TIC64X_ADDRMODE_POS;
+			line++;
+		}
+	} else if (*line == '-') {
+		if (*(line+1) == '-') {
+			nomod_modify = TIC64X_ADDRMODE_MODIFY;
+			pos_neg = TIC64X_ADDRMODE_NEG;
+			pre_post = TIC64X_ADDRMODE_PRE;
+			line += 2;
+		} else {
+			nomod_modify = TIC64X_ADDRMODE_NOMODIFY;
+			pos_neg = TIC64X_ADDRMODE_NEG;
+			line++;
+		}
+	}
+
+	/* We should now have an alpha-num register name, possibly .asg'd */
+	regname = line;
+	while (ISALPHA(*line) || ISDIGIT(*line))
+		line++;
+
+	if (regname == line) { /* Invalid register name */
+		as_bad("Expected register name in memory operand of \"%s\"",
+						insn->templ->mnemonic);
+		return;
+	}
+
+	c = *line;
+	*line = 0;
+	reg = hash_find(tic64x_reg_names, regname);
+	if (!reg) {
+		subsym = hash_find(tic64x_subsyms, regname);
+		if (!subsym) {
+			as_bad("\"%s\" not a register or symbolic name",
+								regname);
+			return;
+		}
+
+		reg = hash_find(tic64x_reg_names, subsym);
+		if (!reg) {
+			as_bad("\"%s\" is not a register", regname);
+			return;
+		}
+	}
+
+	*line = c;
+	/* We should now have a register to work with */
+
 	return;
 }
 
