@@ -9,6 +9,18 @@
 
 #define UNUSED(x) ((x) = (x))
 
+struct tic64x_insn {
+	struct tic64x_op_template *templ;
+
+	/* Template holds everything needed to build the instruction, but
+	 * we need some data to actually build with. Each entry in operands
+	 * array corresponds to the operand in the op template */
+	struct {
+		uint32_t value;
+		int set;
+	} operands[TIC64X_MAX_OPERANDS];
+};
+
 const char comment_chars[] = ";";
 const char line_comment_chars[] = ";*#";
 const char line_separator_chars[] = "";
