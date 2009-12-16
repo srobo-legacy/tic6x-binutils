@@ -483,7 +483,7 @@ void
 md_assemble(char *line)
 {
 	struct tic64x_insn *insn;
-	char *mnemonic, *ex_unit;
+	char *mnemonic;
 	int unit_num, mem_unit_num, i;
 	char unit;
 
@@ -506,25 +506,16 @@ md_assemble(char *line)
 		return;
 	}
 
-	/* Next read execution unit */
-	while (ISSPACE(*line) &&  !is_end_of_line[(int)*line])
-		line++;
-	ex_unit = line;
-
-	while (!ISSPACE(*line) &&  !is_end_of_line[(int)*line])
-		line++;
-	*line++ = 0;
-
 	/* Expect ".xn" where x is {D,L,S,M}, and n is {1,2}. Can be followed
 	 * by 'T' specifier saying which memory data path is being used */
-	if (*ex_unit++ != '.') {
+	if (*line++ != '.') {
 		as_bad("Expected execution unit specifier after \"%s\"",
 							insn->templ->mnemonic);
 		free(insn);
 		return;
 	}
 
-	unit = *ex_unit++;
+	unit = *line++;
 	if (unit != 'D' && unit != 'L' && unit != 'S' && unit != 'M') {
 		as_bad("Unrecognised execution unit %C after \"%s\"",
 						unit, insn->templ->mnemonic);
@@ -533,7 +524,7 @@ md_assemble(char *line)
 	}
 
 	/* I will scream if someone says "what if it isn't ascii" */
-	unit_num = *ex_unit++ - 0x30;
+	unit_num = *line++ - 0x30;
 	if (unit_num != 1 && unit_num != 2) {
 		as_bad("Bad execution unit number %d after \"%s\"",
 					unit_num, insn->templ->mnemonic);
@@ -545,14 +536,14 @@ md_assemble(char *line)
 		/* We should find either T1 or T2 at end of unit specifier,
 		 * indicating which data path the loaded/stored data will
 		 * travel through (only address needs to be in same unit) */
-		if (*ex_unit++ != 'T') {
+		if (*line++ != 'T') {
 			as_bad("Expected memory datapath T1/T2 in unit "
 				"specifier for \"%s\"", insn->templ->mnemonic);
 			free(insn);
 			return;
 		}
 
-		mem_unit_num = *ex_unit++ - 0x30;
+		mem_unit_num = *line++ - 0x30;
 		if (mem_unit_num != 1 && mem_unit_num != 2) {
 			as_bad("%d not a valid unit number for memory data path"
 						" in \"%s\"", mem_unit_num,
