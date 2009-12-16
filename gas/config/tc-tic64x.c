@@ -315,19 +315,26 @@ tic64x_start_line_hook(void)
 	return;
 }
 
+char *
+tic64x_parse_operand(char *line)
+{
+
+	*line = 0;
+	return line;
+}
+
 void
 md_assemble(char *line)
 {
-	struct tic64x_op_template *tmpl;
+	struct tic64x_insn insn;
 	char *mnemonic, *ex_unit;
 	int unit_num, mem_unit_num;
 	char unit;
 
-	/* Insert here - double bar detection */
-
 	mem_unit_num = -1;
 	unit_num = -1;
 	unit = 0;
+	memset(&insn, 0, sizeof(insn));
 
 	mnemonic = line;
 	while (!ISSPACE(*line) && !is_end_of_line[(int)*line])
@@ -335,13 +342,11 @@ md_assemble(char *line)
 	*line++ = 0;
 
 	/* Is this an instruction we've heard of? */
-	tmpl = hash_find(tic64x_ops, mnemonic);
-	if (!tmpl) {
+	insn.templ = hash_find(tic64x_ops, mnemonic);
+	if (!insn.templ) {
 		as_bad("Unrecognised mnemonic %s", mnemonic);
 		return;
 	}
-
-	mnemonic = strdup(mnemonic);
 
 	/* Next read execution unit */
 	while (ISSPACE(*line) &&  !is_end_of_line[(int)*line])
@@ -356,16 +361,14 @@ md_assemble(char *line)
 	 * by 'T' specifier saying which memory data path is being used */
 	if (*ex_unit++ != '.') {
 		as_bad("Expected execution unit specifier after \"%s\"",
-							mnemonic);
-		free(mnemonic);
+							insn.templ->mnemonic);
 		return;
 	}
 
 	unit = *ex_unit++;
 	if (unit != 'D' && unit != 'L' && unit != 'S' && unit != 'M') {
 		as_bad("Unrecognised execution unit %C after \"%s\"",
-							unit, mnemonic);
-		free(mnemonic);
+						unit, insn.templ->mnemonic);
 		return;
 	}
 
@@ -373,33 +376,33 @@ md_assemble(char *line)
 	unit_num = *ex_unit++ - 0x30;
 	if (unit_num != 1 && unit_num != 2) {
 		as_bad("Bad execution unit number %d after \"%s\"",
-							unit_num, mnemonic);
-		free(mnemonic);
+						unit_num, insn.templ->mnemonic);
 		return;
 	}
 
-	if (tmpl->flags & TIC64X_OP_MEMACCESS) {
+	if (insn.templ->flags & TIC64X_OP_MEMACCESS) {
 		/* We should find either T1 or T2 at end of unit specifier,
 		 * indicating which data path the loaded/stored data will
 		 * travel through (only address needs to be in same unit) */
 		if (*ex_unit++ != 'T') {
 			as_bad("Expected memory datapath T1/T2 in unit "
-				"specifier for \"%s\"", mnemonic);
-			free(mnemonic);
+				"specifier for \"%s\"", insn.templ->mnemonic);
 			return;
 		}
 
 		mem_unit_num = *ex_unit++ - 0x30;
 		if (mem_unit_num != 1 && mem_unit_num != 2) {
 			as_bad("%d not a valid unit number for memory data path"
-				" in \"%s\"", mem_unit_num, mnemonic);
-			free(mnemonic);
+						" in \"%s\"", mem_unit_num,
+							insn.templ->mnemonic);
 			return;
 		}
 	}
 
-	printf("Got mnemonic %s unit %C num %d memunit %d\n", mnemonic, unit,
-							unit_num, mem_unit_num);
-	free(mnemonic);
+	while (!is_end_of_line[(int)*line])
+		line = tic64x_parse_operand(line);
+
+	printf("Got mnemonic %s unit %C num %d memunit %d\n",
+		insn.templ->mnemonic, unit, unit_num, mem_unit_num);
 	return;
 }
