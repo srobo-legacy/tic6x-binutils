@@ -18,10 +18,20 @@ enum tic64x_operand_type {
 	tic64x_operand_scale			/* Scale bit for rcoffset */
 };
 
+/* Represent operand in opcode */
 struct tic64x_operand {
 	enum tic64x_operand_type type;
 	int position;		/* Location in opcode, bits from zero */
 	int size;		/* Size of operand in bits */
+};
+
+/* Represent operand in text - simplifies how parser/disassembler works out
+ * what to expect when dealing with an instruction */
+enum tic64x_text_operand {
+	tic64x_optxt_none = 0,
+	tic64x_optxt_memaccess,
+	tic64x_optxt_register,
+	tic64x_optxt_constant
 };
 
 struct tic64x_op_template {
@@ -57,6 +67,7 @@ struct tic64x_op_template {
 #define TIC64X_OP_MEMSZ_WORD	0x200
 #define TIC64X_OP_MEMSZ_DWORD	0x300
 
+	enum tic64x_text_operand textops[3];
 #define TIC64X_MAX_OPERANDS	5
 	struct tic64x_operand operands[TIC64X_MAX_OPERANDS];
 };
