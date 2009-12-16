@@ -391,7 +391,7 @@ tic64x_opreader_memaccess(char *line, struct tic64x_insn *insn)
 
 	/* We should now have an alpha-num register name, possibly .asg'd */
 	regname = line;
-	while (ISALPHA(*line) || ISDIGIT(*line))
+	while (ISALPHA(*line) || ISDIGIT(*line) || *line == '_')
 		line++;
 
 	if (regname == line) { /* Invalid register name */
