@@ -46,7 +46,7 @@ int tic64x_line_had_parallel_prefix;
 static void tic64x_asg(int x);
 static void tic64x_sect(int x);
 static void tic64x_fail(int x);
-static char *tic64x_parse_operand(char *line);
+static char *tic64x_parse_operand(char *line, int op_num);
 
 /* A few things we might want to handle - more complete table in tic54x, also
  * see spru186 for a full reference */
@@ -317,7 +317,7 @@ tic64x_start_line_hook(void)
 }
 
 char *
-tic64x_parse_operand(char *line)
+tic64x_parse_operand(char *line, int op_num)
 {
 
 	*line = 0;
@@ -329,7 +329,7 @@ md_assemble(char *line)
 {
 	struct tic64x_insn *insn;
 	char *mnemonic, *ex_unit;
-	int unit_num, mem_unit_num;
+	int unit_num, mem_unit_num, i;
 	char unit;
 
 	mem_unit_num = -1;
@@ -407,8 +407,9 @@ md_assemble(char *line)
 		}
 	}
 
+	operand = 0;
 	while (!is_end_of_line[(int)*line])
-		line = tic64x_parse_operand(line);
+		line = tic64x_parse_operand(line, operand++);
 
 	printf("Got mnemonic %s unit %C num %d memunit %d\n",
 		insn->templ->mnemonic, unit, unit_num, mem_unit_num);
