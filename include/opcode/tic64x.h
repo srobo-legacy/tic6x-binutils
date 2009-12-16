@@ -48,6 +48,7 @@ struct tic64x_op_template {
 					 * store instruction. Used to work out
 					 * when we should have a T1 or T2 suffix
 					 * to the execution unit specifier */
+#define TIC64X_OP_LOAD		0x40	/* If memory access, load or store? */
 
 	struct tic64x_operand operands[5];
 };

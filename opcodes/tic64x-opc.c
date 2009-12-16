@@ -36,7 +36,7 @@ struct tic64x_register tic64x_regs[] = {
 struct tic64x_op_template tic64x_opcodes[] = {
 {"ldndw",	 0x124,		0x17C,
 	TIC64X_OP_COND | TIC64X_OP_UNIT_D | TIC64X_OP_SIDE |
-	TIC64X_OP_UNITNO | TIC64X_OP_MEMACCESS,
+	TIC64X_OP_UNITNO | TIC64X_OP_MEMACCESS | TIC64X_OP_LOAD,
 	{
 		{tic64x_operand_dwdest,			24,		4},
 		{tic64x_operand_basereg,		18,		5},
