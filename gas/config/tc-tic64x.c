@@ -46,7 +46,7 @@ int tic64x_line_had_parallel_prefix;
 static void tic64x_asg(int x);
 static void tic64x_sect(int x);
 static void tic64x_fail(int x);
-static char *tic64x_parse_operand(char *line, int op_num);
+static char *tic64x_parse_operand(char *line, struct tic64x_insn *i,int op_num);
 static void tic64x_opreader_none(char *line, struct tic64x_insn *insn);
 static void tic64x_opreader_memaccess(char *line, struct tic64x_insn *insn);
 static void tic64x_opreader_register(char *line, struct tic64x_insn *insn);
@@ -445,7 +445,7 @@ tic64x_opreader_constant(char *line, struct tic64x_insn *insn)
 }
 
 char *
-tic64x_parse_operand(char *line, int op_num)
+tic64x_parse_operand(char *line, struct tic64x_insn *insn, int op_num)
 {
 
 	*line = 0;
@@ -537,7 +537,7 @@ md_assemble(char *line)
 
 	i = 0;
 	while (!is_end_of_line[(int)*line])
-		line = tic64x_parse_operand(line, i++);
+		line = tic64x_parse_operand(line, insn, i++);
 
 	printf("Got mnemonic %s unit %C num %d memunit %d\n",
 		insn->templ->mnemonic, unit, unit_num, mem_unit_num);
