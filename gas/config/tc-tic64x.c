@@ -47,6 +47,10 @@ static void tic64x_asg(int x);
 static void tic64x_sect(int x);
 static void tic64x_fail(int x);
 static char *tic64x_parse_operand(char *line, int op_num);
+static void tic64x_opreader_none(char *line, struct tic64x_insn *insn);
+static void tic64x_opreader_memaccess(char *line, struct tic64x_insn *insn);
+static void tic64x_opreader_register(char *line, struct tic64x_insn *insn);
+static void tic64x_opreader_constant(char *line, struct tic64x_insn *insn);
 
 /* A few things we might want to handle - more complete table in tic54x, also
  * see spru186 for a full reference */
@@ -73,6 +77,20 @@ const pseudo_typeS md_pseudo_table[] =
 	{"word",	tic64x_fail,		0},
 	{NULL, 		NULL,			0}
 };
+
+/* Parser routines to read a particularly kind of operand */
+struct {
+	enum tic64x_text_operand type;
+	void (*reader) (char *line, struct tic64x_insn *insn);
+} tic64x_operand_readers[] = {
+{	tic64x_optxt_none,	tic64x_opreader_none},
+{	tic64x_optxt_memaccess,	tic64x_opreader_memaccess},
+{	tic64x_optxt_register,	tic64x_opreader_register},
+{	tic64x_optxt_constant,	tic64x_opreader_constant},
+{	tic64x_optxt_none,	NULL}
+};
+
+
 
 int
 md_parse_option(int c, char *arg)
@@ -313,6 +331,46 @@ tic64x_start_line_hook(void)
 		tic64x_line_had_parallel_prefix = 0;
 	}
 
+	return;
+}
+
+void
+tic64x_opreader_none(char *line, struct tic64x_insn *insn)
+{
+
+	UNUSED(line);
+	UNUSED(insn);
+	as_bad("Unsupported operand type");
+	return;
+}
+
+void
+tic64x_opreader_memaccess(char *line, struct tic64x_insn *insn)
+{
+
+	UNUSED(line);
+	UNUSED(insn);
+	as_bad("Unsupported operand type");
+	return;
+}
+
+void
+tic64x_opreader_register(char *line, struct tic64x_insn *insn)
+{
+
+	UNUSED(line);
+	UNUSED(insn);
+	as_bad("Unsupported operand type");
+	return;
+}
+
+void
+tic64x_opreader_constant(char *line, struct tic64x_insn *insn)
+{
+
+	UNUSED(line);
+	UNUSED(insn);
+	as_bad("Unsupported operand type");
 	return;
 }
 
