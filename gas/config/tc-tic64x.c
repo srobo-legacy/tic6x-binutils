@@ -448,14 +448,72 @@ tic64x_opreader_memaccess(char *line, struct tic64x_insn *insn)
 	if (!reg)
 		return;
 
+	/* We should now have a register to work with - it can be suffixed
+	 * with a postdecrement/increment, offset constant or register */
+	if (*line == '-') {
+		if (*(line+1) == '-') {
+			if (pos_neg != -1 || nomod_modify != -1) {
+				as_bad("Can't specify both pre and post "
+					"operators on address register");
+				return;
+			}
+
+			nomod_modify = TIC64X_ADDRMODE_MODIFY;
+			pos_neg = TIC64X_ADDRMODE_NEG;
+			pre_post = TIC64X_ADDRMODE_POST;
+		} else {
+			as_bad("Bad operator following address register");
 			return;
 		}
+	} else if (*line == '+') {
+		if (*(line+1) == '+') {
+			if (pos_neg != -1 || nomod_modify != -1) {
+				as_bad("Can't specify both pre and post "
+					"operators on address register");
+				return;
+			}
 
+			nomod_modify = TIC64X_ADDRMODE_MODIFY;
+			pos_neg = TIC64X_ADDRMODE_POS;
+			pre_post = TIC64X_ADDRMODE_POST;
+		} else {
+			as_bad("Bad operator following address register");
 			return;
 		}
 	}
 
-	/* We should now have a register to work with */
+	/* At this point we either need to have had + or - at the start, or
+	 * pre/post inc/decrementors. Verify we don't have invalid combination
+	 * (postmodifier nonmodifier), and nothing else is -1 */
+
+	if (nomod_modify == -1 || pos_neg == -1) {
+		as_bad("No addressing mode specified on address register");
+		return;
+	} else if (nomod_modify == TIC64X_ADDRMODE_NOMODIFY &&
+			pre_post == TIC64X_ADDRMODE_POST) {
+		as_bad("Invalid postmodifier (internal error)");
+		return;
+	} else if (pre_post == -1) {
+		as_bad("Bad internal pre/post value in tic64x_parse_memaccess");
+		return;
+	}
+
+	/* Look for offset register of constant */
+	if (*line++ == '[') {
+		offs = line;
+		while (*line != ']' && !is_end_of_line[(int)*line])
+			line++;
+
+		if (is_end_of_line[(int)*line]) {
+			as_bad("Unexpected end of file while reading address "
+				"register offset");
+			return;
+		}
+
+		c = *line;
+		*line = 0;
+		offsreg = tic64x_sym_to_reg(offs);
+	} /* XXX */
 
 	return;
 }
