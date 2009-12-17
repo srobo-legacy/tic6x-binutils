@@ -889,7 +889,7 @@ tic64x_opreader_register(char *line, struct tic64x_insn *insn,
 {
 	enum tic64x_operand_type t2;
 	struct tic64x_register *reg;
-	int i;
+	int i, tmp;
 
 	/* Expect only a single piece of text, should be register */
 	reg = tic64x_sym_to_reg(line);
@@ -928,11 +928,48 @@ tic64x_opreader_register(char *line, struct tic64x_insn *insn,
 			break;
 		}
 	}
+
 	if (i == TIC64X_MAX_OPERANDS)
 		as_fatal("tic64x_opreader_memaccess: instruction \"%s\" has "
 			"tic64x_optxt_memaccess operand, but no corresponding "
 			"tic64x_operand_scale operand field",
 				insn->templ->mnemonic);
+
+	/* Now set some more interesting fields - if working on destination reg,
+	 * set the side of processor we're working on. Also set xpath field */
+	if (t2 == tic64x_operand_dstreg) {
+		if (insn->side != 0)
+			as_fatal("tic64x_opreader_register: side field already "
+								"set");
+
+		insn->side = (reg->num & TIC64X_REG_UNIT2) ? 2 : 1;
+	} else if (TXTOPERAND_CAN_XPATH(insn, type)) {
+		/* This operand can use the xpath, do we? */
+		if (((reg->num & TIC64X_REG_UNIT2) && insn->unit_num == 1) ||
+		    (!(reg->num & TIC64X_REG_UNIT2) && insn->unit_num == 2)) {
+			/* Yes */
+			tmp = 1;
+		} else {
+			/* No */
+			tmp = 0;
+		}
+
+		for (i = 0; i < TIC64X_MAX_OPERANDS; i++) {
+			if (insn->templ->operands[i].type == tic64x_operand_x) {
+				insn->operand_values[i].value = tmp;
+				insn->operand_values[i].resolved = 1;
+				break;
+			}
+		}
+
+		if (i == TIC64X_MAX_OPERANDS)
+			as_fatal("tic64x_opreader_memaccess: instruction \"%s\" "
+				"has xpath enabled operand, but no corresponding"
+				" tic64x_operand_x operand field",
+					insn->templ->mnemonic);
+	}
+
+
 
 	return;
 }
