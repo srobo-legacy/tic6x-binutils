@@ -280,6 +280,59 @@ struct tic64x_op_template tic64x_opcodes[] = {
 		{tic64x_operand_invalid,		0,		0}
 	}
 },
+/* XXX XXX XXX XXX XXX XXX XXX XXX XXX */
+/* The zero opcode is just entirely absent from spru732h; there's a page (495)
+ * for it, but they just don't appear to have bothered to put it in. spru186q
+ * p74 has a binary dump of some assembly, I've assumed the destination reg
+ * is in exactly the same as ever and pieced it back together from that. There
+ * _is_ an opcode map field in the usual reference though */
+{"zero",	0x8C0,		0x7FFFFC,		/* damned if I know */
+	TIC64X_OP_UNIT_D  | TIC64X_OP_COND | TIC64X_OP_SIDE |
+	TIC64X_OP_MULTI_MNEMONIC,
+	{ tic64x_optxt_dstreg, tic64x_optxt_none, tic64x_optxt_none},
+	{
+		{tic64x_operand_dstreg,			23,		5},
+		{tic64x_operand_invalid,		0,		0},
+		{tic64x_operand_invalid,		0,		0},
+		{tic64x_operand_invalid,		0,		0},
+		{tic64x_operand_invalid,		0,		0}
+	}
+},
+{"zero",	0xBC0,		0x7FFFFC,
+	TIC64X_OP_UNIT_L | TIC64X_OP_COND | TIC64X_OP_SIDE,
+	{ tic64x_optxt_dstreg, tic64x_optxt_none, tic64x_optxt_none},
+	{
+		{tic64x_operand_dstreg,			23,		5},
+		{tic64x_operand_invalid,		0,		0},
+		{tic64x_operand_invalid,		0,		0},
+		{tic64x_operand_invalid,		0,		0},
+		{tic64x_operand_invalid,		0,		0}
+	}
+},
+{"zero",	0x1BC0,		0x7FFFFC,
+	TIC64X_OP_UNIT_L | TIC64X_OP_COND | TIC64X_OP_SIDE,
+	{ tic64x_optxt_dwdst, tic64x_optxt_none, tic64x_optxt_none},
+	{
+		{tic64x_operand_dwdst,			23,		5},
+		{tic64x_operand_invalid,		0,		0},
+		{tic64x_operand_invalid,		0,		0},
+		{tic64x_operand_invalid,		0,		0},
+		{tic64x_operand_invalid,		0,		0}
+	}
+},
+/* See preceeding XXX's, this opcode is identical to one of the L opcodes,
+ * only difference is that it goes down the S units. Uuughh, docs please.*/
+{"zero",	0xBC0,		0x7FFFC,
+	TIC64X_OP_UNIT_S | TIC64X_OP_COND | TIC64X_OP_SIDE,
+	{ tic64x_optxt_dstreg, tic64x_optxt_none, tic64x_optxt_none},
+	{
+		{tic64x_operand_dstreg,			23,		5},
+		{tic64x_operand_invalid,		0,		0},
+		{tic64x_operand_invalid,		0,		0},
+		{tic64x_operand_invalid,		0,		0},
+		{tic64x_operand_invalid,		0,		0}
+	}
+},
 {NULL, 		0,		0,		0,
 	{ tic64x_optxt_none, tic64x_optxt_none, tic64x_optxt_none },
 	{
