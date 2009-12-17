@@ -229,11 +229,39 @@ struct tic64x_op_template tic64x_opcodes[] = {
 	}
 },
 {"mvk",		0x28,		0x7C,
-	TIC64X_OP_UNIT_D | TIC64X_OP_UNIT_S | TIC64X_OP_UNIT_L |
-	TIC64X_OP_UNITNO | TIC64X_OP_COND,
+	TIC64X_OP_UNIT_S | TIC64X_OP_COND | TIC64X_OP_SIDE |
+	TIC64X_OP_MULTI_MNEMONIC,
 	{ tic64x_optxt_sconstant, tic64x_optxt_dstreg, tic64x_optxt_none},
 	{
 		{tic64x_operand_vconstant,		7,		16},
+		{tic64x_operand_dstreg,			23,		5},
+		{tic64x_operand_invalid,		0,		0},
+		{tic64x_operand_invalid,		0,		0},
+		{tic64x_operand_invalid,		0,		0}
+	}
+},
+/* XXX XXX XXX - spru732h p327, says xpath bit present, but not in opcode map,
+ * and we never read anything from a register in this insn, so it's not
+ * part of the opcode field but also not in flags */
+{"mvk",		0xA358,		0x3EFFC,
+	TIC64X_OP_UNIT_L | TIC64X_OP_COND | TIC64X_OP_SIDE,
+	{ tic64x_optxt_sconstant, tic64x_optxt_dstreg, tic64x_optxt_none},
+	{
+		{tic64x_operand_vconstant,		18,		5},
+		{tic64x_operand_dstreg,			23,		5},
+		{tic64x_operand_invalid,		0,		0},
+		{tic64x_operand_invalid,		0,		0},
+		{tic64x_operand_invalid,		0,		0}
+	}
+},
+/* XXX XXX XXX - spru732h p327 again, "src2" field present in opcode, but
+ * not used in actual instruction syntax or even operation. Field entirely
+ * ignored for this implementation */
+{"mvk",		0x40,		0x1FFC,
+	TIC64X_OP_UNIT_D | TIC64X_OP_COND | TIC64X_OP_SIDE,
+	{tic64x_optxt_sconstant, tic64x_optxt_dstreg, tic64x_optxt_none},
+	{
+		{tic64x_operand_vconstant,		13,		5},
 		{tic64x_operand_dstreg,			23,		5},
 		{tic64x_operand_invalid,		0,		0},
 		{tic64x_operand_invalid,		0,		0},
