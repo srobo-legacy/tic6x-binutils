@@ -695,6 +695,22 @@ tic64x_opreader_memaccess(char *line, struct tic64x_insn *insn)
 	} else {
 		/* offset, not reg, not constant, so it has a symbol.
 		 * resolve that later */
+		for (i = 0; i < TIC64X_MAX_OPERANDS; i++) {
+			if (insn->templ->operands[i].type ==
+					tic64x_operand_rcoffset) {
+				memcpy(&insn->operand_values[i].expr, &expr,
+								sizeof(expr));
+				insn->operand_values[i].resolved = 0;
+				break;
+			}
+		}
+
+		if (i == TIC64X_MAX_OPERANDS)
+			as_fatal("tic64x_opreader_memaccess: instruction \"%s\""
+				" has tic64x_optxt_memaccess operand, but no "
+				"corresponding tic64x_operand_rcoffset operand "
+				"field", insn->templ->mnemonic);
+
 		goto skip_offset; /* Mwuuhahahaaaha */
 	}
 
