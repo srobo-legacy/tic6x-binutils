@@ -71,6 +71,7 @@ struct tic64x_op_template {
 /* 0x80 unused right now */
 #define TIC64X_OP_MEMSZ_MASK	0x300	/* Mask for finding memory access size
 					 * power */
+#define TIC64X_OP_MEMSZ_SHIFT	8	/* Values need to be shr'd 8 bits... */
 #define TIC64X_OP_MEMSZ_BYTE	0x0
 #define TIC64X_OP_MEMSZ_HWORD	0x100
 #define TIC64X_OP_MEMSZ_WORD	0x200
