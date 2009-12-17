@@ -1217,7 +1217,8 @@ md_assemble(char *line)
 		}
 
 		if (tic64x_operand_readers[j].reader) {
-			tic64x_operand_readers[j].reader(operands[i], insn, i);
+			tic64x_operand_readers[j].reader(operands[i], insn,
+					tic64x_operand_readers[j].type);
 		} else {
 			as_bad("\"%s\" has unrecognised operand %d",
 				insn->templ->mnemonic, i);
