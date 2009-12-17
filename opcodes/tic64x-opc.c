@@ -70,6 +70,18 @@ struct tic64x_op_template tic64x_opcodes[] = {
 		{tic64x_operand_scale,			23,		1}
 	}
 },
+{"mvk",		0x28,		0x7C,
+	TIC64X_OP_UNIT_D | TIC64X_OP_UNIT_S | TIC64X_OP_UNIT_L |
+	TIC64X_OP_UNITNO | TIC64X_OP_COND,
+	{ tic64x_optxt_sconstant, tic64x_optxt_destreg, tic64x_optxt_none},
+	{
+		{tic64x_operand_vconstant,		7,		16},
+		{tic64x_operand_dstreg,			23,		5},
+		{tic64x_operand_invalid,		0,		0},
+		{tic64x_operand_invalid,		0,		0},
+		{tic64x_operand_invalid,		0,		0}
+	}
+},
 {NULL, 		0,		0,		0,
 	{ tic64x_optxt_none, tic64x_optxt_none, tic64x_optxt_none },
 	{
