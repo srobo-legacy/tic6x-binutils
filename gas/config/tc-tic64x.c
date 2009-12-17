@@ -1066,6 +1066,17 @@ void tic64x_opreader_double_register(char *line, struct tic64x_insn *insn,
 			"tic64x_operand_dw{src,dst} operand field",
 					insn->templ->mnemonic);
 
+	/* Also in this series - if this dw pair happen to be the destintation,
+	 * set the side field for this insn */
+	if (optype == tic64x_optxt_dwdst) {
+		if (insn->side != 0) {
+			as_fatal("tic64x_opreader_register: side field already "
+								"set");
+		}
+
+		insn->side = (reg1->num & TIC64X_REG_UNIT2) ? 2 : 1;
+	}
+
 	return;
 }
 void
