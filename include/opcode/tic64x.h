@@ -81,6 +81,11 @@ struct tic64x_op_template {
 #define TIC64X_OP_MEMSZ_WORD	0x200
 #define TIC64X_OP_MEMSZ_DWORD	0x300
 
+#define TIC64X_OP_FIXED_UNITNO	0x400	/* Instruction can only execute on one
+					 * side of processor */
+#define TIC64X_OP_FIXED_UNIT2	0x800	/* Insn only executes on unit 2; not
+					 * set means unit 1 */
+
 	enum tic64x_text_operand textops[3];
 #define TIC64X_MAX_OPERANDS	5
 	struct tic64x_operand operands[TIC64X_MAX_OPERANDS];
