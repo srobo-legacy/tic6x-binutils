@@ -86,8 +86,8 @@ struct tic64x_op_template {
 #define TIC64X_OP_MEMSZ_WORD	0x200
 #define TIC64X_OP_MEMSZ_DWORD	0x300
 
-
-	enum tic64x_text_operand textops[3];
+#define TIC64X_MAX_TXT_OPERANDS	3
+	enum tic64x_text_operand textops[TIC64X_MAX_TXT_OPERANDS];
 #define TIC64X_MAX_OPERANDS	5
 	struct tic64x_operand operands[TIC64X_MAX_OPERANDS];
 };
