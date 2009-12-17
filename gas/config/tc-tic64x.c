@@ -33,6 +33,12 @@ struct tic64x_insn {
 	} operand_values[TIC64X_MAX_OPERANDS];
 };
 
+typedef int (optester) (char *line, struct tic64x_insn *insn,
+                                        enum tic64x_text_operand optype);
+typedef void (opreader) (char *line, struct tic64x_insn *insn,
+                                        enum tic64x_text_operand optype);
+
+
 const char comment_chars[] = ";";
 const char line_comment_chars[] = ";*#";
 const char line_separator_chars[] = "";
@@ -60,23 +66,19 @@ static void tic64x_asg(int x);
 static void tic64x_sect(int x);
 static void tic64x_fail(int x);
 static struct tic64x_register *tic64x_sym_to_reg(char *name);
-static void tic64x_opreader_none(char *line, struct tic64x_insn *insn,
-					enum tic64x_text_operand optype);
-static int tic64x_optest_none(char *line);
-static void tic64x_opreader_memaccess(char *line, struct tic64x_insn *insn,
-					enum tic64x_text_operand optype);
-static int tic64x_optest_memaccess(char *line);
-static void tic64x_opreader_register(char *line, struct tic64x_insn *insn,
-					enum tic64x_text_operand optype);
-static int tic64x_optest_register(char *line);
-static void tic64x_opreader_double_register(char *line,
-		struct tic64x_insn *insn, enum tic64x_text_operand optype);
-static int tic64x_optest_double_register(char *line);
-static void tic64x_opreader_constant(char *line, struct tic64x_insn *insn,
-					enum tic64x_text_operand optype);
-static int tic64x_optest_constant(char *line);
+static opreader tic64x_opreader_none;
+static optester tic64x_optest_none;
+static opreader tic64x_opreader_memaccess;
+static optester tic64x_optest_memaccess;
+static opreader tic64x_opreader_register;
+static optester tic64x_optest_register;
+static opreader tic64x_opreader_double_register;
+static optester tic64x_optest_double_register;
+static opreader tic64x_opreader_constant;
+static optester tic64x_optest_constant;
 
-static int tic64x_compare_operands(struct tic64x_op_template *templ,
+static int tic64x_compare_operands(struct tic64x_insn *insn,
+					struct tic64x_op_template *templ,
 							char **operands);
 
 /* A few things we might want to handle - more complete table in tic54x, also
@@ -108,9 +110,8 @@ const pseudo_typeS md_pseudo_table[] =
 /* Parser routines to read a particularly kind of operand */
 struct {
 	enum tic64x_text_operand type;
-	void (*reader) (char *line, struct tic64x_insn *insn,
-				enum tic64x_text_operand optype);
-	int (*test) (char *line);
+	opreader *reader;
+	optester *test;
 } tic64x_operand_readers[] = {
 {tic64x_optxt_none,	tic64x_opreader_none,	tic64x_optest_none},
 {tic64x_optxt_memaccess,tic64x_opreader_memaccess,tic64x_optest_memaccess},
@@ -411,21 +412,27 @@ tic64x_start_line_hook(void)
 }
 
 int
-tic64x_optest_none(char *line ATTRIBUTE_UNUSED)
+tic64x_optest_none(char *line ATTRIBUTE_UNUSED,
+		struct tic64x_insn *insn ATTRIBUTE_UNUSED,
+		enum tic64x_text_operand op ATTRIBUTE_UNUSED)
+
 {
 
 	return 0; /* Never matches */
 }
 
 int
-tic64x_optest_register(char *line)
+tic64x_optest_register(char *line, struct tic64x_insn *insn,
+				enum tic64x_text_operand op)
 {
 
 	return (tic64x_sym_to_reg(line)) ? 1 : 0;
 }
 
 int
-tic64x_optest_double_register(char *line)
+tic64x_optest_double_register(char *line,
+				struct tic64x_insn *insn ATTRIBUTE_UNUSED,
+				enum tic64x_text_operand op ATTRIBUTE_UNUSED)
 {
 	char *reg1, *reg2;
 	int tmp;
@@ -443,7 +450,8 @@ tic64x_optest_double_register(char *line)
 }
 
 int
-tic64x_optest_memaccess(char *line)
+tic64x_optest_memaccess(char *line, struct tic64x_insn *insn ATTRIBUTE_UNUSED,
+				enum tic64x_text_operand op ATTRIBUTE_UNUSED)
 {
 
 	/* Difficult to validate - instead check if the first char is '*',
@@ -452,14 +460,15 @@ tic64x_optest_memaccess(char *line)
 }
 
 int
-tic64x_optest_constant(char *line)
+tic64x_optest_constant(char *line, struct tic64x_insn *insn ATTRIBUTE_UNUSED,
+				enum tic64x_text_operand op ATTRIBUTE_UNUSED)
 {
 	expressionS expr;
 
 	/* Constants can either be an actual constant, or a symbol that'll
 	 * eventually become an offset / whatever. However because we aren't
 	 * telling gas about registers, first check we're not one of those */
-	if (tic64x_optest_register(line))
+	if (tic64x_sym_to_reg(line))
 		return 0;
 
 	tic64x_parse_expr(line, &expr);
@@ -1054,7 +1063,9 @@ tic64x_opreader_constant(char *line, struct tic64x_insn *insn,
 }
 
 int
-tic64x_compare_operands(struct tic64x_op_template *templ, char **ops)
+tic64x_compare_operands(struct tic64x_insn *insn,
+			struct tic64x_op_template *templ,
+						char **ops)
 {
 	enum tic64x_text_operand type;
 	int i, j, ret;
@@ -1072,7 +1083,8 @@ tic64x_compare_operands(struct tic64x_op_template *templ, char **ops)
 		type = templ->textops[i];
 		for (j = 0; tic64x_operand_readers[j].test; j++) {
 			if (tic64x_operand_readers[j].type == type) {
-				ret = tic64x_operand_readers[j].test(ops[i]);
+				ret = tic64x_operand_readers[j].test(ops[i],
+								insn, type);
 				break;
 			}
 		}
@@ -1232,7 +1244,7 @@ md_assemble(char *line)
 			/* No such luck - probe each operand to see if it's
 			 * what we expect it to be. So ugly it has to go in
 			 * a different function */
-			if (tic64x_compare_operands(multi, operands))
+			if (tic64x_compare_operands(insn, multi, operands))
 				break;
 		}
 
