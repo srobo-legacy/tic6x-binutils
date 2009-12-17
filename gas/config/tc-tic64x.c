@@ -725,8 +725,8 @@ tic64x_opreader_memaccess(char *line, struct tic64x_insn *insn,
 	}
 	/* Someone with more sleep needs to think up more checks */
 
-	/* So - we have a base register, addressing mode, offset and scale bit,
-	 * which we need to fill out in insn. Simple ones first */
+	/* So - we have a base register, addressing mode, offset and maybe scale
+	 * bit, which we need to fill out in insn. Simple ones first */
 	for (i = 0; i < TIC64X_MAX_OPERANDS; i++) {
 		if (insn->templ->operands[i].type == tic64x_operand_basereg) {
 			insn->operand_values[i].value = reg->num & 0x1F;
@@ -794,8 +794,9 @@ tic64x_opreader_memaccess(char *line, struct tic64x_insn *insn,
 			return;
 		}
 
-		if (tmp > 31) {
-			/* All is not lost - see if we can't scale it. The
+		if (tmp > 31 || insn->templ->flags & TIC64X_OP_MEMACC_SCALE) {
+			/* If the instruction always scales the offset, or if
+			 * the offset is too large to fit, scale it. The
 			 * amount by which it's scaled is the size of memory
 			 * access this instruction performs - so 8b for dword
 			 * memory access, 2b for half byte access. The power
@@ -849,7 +850,7 @@ tic64x_opreader_memaccess(char *line, struct tic64x_insn *insn,
 		goto skip_offset; /* Mwuuhahahaaaha */
 	}
 
-	/* Write offset/scale values */
+	/* Write offset/scale values - scale only if we have a scale bit */
 	for (i = 0; i < TIC64X_MAX_OPERANDS; i++) {
 		if (insn->templ->operands[i].type == tic64x_operand_rcoffset) {
 			insn->operand_values[i].value = tmp;
@@ -864,20 +865,22 @@ tic64x_opreader_memaccess(char *line, struct tic64x_insn *insn,
 			"tic64x_operand_rcoffset operand field",
 					insn->templ->mnemonic);
 
-
-	for (i = 0; i < TIC64X_MAX_OPERANDS; i++) {
-		if (insn->templ->operands[i].type == tic64x_operand_scale) {
-			insn->operand_values[i].value = sc;
-			insn->operand_values[i].resolved = 1;
-			break;
+	if (!(insn->templ->flags & TIC64X_OP_MEMACC_SCALE)) {
+		for (i = 0; i < TIC64X_MAX_OPERANDS; i++) {
+			if (insn->templ->operands[i].type ==
+							tic64x_operand_scale) {
+				insn->operand_values[i].value = sc;
+				insn->operand_values[i].resolved = 1;
+				break;
+			}
 		}
-	}
 
-	if (i == TIC64X_MAX_OPERANDS)
-		as_fatal("tic64x_opreader_memaccess: instruction \"%s\" has "
-			"tic64x_optxt_memaccess operand, but no corresponding "
-			"tic64x_operand_scale operand field",
-					insn->templ->mnemonic);
+		if (i == TIC64X_MAX_OPERANDS)
+			as_fatal("tic64x_opreader_memaccess: instruction \"%s\" "
+				"has tic64x_optxt_memaccess operand, but no "
+				"corresponding tic64x_operand_scale operand "
+				"field", insn->templ->mnemonic);
+	}
 
 	skip_offset:
 	return;
