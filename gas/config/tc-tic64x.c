@@ -954,6 +954,18 @@ tic64x_opreader_register(char *line, struct tic64x_insn *insn,
 			tmp = 0;
 		}
 
+		/* Cross-check with what user said */
+                if (insn->uses_xpath == 0 && tmp == 1) {
+			as_bad("Specify 'X' in execution unit when "
+				"addressing registers in other side of "
+				"processor");
+			return;
+		} else if (insn->uses_xpath == 1 && tmp == 0) {
+			as_bad("'X' in execution unit, but cross-path register "
+				"is on same side of processor as instruction");
+			return;
+		}
+
 		for (i = 0; i < TIC64X_MAX_OPERANDS; i++) {
 			if (insn->templ->operands[i].type == tic64x_operand_x) {
 				insn->operand_values[i].value = tmp;
@@ -1361,13 +1373,7 @@ md_assemble(char *line)
 		}
 	}
 
-	if (insn->templ->flags & TIC64X_OP_USE_XPATH) {
-		if (insn->uses_xpath != 1) {
-			as_bad("Expected 'X' in unit specifier for instruction "
-				"that uses cross-path");
-			return;
-		}
-	} else {
+	if (!(insn->templ->flags & TIC64X_OP_USE_XPATH)) {
 		if (insn->uses_xpath != 0) {
 			as_bad("Unexpected 'X' in unit specifier for instruction"
 				" that does not use cross-path");
