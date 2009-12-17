@@ -91,6 +91,11 @@ struct tic64x_op_template {
 					 * md_assemble expects this to come
 					 * first */
 
+#define TIC64X_OP_USE_XPATH	0x2000	/* An operand uses cross path, must
+					 * have x bit 12 in opcode */
+#define TIC64X_OP_XPATH_SRC2	0x4000	/* Set -> src2 is xpath, unset -> src1*/
+
+
 #define TIC64X_MAX_TXT_OPERANDS	3
 	enum tic64x_text_operand textops[TIC64X_MAX_TXT_OPERANDS];
 #define TIC64X_MAX_OPERANDS	5
