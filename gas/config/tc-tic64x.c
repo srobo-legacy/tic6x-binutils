@@ -853,9 +853,9 @@ void tic64x_opreader_double_register(char *line, struct tic64x_insn *insn,
 	}
 
 	if (i == TIC64X_MAX_OPERANDS)
-		as_fatal("tic64x_opreader_memaccess: instruction \"%s\" has "
-			"tic64x_optxt_dwreg operand, but no corresponding "
-			"tic64x_operand_scale operand field",
+		as_fatal("tic64x_opreader_double_register: instruction \"%s\" "
+			"has tic64x_optxt_dwreg operand, but no corresponding "
+			"tic64x_operand_dwreg operand field",
 					insn->templ->mnemonic);
 
 	return;
