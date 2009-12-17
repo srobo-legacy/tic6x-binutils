@@ -958,6 +958,7 @@ tic64x_parse_operand(char *line, struct tic64x_insn *insn, int op_num)
 void
 md_assemble(char *line)
 {
+	char *operands[TIC64X_MAX_TXT_OPERANDS];
 	struct tic64x_insn *insn;
 	char *mnemonic;
 	int i;
@@ -1045,9 +1046,28 @@ md_assemble(char *line)
 		}
 	}
 
+	/* Turn string of operands into array of string pointers */
+	memset(operands, 0, sizeof(operands));
+	operands[0] = line;
+	i = 1;
+	while (!is_end_of_line[(int)*line] && i < TIC64X_MAX_TXT_OPERANDS) {
+		if (*line == ',') {
+			*line = 0;
+			operands[i] = line;
+			i++;
+		}
+		line++;
+	}
+
+	for (i = 0; i < TIC64X_MAX_TXT_OPERANDS && operands[i]; i++) {
+		/* XXX */
+	}
+
+	/* Remove this */
 	i = 0;
-	while (!is_end_of_line[(int)*line] && i < TIC64X_MAX_OPERANDS)
+	while (!is_end_of_line[(int)*line] && i < TIC64X_MAX_OPERANDS) {
 		line = tic64x_parse_operand(line, insn, i++);
+	}
 
 	printf("Got mnemonic %s unit %C num %d memunit %d\n",
 		insn->templ->mnemonic, insn->unit, insn->unit_num,
