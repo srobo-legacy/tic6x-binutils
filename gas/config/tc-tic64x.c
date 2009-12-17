@@ -140,10 +140,18 @@ md_begin()
 	tic64x_reg_names = hash_new();
 	tic64x_subsyms = hash_new();
 
-	for (op = tic64x_opcodes; op->mnemonic; op++)
+	for (op = tic64x_opcodes; op->mnemonic; op++) {
 		if (hash_insert(tic64x_ops, op->mnemonic, (void *)op))
 			as_fatal("md_begin: couldn't enter %s in hash table\n",
 				op->mnemonic);
+
+		/* In the unpleasent circumstance when there are more than
+		 * one instruction with the same mnemonic, skip through until
+		 * we find a different one */
+		if (op->flags & TIC64X_OP_MULTI_MNEMONIC)
+			while (!strcmp(op->mnemonic, (op+1)->mnemonic))
+				op++;
+	}
 
 	for (reg = tic64x_regs; reg->name; reg++)
 		if (hash_insert(tic64x_reg_names, reg->name, (void *)reg))
