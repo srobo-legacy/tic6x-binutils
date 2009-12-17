@@ -927,6 +927,7 @@ md_assemble(char *line)
 {
 	char *operands[TIC64X_MAX_TXT_OPERANDS];
 	struct tic64x_insn *insn;
+	struct tic64x_op_template *multi;
 	char *mnemonic;
 	enum tic64x_text_operand optype;
 	int i, j;
@@ -1005,7 +1006,36 @@ md_assemble(char *line)
 
 	/* Horror: if we have multiple operations for this mnemonic,
 	 * start guessing which one we are. Grrr. */
-	/* XXX this */
+	if (insn->templ->flags & TIC64X_OP_MULTI_MNEMONIC) {
+		/* For each insn, test length and probe each operand */
+		/* Count number of text operands... */
+		for (i = 0; i < TIC64X_MAX_TXT_OPERANDS && operands[i]; i++)
+			;
+
+		/* Loop through each insn template - warning, pointer abuse.
+		 * assumes that templ pointed into tic64x_opcodes, and that
+		 * the first one is marked with the MULTI_MNEMONIC flag */
+		for (multi = insn->templ; !strcmp(multi->mnemonic,
+					insn->templ->mnemonic); multi++) {
+			for (j = 0; j < TIC64X_MAX_TXT_OPERANDS; j++)
+				if (multi->textops[j] == tic64x_optxt_none)
+					break;
+
+			if (j != i)
+				continue;
+
+			/* No such luck - probe each operand to see if it's
+			 * what we expect it to be */
+			/* XXX - do this */
+		}
+
+		if (strcmp(multi->mnemonic, insn->templ->mnemonic)) {
+			as_bad("Unrecognised instruction format");
+			return;
+		}
+
+		insn->templ = multi;	/* Swap type of instruction */
+	}
 
 	/* Now that our instruction is definate, some checks */
 	if (UNITCHAR_2_FLAG(insn->unit) !=
