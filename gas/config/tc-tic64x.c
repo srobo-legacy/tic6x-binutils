@@ -700,7 +700,6 @@ tic64x_opreader_memaccess(char *line, struct tic64x_insn *insn)
 					tic64x_operand_rcoffset) {
 				memcpy(&insn->operand_values[i].expr, &expr,
 								sizeof(expr));
-				insn->operand_values[i].resolved = 0;
 				break;
 			}
 		}
