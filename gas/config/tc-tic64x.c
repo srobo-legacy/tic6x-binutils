@@ -1183,7 +1183,8 @@ md_assemble(char *line)
 		}
 
 		if (strcmp(multi->mnemonic, insn->templ->mnemonic)) {
-			as_bad("Unrecognised instruction format");
+			as_bad("Unrecognised instruction format for \"%s\"",
+						multi->mnemonic);
 			return;
 		}
 
