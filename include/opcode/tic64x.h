@@ -17,6 +17,7 @@ enum tic64x_operand_type {
 	tic64x_operand_basereg,			/* Base address register, l/s */
 	tic64x_operand_rcoffset,		/* Register/Constant offset */
 	tic64x_operand_scale,			/* Scale bit for rcoffset */
+	tic64x_operand_x,			/* Crosspath bit */
 	tic64x_operand_vconstant,		/* Generic constant, any size */
 	tic64x_operand_srcreg1,			/* Generic source registers */
 	tic64x_operand_srcreg2,			/* one and two, any use */

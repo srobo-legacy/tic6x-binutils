@@ -43,7 +43,7 @@ struct tic64x_op_template tic64x_opcodes[] = {
 		{tic64x_operand_dstreg,			23,		5},
 		{tic64x_operand_srcreg1,		13,		5},
 		{tic64x_operand_srcreg2,		18,		5},
-		{tic64x_operand_invalid,		0,		0},
+		{tic64x_operand_x,			12,		1},
 		{tic64x_operand_invalid,		0,		0}
 	}
 },
@@ -55,7 +55,7 @@ struct tic64x_op_template tic64x_opcodes[] = {
 		{tic64x_operand_dwdst,			23,		5},
 		{tic64x_operand_srcreg1,		13,		5},
 		{tic64x_operand_srcreg2,		18,		5},
-		{tic64x_operand_invalid,		0,		0},
+		{tic64x_operand_x,			12,		1},
 		{tic64x_operand_invalid,		0,		0}
 	}
 },
@@ -67,7 +67,7 @@ struct tic64x_op_template tic64x_opcodes[] = {
 		{tic64x_operand_dwdst,			23,		5},
 		{tic64x_operand_srcreg1,		13,		5},
 		{tic64x_operand_dwsrc,			18,		5},
-		{tic64x_operand_invalid,		0,		0},
+		{tic64x_operand_x,			12,		1},
 		{tic64x_operand_invalid,		0,		0}
 	}
 },
@@ -79,7 +79,7 @@ struct tic64x_op_template tic64x_opcodes[] = {
 		{tic64x_operand_dstreg,			23,		5},
 		{tic64x_operand_vconstant,		13,		5},
 		{tic64x_operand_srcreg2,		18,		5},
-		{tic64x_operand_invalid,		0,		0},
+		{tic64x_operand_x,			12,		1},
 		{tic64x_operand_invalid,		0,		0}
 	}
 },
@@ -102,7 +102,7 @@ struct tic64x_op_template tic64x_opcodes[] = {
 		{tic64x_operand_dstreg,			23,		5},
 		{tic64x_operand_srcreg1,		13,		5},
 		{tic64x_operand_srcreg2,		18,		5},
-		{tic64x_operand_invalid,		0,		0},
+		{tic64x_operand_x,			12,		1},
 		{tic64x_operand_invalid,		0,		0}
 	}
 },
@@ -114,7 +114,7 @@ struct tic64x_op_template tic64x_opcodes[] = {
 		{tic64x_operand_dstreg,			23,		5},
 		{tic64x_operand_vconstant,		13,		5},
 		{tic64x_operand_srcreg2,		18,		5},
-		{tic64x_operand_invalid,		0,		0},
+		{tic64x_operand_x,			12,		1},
 		{tic64x_operand_invalid,		0,		0}
 	}
 },
@@ -150,7 +150,7 @@ struct tic64x_op_template tic64x_opcodes[] = {
 		{tic64x_operand_dstreg,			23,		5},
 		{tic64x_operand_srcreg1,		13,		5},
 		{tic64x_operand_srcreg2,		18,		5},
-		{tic64x_operand_invalid,		0,		0},
+		{tic64x_operand_x,			12,		1},
 		{tic64x_operand_invalid,		0,		0}
 	}
 },
@@ -162,7 +162,7 @@ struct tic64x_op_template tic64x_opcodes[] = {
 		{tic64x_operand_dstreg,			23,		5},
 		{tic64x_operand_vconstant,		13,		5},
 		{tic64x_operand_srcreg2,		18,		5},
-		{tic64x_operand_invalid,		0,		0},
+		{tic64x_operand_x,			12,		1},
 		{tic64x_operand_invalid,		0,		0}
 	}
 },
