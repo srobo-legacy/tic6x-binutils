@@ -22,7 +22,7 @@ struct tic64x_insn {
 		expressionS expr;
 		uint32_t value;
 		int resolved;
-	} operands[TIC64X_MAX_OPERANDS];
+	} operand_values[TIC64X_MAX_OPERANDS];
 };
 
 const char comment_chars[] = ";";
