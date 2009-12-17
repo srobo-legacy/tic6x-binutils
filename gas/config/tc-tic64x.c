@@ -1113,6 +1113,13 @@ md_assemble(char *line)
 		for (i = 0; i < TIC64X_MAX_TXT_OPERANDS && operands[i]; i++)
 			;
 
+		if (i == 0) {
+			as_bad("Cowardly refusing to try and match instruction "
+				"with no operands against multiple opcodes for "
+				"that opcode");
+			return;
+		}
+
 		/* Loop through each insn template - warning, pointer abuse.
 		 * assumes that templ pointed into tic64x_opcodes, and that
 		 * the first one is marked with the MULTI_MNEMONIC flag */
