@@ -458,6 +458,15 @@ tic64x_opreader_memaccess(char *line, struct tic64x_insn *insn)
 		return;
 	}
 
+	/* Memory addr registers _have_ to come from the side of the processor
+	 * we're executing on */
+	if (((reg->num & TIC64X_REG_UNIT2) && insn->unit_num != 2) ||
+	    (!(reg->num & TIC64X_REG_UNIT2) && insn->unit_num != 1)) {
+		as_bad("Base address register must be on same side of processor"
+			" as instruction");
+		return;
+	}
+
 	/* We should now have a register to work with - it can be suffixed
 	 * with a postdecrement/increment, offset constant or register */
 	if (*line == '-') {
