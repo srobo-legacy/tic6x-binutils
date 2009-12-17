@@ -781,12 +781,83 @@ tic64x_opreader_register(char *line, struct tic64x_insn *insn,
 }
 
 void tic64x_opreader_double_register(char *line, struct tic64x_insn *insn,
-					enum tic64x_text_operand optype)
+			enum tic64x_text_operand optype ATTRIBUTE_UNUSED)
 {
+	struct tic64x_register *reg1, *reg2;
+	char *rtext;
+	int tmp, i;
+	char c;
 
-	UNUSED(line);
-	UNUSED(insn);
-	UNUSED(optype);
+	/* Double register is of the form "A0:A1", or whatever symbolic names
+	 * user has assigned. Register numbers must be consecutive, and stored
+	 * as the top four bits */
+
+	/* Read up to ':' seperator */
+	rtext = line;
+	while (*line != ':' && !is_end_of_line[(int)*line])
+		line++;
+
+	/* Bail out if there wasn't one */
+	if (is_end_of_line[(int)*line]) {
+		as_bad("Unexpected end-of-line, expected ':' double register "
+			"seperator");
+		return;
+	}
+
+	/* Actually try and read register */
+	*line = 0;
+	reg1 = tic64x_sym_to_reg(rtext);
+	if (!reg1) {
+		as_bad("\"%s\" is not a register", rtext);
+		return;
+	}
+	*line++ = ':';
+
+	/* Now read up to next non-name */
+	rtext = line;
+	while (ISALPHA(*line) || ISDIGIT(*line) || *line == '_')
+		line++;
+
+	/* And find register */
+	c = *line;
+	*line = 0;
+	reg2 = tic64x_sym_to_reg(rtext);
+	if (!reg2) {
+		as_bad("\"%s\" is not a register", rtext);
+		*line = c;
+		return;
+	}
+	*line = c;
+
+	/* Now for some validation - same side? */
+	if ((reg1->num & TIC64X_REG_UNIT2) != (reg2->num & TIC64X_REG_UNIT2)) {
+		as_bad("Double register operands must be on same side of "
+								"processor");
+		return;
+	}
+
+	/* Consecutive? */
+	if ((reg1->num & 0x1F) + 1 != (reg2->num & 0x1F)) {
+		as_bad("Double register operands must be consecutive");
+		return;
+	}
+
+	/* These are fine and can be written into opcode operand */
+	tmp = reg1->num >> 1;
+	for (i = 0; i < TIC64X_MAX_OPERANDS; i++) {
+		if (insn->templ->operands[i].type == tic64x_operand_dwreg) {
+			insn->operand_values[i].value = tmp;
+			insn->operand_values[i].resolved = 1;
+			break;
+		}
+	}
+
+	if (i == TIC64X_MAX_OPERANDS)
+		as_fatal("tic64x_opreader_memaccess: instruction \"%s\" has "
+			"tic64x_optxt_dwreg operand, but no corresponding "
+			"tic64x_operand_scale operand field",
+					insn->templ->mnemonic);
+
 	return;
 }
 void
