@@ -1125,6 +1125,13 @@ md_assemble(char *line)
 			if (j != i)
 				continue;
 
+			if (j == 0) {
+				as_fatal("tic64x md_assemble: instruction "
+					"\"%s\" with zero operands and "
+					"sharing mnemonics matches everything",
+					multi->mnemonic);
+			}
+
 			/* No such luck - probe each operand to see if it's
 			 * what we expect it to be. So ugly it has to go in
 			 * a different function */
