@@ -399,7 +399,7 @@ tic64x_opreader_none(char *line, struct tic64x_insn *insn,
 	UNUSED(line);
 	UNUSED(insn);
 	UNUSED(type);
-	as_bad("Unsupported operand type");
+	as_bad("Excess operand");
 	return;
 }
 
