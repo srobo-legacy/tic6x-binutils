@@ -109,7 +109,8 @@ struct {
 {	tic64x_optxt_srcreg1,	tic64x_opreader_register},
 {	tic64x_optxt_srcreg2,	tic64x_opreader_register},
 {	tic64x_optxt_dwreg,	tic64x_opreader_double_register},
-{	tic64x_optxt_constant,	tic64x_opreader_constant},
+{	tic64x_optxt_uconstant,	tic64x_opreader_constant},
+{	tic64x_optxt_sconstant,	tic64x_opreader_constant},
 {	tic64x_optxt_none,	NULL}
 };
 
@@ -862,7 +863,7 @@ void tic64x_opreader_double_register(char *line, struct tic64x_insn *insn,
 }
 void
 tic64x_opreader_constant(char *line, struct tic64x_insn *insn,
-			enum tic64x_text_operand type ATTRIBUTE_UNUSED)
+			enum tic64x_text_operand type)
 {
 	expressionS expr;
 	int opindex, tmp;
@@ -886,13 +887,22 @@ tic64x_opreader_constant(char *line, struct tic64x_insn *insn,
 		/* Question 1 - is it small enough? */
 		tmp = insn->templ->operands[opindex].size;
 		tmp = 1 << tmp;
-		if (expr.X_add_number >= tmp) {
-			as_bad("Constant too large for field");
-			return;
-		}
 
-		/* XXX - how about constants that can be signed?
-		 * are there any? */
+		if (type == tic64x_optxt_uconstant) {
+			if (expr.X_add_number >= tmp) {
+				as_bad("Unsigned constant too large for field");
+				return;
+			}
+		} else if (type == tic64x_optxt_sconstant) {
+			/* XXX XXX XXX - I'm making the quite reasonable
+			 * assumption that c64x is twos-compliment signed */
+			tmp >>= 1;
+			if (expr.X_add_number >= tmp ||
+						expr.X_add_number > -tmp) {
+				as_bad("Signed constant too large for field");
+				return;
+			}
+		}
 
 		insn->operand_values[opindex].value = expr.X_add_number;
 		insn->operand_values[opindex].resolved = 1;
