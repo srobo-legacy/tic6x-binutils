@@ -16,10 +16,10 @@
 struct tic64x_insn {
 	struct tic64x_op_template *templ;
 	char unit;				/* Unit character ie 'L' */
-	uint8_t unit_num;			/* Unit number, 1 or 2 */
-	uint8_t mem_unit_num;			/* Memory data path, 1 or 2 */
-	uint8_t uses_xpath;			/* Unit specifier had X suffix*/
-	uint8_t side;				/* Side to execute on - judge
+	int8_t unit_num;			/* Unit number, 1 or 2 */
+	int8_t mem_unit_num;			/* Memory data path, 1 or 2 */
+	int8_t uses_xpath;			/* Unit specifier had X suffix*/
+	int8_t side;				/* Side to execute on - judge
 						 * this by the side of the dst
 						 * register, as it's impossible
 						 * to write it to the other
