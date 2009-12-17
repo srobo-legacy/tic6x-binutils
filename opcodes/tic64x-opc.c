@@ -40,7 +40,7 @@ struct tic64x_op_template tic64x_opcodes[] = {
 	TIC64X_OP_MEMSZ_DWORD,
 	{ tic64x_optxt_memaccess, tic64x_optxt_dwreg, tic64x_optxt_none },
 	{
-		{tic64x_operand_dwdest,			24,		4},
+		{tic64x_operand_dwreg,			24,		4},
 		{tic64x_operand_basereg,		18,		5},
 		{tic64x_operand_addrmode,		9,		4},
 		{tic64x_operand_rcoffset,		13,		5},

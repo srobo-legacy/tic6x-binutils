@@ -12,7 +12,7 @@ struct tic64x_register {
 enum tic64x_operand_type {
 	tic64x_operand_invalid = 0,
 	tic64x_operand_addrmode,		/* Addressing mode field */
-	tic64x_operand_dwdest,			/* Doubleword destination */
+	tic64x_operand_dwreg,			/* Doubleword register pair */
 	tic64x_operand_basereg,			/* Base address register, l/s */
 	tic64x_operand_rcoffset,		/* Register/Constant offset */
 	tic64x_operand_scale			/* Scale bit for rcoffset */
