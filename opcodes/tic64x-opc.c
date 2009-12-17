@@ -115,6 +115,43 @@ struct tic64x_op_template tic64x_opcodes[] = {
 		{tic64x_operand_vconstant,		13,		5},
 		{tic64x_operand_srcreg2,		18,		5},
 		{tic64x_operand_invalid,		0,		0},
+		{tic64x_operand_invalid,		0,		0}
+	}
+},
+/* Caution - opcode map field reverses in ti spec for some reason
+ * for these two ops */
+{"add",		0x840,		0x1FFC,
+	TIC64X_OP_UNIT_D | TIC64X_OP_COND | TIC64X_OP_SIDE,
+	{ tic64x_optxt_srcreg1, tic64x_optxt_srcreg2, tic64x_optxt_dstreg},
+	{
+		{tic64x_operand_dstreg,			23,		5},
+		{tic64x_operand_srcreg1,		13,		5},
+		{tic64x_operand_srcreg2,		18,		5},
+		{tic64x_operand_invalid,		0,		0},
+		{tic64x_operand_invalid,		0,		0}
+	}
+},
+{"add",		0x940,		0x1FFC,
+	TIC64X_OP_UNIT_D | TIC64X_OP_COND | TIC64X_OP_SIDE,
+	{ tic64x_optxt_uconstant, tic64x_optxt_srcreg2, tic64x_optxt_dstreg},
+	{
+		{tic64x_operand_dstreg,			23,		5},
+		{tic64x_operand_vconstant,		13,		5},
+		{tic64x_operand_srcreg2,		18,		5},
+		{tic64x_operand_invalid,		0,		0},
+		{tic64x_operand_invalid,		0,		0}
+	}
+},
+{"add",		0xAB0,		0xFFC,
+	TIC64X_OP_UNIT_D | TIC64X_OP_COND | TIC64X_OP_SIDE |
+	TIC64X_OP_USE_XPATH | TIC64X_OP_XPATH_SRC2,
+	{ tic64x_optxt_srcreg1, tic64x_optxt_srcreg2, tic64x_optxt_dstreg},
+	{
+		{tic64x_operand_dstreg,			23,		5},
+		{tic64x_operand_srcreg1,		13,		5},
+		{tic64x_operand_srcreg2,		18,		5},
+		{tic64x_operand_invalid,		0,		0},
+		{tic64x_operand_invalid,		0,		0}
 	}
 },
 {"b",		0x10,		0x7C,
