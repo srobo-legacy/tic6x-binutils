@@ -16,8 +16,9 @@
 struct tic64x_insn {
 	struct tic64x_op_template *templ;
 	char unit;				/* Unit character ie 'L' */
-	int unit_num;				/* Unit number, 1 or 2 */
-	int mem_unit_num;			/* Memory data path, 1 or 2 */
+	char unit_num;				/* Unit number, 1 or 2 */
+	char mem_unit_num;			/* Memory data path, 1 or 2 */
+	char uses_xpath;			/* Unit specifier had X suffix*/
 
 	/* Template holds everything needed to build the instruction, but
 	 * we need some data to actually build with. Each entry in operands
@@ -1111,6 +1112,15 @@ md_assemble(char *line)
 		}
 	} else {
 		insn->mem_unit_num = -1;
+	}
+
+	/* There's also an 'X' suffix used to indicate we're using the cross
+	 * path. */
+	if (*line == 'X') {
+		line++;
+		insn->uses_xpath = 1;
+	} else {
+		insn->uses_xpath = 0;
 	}
 
 	/* Turn string of operands into array of string pointers */
