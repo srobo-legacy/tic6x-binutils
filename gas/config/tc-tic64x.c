@@ -927,6 +927,10 @@ void tic64x_opreader_double_register(char *line, struct tic64x_insn *insn,
 		return;
 	}
 
+	/* XXX XXX XXX - some of the add instructions can have a single reg
+	 * identifier in one mode, then in another the same field is used for
+	 * addressing a pair: do we know for certain that pair addresses are
+	 * always shifted, even if there's a spare bit? */
 	tmp = reg2->num >> 1;
 	for (i = 0; i < TIC64X_MAX_OPERANDS; i++) {
 		if (insn->templ->operands[i].type == type) {
