@@ -180,11 +180,12 @@ struct tic64x_op_template tic64x_opcodes[] = {
 },
 {"b",		0x360,		0x0F83EFFC,
 	TIC64X_OP_COND | TIC64X_OP_UNIT_S | TIC64X_OP_SIDE |
-	TIC64X_OP_FIXED_UNITNO | TIC64X_OP_FIXED_UNIT2,
+	TIC64X_OP_FIXED_UNITNO | TIC64X_OP_FIXED_UNIT2 |
+	TIC64X_OP_USE_XPATH | TIC64X_OP_XPATH_SRC1,
 	{ tic64x_optxt_srcreg1, tic64x_optxt_none, tic64x_optxt_none},
 	{
 		{tic64x_operand_srcreg1,		18,		5},
-		{tic64x_operand_invalid,		0,		0},
+		{tic64x_operand_x,			12,		1},
 		{tic64x_operand_invalid,		0,		0},
 		{tic64x_operand_invalid,		0,		0},
 		{tic64x_operand_invalid,		0,		0}
