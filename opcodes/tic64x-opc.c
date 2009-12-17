@@ -240,6 +240,18 @@ struct tic64x_op_template tic64x_opcodes[] = {
 		{tic64x_operand_invalid,		0,		0}
 	}
 },
+{"subabs4",	0xB58,		0xFFC,
+	TIC64X_OP_UNIT_L | TIC64X_OP_COND | TIC64X_OP_SIDE |
+	TIC64X_OP_USE_XPATH | TIC64X_OP_XPATH_SRC2,
+	{ tic64x_optxt_srcreg1, tic64x_optxt_srcreg2, tic64x_optxt_dstreg},
+	{
+		{tic64x_operand_dstreg,			23,		5},
+		{tic64x_operand_srcreg1,		13,		5},
+		{tic64x_operand_srcreg2,		18,		5},
+		{tic64x_operand_x,			12,		1},
+		{tic64x_operand_invalid,		0,		0}
+	}
+},
 {NULL, 		0,		0,		0,
 	{ tic64x_optxt_none, tic64x_optxt_none, tic64x_optxt_none },
 	{
