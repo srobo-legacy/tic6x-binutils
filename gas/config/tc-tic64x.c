@@ -454,8 +454,14 @@ tic64x_optest_constant(char *line)
 {
 	expressionS expr;
 
+	/* Constants can either be an actual constant, or a symbol that'll
+	 * eventually become an offset / whatever. However because we aren't
+	 * telling gas about registers, first check we're not one of those */
+	if (tic64x_optest_register(line))
+		return 0;
+
 	tic64x_parse_expr(line, &expr);
-	return (expr.X_op == O_constant);
+	return (expr.X_op == O_constant || expr.X_op == O_symbol);
 }
 
 void
