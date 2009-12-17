@@ -61,14 +61,19 @@ static void tic64x_fail(int x);
 static struct tic64x_register *tic64x_sym_to_reg(char *name);
 static void tic64x_opreader_none(char *line, struct tic64x_insn *insn,
 					enum tic64x_text_operand optype);
+static int tic64x_optest_none(char *line);
 static void tic64x_opreader_memaccess(char *line, struct tic64x_insn *insn,
 					enum tic64x_text_operand optype);
+static int tic64x_optest_memaccess(char *line);
 static void tic64x_opreader_register(char *line, struct tic64x_insn *insn,
 					enum tic64x_text_operand optype);
+static int tic64x_optest_register(char *line);
 static void tic64x_opreader_double_register(char *line,
 		struct tic64x_insn *insn, enum tic64x_text_operand optype);
+static int tic64x_optest_double_register(char *line);
 static void tic64x_opreader_constant(char *line, struct tic64x_insn *insn,
 					enum tic64x_text_operand optype);
+static int tic64x_optest_constant(char *line);
 
 /* A few things we might want to handle - more complete table in tic54x, also
  * see spru186 for a full reference */
@@ -101,16 +106,17 @@ struct {
 	enum tic64x_text_operand type;
 	void (*reader) (char *line, struct tic64x_insn *insn,
 				enum tic64x_text_operand optype);
+	int (*test) (char *line);
 } tic64x_operand_readers[] = {
-{	tic64x_optxt_none,	tic64x_opreader_none},
-{	tic64x_optxt_memaccess,	tic64x_opreader_memaccess},
-{	tic64x_optxt_destreg,	tic64x_opreader_register},
-{	tic64x_optxt_srcreg1,	tic64x_opreader_register},
-{	tic64x_optxt_srcreg2,	tic64x_opreader_register},
-{	tic64x_optxt_dwreg,	tic64x_opreader_double_register},
-{	tic64x_optxt_uconstant,	tic64x_opreader_constant},
-{	tic64x_optxt_sconstant,	tic64x_opreader_constant},
-{	tic64x_optxt_none,	NULL}
+{tic64x_optxt_none,	tic64x_opreader_none,	tic64x_optest_none},
+{tic64x_optxt_memaccess,tic64x_opreader_memaccess,tic64x_optest_memaccess},
+{tic64x_optxt_destreg,	tic64x_opreader_register,tic64x_optest_register},
+{tic64x_optxt_srcreg1,	tic64x_opreader_register,tic64x_optest_register},
+{tic64x_optxt_srcreg2,	tic64x_opreader_register,tic64x_optest_register},
+{tic64x_optxt_dwreg,	tic64x_opreader_double_register,tic64x_optest_double_register},
+{tic64x_optxt_uconstant,tic64x_opreader_constant,tic64x_optest_constant},
+{tic64x_optxt_sconstant,tic64x_opreader_constant,tic64x_optest_constant},
+{tic64x_optxt_none,	NULL, NULL}
 };
 
 int
@@ -397,6 +403,56 @@ tic64x_start_line_hook(void)
 	}
 
 	return;
+}
+
+int
+tic64x_optest_none(char *line ATTRIBUTE_UNUSED)
+{
+
+	return 0; /* Never matches */
+}
+
+int
+tic64x_optest_register(char *line)
+{
+
+	return (tic64x_sym_to_reg(line)) ? 1 : 0;
+}
+
+int
+tic64x_optest_double_register(char *line)
+{
+	char *reg1, *reg2;
+	int tmp;
+
+	if (!strchr(line, ':'))
+		return 0;
+
+	reg1 = strdup(line);
+	reg2 = strchr(reg1, ':');
+	*reg2++ = 0;
+
+	tmp = (tic64x_sym_to_reg(reg1) && tic64x_sym_to_reg(reg2));
+	free(reg1);
+	return tmp;
+}
+
+int
+tic64x_optest_memaccess(char *line)
+{
+
+	/* Difficult to validate - instead check if the first char is '*',
+	 * nothing else has any business doing so */
+	return (*line == '*');
+}
+
+int
+tic64x_optest_constant(char *line)
+{
+	expressionS expr;
+
+	tic64x_parse_expr(line, &expr);
+	return (expr.X_op == O_constant);
 }
 
 void
