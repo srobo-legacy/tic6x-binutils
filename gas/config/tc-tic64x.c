@@ -1142,7 +1142,7 @@ md_assemble(char *line)
 			/* No such luck - probe each operand to see if it's
 			 * what we expect it to be. So ugly it has to go in
 			 * a different function */
-			if (tic64x_compare_operands(insn->templ, operands))
+			if (tic64x_compare_operands(multi, operands))
 				break;
 		}
 
