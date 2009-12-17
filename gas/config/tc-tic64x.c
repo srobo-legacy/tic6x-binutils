@@ -15,6 +15,9 @@
 
 struct tic64x_insn {
 	struct tic64x_op_template *templ;
+	char unit;				/* Unit character ie 'L' */
+	int unit_num;				/* Unit number, 1 or 2 */
+	int mem_unit_num;			/* Memory data path, 1 or 2 */
 
 	/* Template holds everything needed to build the instruction, but
 	 * we need some data to actually build with. Each entry in operands
@@ -611,12 +614,8 @@ md_assemble(char *line)
 {
 	struct tic64x_insn *insn;
 	char *mnemonic;
-	int unit_num, mem_unit_num, i;
-	char unit;
+	int i;
 
-	mem_unit_num = -1;
-	unit_num = -1;
-	unit = 0;
 	insn = malloc(sizeof(*insn));
 	memset(insn, 0, sizeof(*insn));
 
@@ -642,19 +641,20 @@ md_assemble(char *line)
 		return;
 	}
 
-	unit = *line++;
-	if (unit != 'D' && unit != 'L' && unit != 'S' && unit != 'M') {
+	insn->unit = *line++;
+	if (insn->unit != 'D' && insn->unit != 'L' && insn->unit != 'S' &&
+							insn->unit != 'M') {
 		as_bad("Unrecognised execution unit %C after \"%s\"",
-						unit, insn->templ->mnemonic);
+					insn->unit, insn->templ->mnemonic);
 		free(insn);
 		return;
 	}
 
 	/* I will scream if someone says "what if it isn't ascii" */
-	unit_num = *line++ - 0x30;
-	if (unit_num != 1 && unit_num != 2) {
+	insn->unit_num = *line++ - 0x30;
+	if (insn->unit_num != 1 && insn->unit_num != 2) {
 		as_bad("Bad execution unit number %d after \"%s\"",
-					unit_num, insn->templ->mnemonic);
+					insn->unit_num, insn->templ->mnemonic);
 		free(insn);
 		return;
 	}
@@ -670,10 +670,10 @@ md_assemble(char *line)
 			return;
 		}
 
-		mem_unit_num = *line++ - 0x30;
-		if (mem_unit_num != 1 && mem_unit_num != 2) {
+		insn->mem_unit_num = *line++ - 0x30;
+		if (insn->mem_unit_num != 1 && insn->mem_unit_num != 2) {
 			as_bad("%d not a valid unit number for memory data path"
-						" in \"%s\"", mem_unit_num,
+					" in \"%s\"", insn->mem_unit_num,
 							insn->templ->mnemonic);
 			free(insn);
 			return;
@@ -685,7 +685,8 @@ md_assemble(char *line)
 		line = tic64x_parse_operand(line, insn, i++);
 
 	printf("Got mnemonic %s unit %C num %d memunit %d\n",
-		insn->templ->mnemonic, unit, unit_num, mem_unit_num);
+		insn->templ->mnemonic, insn->unit, insn->unit_num,
+					insn->mem_unit_num);
 	free(insn);
 	return;
 }
