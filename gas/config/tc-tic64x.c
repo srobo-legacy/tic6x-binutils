@@ -904,6 +904,10 @@ tic64x_parse_operand(char *line, struct tic64x_insn *insn, int op_num)
 				insn->templ->mnemonic, op_num);
 	}
 
+	*line = end;
+	if (end == ',')
+		line++;
+
 	return line;
 }
 
