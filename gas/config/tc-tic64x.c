@@ -66,6 +66,8 @@ static void tic64x_opreader_memaccess(char *line, struct tic64x_insn *insn,
 					enum tic64x_text_operand optype);
 static void tic64x_opreader_register(char *line, struct tic64x_insn *insn,
 					enum tic64x_text_operand optype);
+static void tic64x_opreader_double_register(char *line,
+		struct tic64x_insn *insn, enum tic64x_text_operand optype);
 static void tic64x_opreader_constant(char *line, struct tic64x_insn *insn,
 					enum tic64x_text_operand optype);
 
@@ -106,7 +108,7 @@ struct {
 {	tic64x_optxt_destreg,	tic64x_opreader_register},
 {	tic64x_optxt_srcreg1,	tic64x_opreader_register},
 {	tic64x_optxt_srcreg2,	tic64x_opreader_register},
-{	tic64x_optxt_dwreg,	tic64x_opreader_register},
+{	tic64x_optxt_dwreg,	tic64x_opreader_double_register},
 {	tic64x_optxt_constant,	tic64x_opreader_constant},
 {	tic64x_optxt_none,	NULL}
 };
@@ -778,6 +780,15 @@ tic64x_opreader_register(char *line, struct tic64x_insn *insn,
 	return;
 }
 
+void tic64x_opreader_double_register(char *line, struct tic64x_insn *insn,
+					enum tic64x_text_operand optype)
+{
+
+	UNUSED(line);
+	UNUSED(insn);
+	UNUSED(optype);
+	return;
+}
 void
 tic64x_opreader_constant(char *line, struct tic64x_insn *insn,
 				enum tic64x_text_operand type)
