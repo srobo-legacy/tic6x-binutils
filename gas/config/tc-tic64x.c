@@ -1229,6 +1229,12 @@ md_assemble(char *line)
 		line++;
 	*line++ = 0;
 
+	/* XXX quirk - TI assembly uses "RET {reg}" instead of "B {reg}". If
+	 * there are more cases of renames like this it should be handled
+	 * generically, but for now patch it up here (ugh) */
+	if (!strcmp(mnemonic, "ret"))
+		strcpy(mnemonic, "b");
+
 	/* Is this an instruction we've heard of? */
 	insn->templ = hash_find(tic64x_ops, mnemonic);
 	if (!insn->templ) {
