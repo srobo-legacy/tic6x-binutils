@@ -516,21 +516,31 @@ tic64x_opreader_memaccess(char *line, struct tic64x_insn *insn)
 		return;
 	}
 
-	/* At this point we either need to have had + or - at the start, or
-	 * pre/post inc/decrementors. Verify we don't have invalid combination
-	 * (postmodifier nonmodifier), and nothing else is -1 */
+	/* There are a million and one ways this operand could have been
+	 * constructed - try and make sense of all this */
+	if (has_offset) {
+		if (nomod_modify == -1 || pos_neg == -1) {
+			as_bad("Offset present, but no + or - address mode "
+				"specified when reading address register");
+			return;
+		}
 
-	if (nomod_modify == -1 || pos_neg == -1) {
-		as_bad("No addressing mode specified on address register");
-		return;
-	} else if (nomod_modify == TIC64X_ADDRMODE_NOMODIFY &&
-			pre_post == TIC64X_ADDRMODE_POST) {
-		as_bad("Invalid postmodifier (internal error)");
-		return;
-	} else if (pre_post == -1) {
-		as_bad("Bad internal pre/post value in tic64x_parse_memaccess");
+		/* Can't have + and - /after/ the base register */
+		if (nomod_modify == TIC64X_ADDRMODE_NOMODIFY &&
+				pre_post == TIC64X_ADDRMODE_POST) {
+			as_bad("Cannot have + and - modes after base register");
+			return;
+		}
+
+		/* Otherwise, just make sure the mode we have is consistent */
+		/* Which I can't quite work my mind around right now */
+	} else if (nomod_modify == TIC64X_ADDRMODE_NOMODIFY) {
+		/* Had just + or -, but no offset */
+		as_bad("Can't specify + or - with no offset for base address "
+								"register");
 		return;
 	}
+	/* Someone with more sleep needs to think up more checks */
 
 	return;
 }
