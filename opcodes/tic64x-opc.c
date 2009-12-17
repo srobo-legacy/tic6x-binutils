@@ -74,7 +74,7 @@ struct tic64x_op_template tic64x_opcodes[] = {
 {"add",		0x58,		0xFFC,
 	TIC64X_OP_UNIT_L | TIC64X_OP_COND | TIC64X_OP_SIDE |
 	TIC64X_OP_USE_XPATH | TIC64X_OP_XPATH_SRC2,
-	{ tic64x_optxt_sconstant, tic64x_optxt_srcreg2, tic64x_optxt_dstreg},
+	{ tic64x_optxt_srcreg2, tic64x_optxt_sconstant, tic64x_optxt_dstreg},
 	{
 		{tic64x_operand_dstreg,			23,		5},
 		{tic64x_operand_vconstant,		13,		5},
