@@ -388,13 +388,14 @@ tic64x_opreader_memaccess(char *line, struct tic64x_insn *insn)
 	expressionS expr;
 	char *regname, *offs;
 	struct tic64x_register *reg, *offsreg;
-	int off_reg, pos_neg, pre_post, nomod_modify;
+	int off_reg, pos_neg, pre_post, nomod_modify, has_offset;
 	char c;
 
 	off_reg = -1;
 	pos_neg = -1;
 	pre_post = -1;
 	nomod_modify = -1;
+	has_offset = -1;
 
 	/* We expect firstly to start wih a '*' */
 	if (*line++ != '*') {
@@ -485,6 +486,7 @@ tic64x_opreader_memaccess(char *line, struct tic64x_insn *insn)
 	/* Look for offset register of constant */
 	offsreg = NULL;
 	if (*line == '[' || *line == '(') {
+		has_offset = 1;
 		c = (*line++ == '[') ? ']' : ')';
 		offs = line;
 
@@ -503,6 +505,8 @@ tic64x_opreader_memaccess(char *line, struct tic64x_insn *insn)
 		*line = 0;
 		tic64x_parse_expr(offs, &expr);
 		*line++ = c;
+	} else {
+		has_offset = 0;
 	}
 
 	/* Offset / reg should be the last thing we (might) read - ensure that
