@@ -8,6 +8,10 @@
 #include "struc-symbol.h"
 
 #define UNUSED(x) ((x) = (x))
+#define UNITCHAR_2_FLAG(x) ((x) == 'D' ? TIC64X_OP_UNIT_D :		\
+				(x) == 'L' ? TIC64X_OP_UNIT_L :		\
+				(x) == 'S' ? TIC64X_OP_UNIT_S :		\
+				TIC64X_OP_UNIT_M)
 
 struct tic64x_insn {
 	struct tic64x_op_template *templ;
@@ -95,8 +99,6 @@ struct {
 {	tic64x_optxt_constant,	tic64x_opreader_constant},
 {	tic64x_optxt_none,	NULL}
 };
-
-
 
 int
 md_parse_option(int c, char *arg)
