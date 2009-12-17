@@ -1278,6 +1278,20 @@ md_assemble(char *line)
 		}
 	}
 
+	if (insn->templ->flags & TIC64X_OP_USE_XPATH) {
+		if (insn->uses_xpath != 1) {
+			as_bad("Expected 'X' in unit specifier for instruction "
+				"that uses cross-path");
+			return;
+		}
+	} else {
+		if (insn->uses_xpath != 0) {
+			as_bad("Unexpected 'X' in unit specifier for instruction"
+				" that does not use cross-path");
+			return;
+		}
+	}
+
 	for (i = 0; i < TIC64X_MAX_TXT_OPERANDS && operands[i]; i++) {
 		/* We have some text, lookup what kind of operand we expect,
 		 * and call its parser / handler / whatever */
