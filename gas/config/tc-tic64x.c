@@ -60,10 +60,14 @@ static void tic64x_sect(int x);
 static void tic64x_fail(int x);
 static struct tic64x_register *tic64x_sym_to_reg(char *name);
 static char *tic64x_parse_operand(char *line, struct tic64x_insn *i,int op_num);
-static void tic64x_opreader_none(char *line, struct tic64x_insn *insn);
-static void tic64x_opreader_memaccess(char *line, struct tic64x_insn *insn);
-static void tic64x_opreader_register(char *line, struct tic64x_insn *insn);
-static void tic64x_opreader_constant(char *line, struct tic64x_insn *insn);
+static void tic64x_opreader_none(char *line, struct tic64x_insn *insn,
+					enum tic64x_text_operand optype);
+static void tic64x_opreader_memaccess(char *line, struct tic64x_insn *insn,
+					enum tic64x_text_operand optype);
+static void tic64x_opreader_register(char *line, struct tic64x_insn *insn,
+					enum tic64x_text_operand optype);
+static void tic64x_opreader_constant(char *line, struct tic64x_insn *insn,
+					enum tic64x_text_operand optype);
 
 /* A few things we might want to handle - more complete table in tic54x, also
  * see spru186 for a full reference */
@@ -94,11 +98,15 @@ const pseudo_typeS md_pseudo_table[] =
 /* Parser routines to read a particularly kind of operand */
 struct {
 	enum tic64x_text_operand type;
-	void (*reader) (char *line, struct tic64x_insn *insn);
+	void (*reader) (char *line, struct tic64x_insn *insn,
+				enum tic64x_text_operand optype);
 } tic64x_operand_readers[] = {
 {	tic64x_optxt_none,	tic64x_opreader_none},
 {	tic64x_optxt_memaccess,	tic64x_opreader_memaccess},
-{	tic64x_optxt_register,	tic64x_opreader_register},
+{	tic64x_optxt_destreg,	tic64x_opreader_register},
+{	tic64x_optxt_srcreg1,	tic64x_opreader_register},
+{	tic64x_optxt_srcreg2,	tic64x_opreader_register},
+{	tic64x_optxt_dwreg,	tic64x_opreader_register},
 {	tic64x_optxt_constant,	tic64x_opreader_constant},
 {	tic64x_optxt_none,	NULL}
 };
@@ -382,17 +390,20 @@ tic64x_start_line_hook(void)
 }
 
 void
-tic64x_opreader_none(char *line, struct tic64x_insn *insn)
+tic64x_opreader_none(char *line, struct tic64x_insn *insn,
+				enum tic64x_text_operand type)
 {
 
 	UNUSED(line);
 	UNUSED(insn);
+	UNUSED(type);
 	as_bad("Unsupported operand type");
 	return;
 }
 
 void
-tic64x_opreader_memaccess(char *line, struct tic64x_insn *insn)
+tic64x_opreader_memaccess(char *line, struct tic64x_insn *insn,
+			enum tic64x_text_operand type ATTRIBUTE_UNUSED)
 {
 	expressionS expr;
 	char *regname, *offs;
@@ -748,7 +759,8 @@ tic64x_opreader_memaccess(char *line, struct tic64x_insn *insn)
 }
 
 void
-tic64x_opreader_register(char *line, struct tic64x_insn *insn)
+tic64x_opreader_register(char *line, struct tic64x_insn *insn,
+				enum tic64x_text_operand type)
 {
 
 	UNUSED(line);
@@ -758,11 +770,13 @@ tic64x_opreader_register(char *line, struct tic64x_insn *insn)
 }
 
 void
-tic64x_opreader_constant(char *line, struct tic64x_insn *insn)
+tic64x_opreader_constant(char *line, struct tic64x_insn *insn,
+				enum tic64x_text_operand type)
 {
 
 	UNUSED(line);
 	UNUSED(insn);
+	UNUSED(type);
 	as_bad("Unsupported operand type");
 	return;
 }
@@ -793,7 +807,7 @@ tic64x_parse_operand(char *line, struct tic64x_insn *insn, int op_num)
 	}
 
 	if (tic64x_operand_readers[i].reader) {
-		tic64x_operand_readers[i].reader(operand, insn);
+		tic64x_operand_readers[i].reader(operand, insn, optype);
 	} else {
 		as_bad("\"%s\" has unrecognised operand %d",
 				insn->templ->mnemonic, op_num);
