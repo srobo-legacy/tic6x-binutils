@@ -865,6 +865,30 @@ tic64x_opreader_register(char *line, struct tic64x_insn *insn,
 		return;
 	}
 
+	if (((reg->num & TIC64X_REG_UNIT2) && insn->unit_num == 1) ||
+	    (!(reg->num & TIC64X_REG_UNIT2) && insn->unit_num == 2)) {
+		/* Register doesn't match the side of processor we're using.
+		 * There are a few circumstances where this permittable though*/
+
+		/* Is xpath on, and does it match our register */
+		if ((insn->templ->flags & TIC64X_OP_USE_XPATH) &&
+(((insn->templ->flags & TIC64X_OP_XPATH_SRC2) && t2 == tic64x_operand_srcreg2) ||
+(!(insn->templ->flags & TIC64X_OP_XPATH_SRC2) && t2 == tic64x_operand_srcreg1))){
+			/* Xpath on, matches us, woo. Dummy statement. */
+			i = 0;
+		/* We're also excused if we're dest/src of a load/store */
+		} else if (insn->mem_unit_num != -1 &&
+		(((reg->num & TIC64X_REG_UNIT2) && insn->mem_unit_num == 2) ||
+		 (!(reg->num & TIC64X_REG_UNIT2) && insn->mem_unit_num == 1))) {
+			/* We're fine */
+			i = 0;
+		} else {
+			as_bad("Expected operand in same unit num as "
+					"instruction");
+			return;
+		}
+	}
+
 	for (i = 0; i < TIC64X_MAX_OPERANDS; i++) {
 		if (insn->templ->operands[i].type == t2) {
 			insn->operand_values[i].value = reg->num & 0x1F;
