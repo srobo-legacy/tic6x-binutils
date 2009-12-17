@@ -632,6 +632,103 @@ tic64x_opreader_memaccess(char *line, struct tic64x_insn *insn)
 			"tic64x_operand_addrmode operand field",
 					insn->templ->mnemonic);
 
+	/* Tricky part - offset might not be resolved (with 5 bits, not certain
+	 * _why_ that would be, but never mind) so we'll check if it's a
+	 * register or constant. If the former, write it. If the latter, check
+	 * if it's a numeric constant or whether it involves symbols. If symbols
+	 * it'll have to be left unresolved.
+	 * Also for constants, see whether we need to scale them or not. Turn
+	 * scaling off for register offsets - I don't think there's assembly
+	 * syntax for scaled registers */
+
+	if (!has_offset) {
+		/* _really_ simple, no offset, no scale */
+		tmp = 0;
+		sc = 0;
+	} else if (off_reg == TIC64X_ADDRMODE_REGISTER) {
+		/* All's fine and well */
+		tmp = offsetreg->num & 0x1F;
+		sc = 0;
+	} else if (has_offset && expr.X_op == O_constant) {
+		tmp = expr.X_add_number;
+		if (tmp < 0) {
+			as_bad("tic64x-pedantic-mode: can't add/subtract a "
+				"negative constant from base register, use "
+				"correct addressing mode instead");
+			return;
+		}
+
+		if (tmp > 31) {
+			/* All is not lost - see if we can't scale it. The
+			 * amount by which it's scaled is the size of memory
+			 * access this instruction performs - so 8b for dword
+			 * memory access, 2b for half byte access. The power
+			 * of this shift is stored in insn template flags */
+			i = insn->templ->flags & TIC64X_OP_MEMSZ_MASK;
+			i >>= TIC64X_OP_MEMSZ_SHIFT;
+
+			/* Shift 1 by power to make multiplier */
+			i = 1 << i;
+
+			/* Is constant offset aligned to this boundry? */
+			if (tmp & (i-1)) {
+				as_bad("Constant offset to base address "
+					"register too large, cannot be scaled "
+					"as %d is not on a %d byte boundry",
+									tmp, i);
+				return;
+			}
+
+			/* Ok, we can scale it, but even then does it fit? */
+			tmp /= i;
+			if (tmp > 31) {
+				as_bad("Constant offset too large");
+				return;
+			}
+
+			/* Success; enable scaling */
+			sc = 1;
+		} else {
+			/* When < 31 in the first place, don't scale */
+			sc = 0;
+		}
+	} else {
+		/* offset, not reg, not constant, so it has a symbol.
+		 * resolve that later */
+		goto skip_offset; /* Mwuuhahahaaaha */
+	}
+
+	/* Write offset/scale values */
+	for (i = 0; i < TIC64X_MAX_OPERANDS; i++) {
+		if (insn->templ->operands[i].type == tic64x_operand_rcoffset) {
+			insn->operand_values[i].value = tmp;
+			insn->operand_values[i].resolved = 1;
+			break;
+		}
+	}
+
+	if (i == TIC64X_MAX_OPERANDS)
+		as_fatal("tic64x_opreader_memaccess: instruction \"%s\" has "
+			"tic64x_optxt_memaccess operand, but no corresponding "
+			"tic64x_operand_rcoffset operand field",
+					insn->templ->mnemonic);
+
+
+	for (i = 0; i < TIC64X_MAX_OPERANDS; i++) {
+		if (insn->templ->operands[i].type == tic64x_operand_scale) {
+			insn->operand_values[i].value = sc;
+			insn->operand_values[i].resolved = 1;
+			break;
+		}
+	}
+
+	if (i == TIC64X_MAX_OPERANDS)
+		as_fatal("tic64x_opreader_memaccess: instruction \"%s\" has "
+			"tic64x_optxt_memaccess operand, but no corresponding "
+			"tic64x_operand_scale operand field",
+					insn->templ->mnemonic);
+
+	skip_offset:
 	return;
 }
 
