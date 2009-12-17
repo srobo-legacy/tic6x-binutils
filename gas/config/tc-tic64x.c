@@ -862,12 +862,46 @@ void tic64x_opreader_double_register(char *line, struct tic64x_insn *insn,
 }
 void
 tic64x_opreader_constant(char *line, struct tic64x_insn *insn,
-				enum tic64x_text_operand type)
+			enum tic64x_text_operand type ATTRIBUTE_UNUSED)
 {
+	expressionS expr;
+	int opindex, tmp;
 
-	UNUSED(line);
-	UNUSED(insn);
-	UNUSED(type);
+	/* Pre-lookup the operand index we expect... */
+	for (opindex = 0; opindex < TIC64X_MAX_OPERANDS; opindex++) {
+		if (insn->templ->operands[opindex].type ==
+					tic64x_operand_vconstant)
+			break;
+	}
+
+	if (opindex == TIC64X_MAX_OPERANDS)
+		as_fatal("tic64x_opreader_memaccess: instruction \"%s\" has "
+			"tic64x_optxt_dwreg operand, but no corresponding "
+			"tic64x_operand_scale operand field",
+					insn->templ->mnemonic);
+
+	tic64x_parse_expr(line, &expr);
+	if (expr.X_op == O_constant) {
+		/* Seeing how it's a constant, we can resolve operand now */
+		/* Question 1 - is it small enough? */
+		tmp = insn->templ->operands[opindex].size;
+		tmp = 1 << tmp;
+		if (expr.X_add_number >= tmp) {
+			as_bad("Constant too large for field");
+			return;
+		}
+
+		/* XXX - how about constants that can be signed?
+		 * are there any? */
+
+		insn->operand_values[opindex].value = expr.X_add_number;
+		insn->operand_values[opindex].resolved = 1;
+	} else {
+		/* Not something useful right now, leave unresovled */
+		memcpy(&insn->operand_values[opindex].expr, &expr,
+							sizeof(expr));
+	}
+
 	as_bad("Unsupported operand type");
 	return;
 }
