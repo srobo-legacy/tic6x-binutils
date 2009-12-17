@@ -965,14 +965,6 @@ md_assemble(char *line)
 		return;
 	}
 
-	if (UNITCHAR_2_FLAG(insn->unit) !=
-			(insn->templ->flags & TIC64X_OP_UNIT_MASK)) {
-		as_bad("Instruction \"%s\" can't go in unit %C. XXX - currently"
-			" have no way of representing instructions that go "
-			"in multiple units", insn->templ->mnemonic, insn->unit);
-		return;
-	}
-
 	/* I will scream if someone says "what if it isn't ascii" */
 	insn->unit_num = *line++ - 0x30;
 	if (insn->unit_num != 1 && insn->unit_num != 2) {
@@ -982,28 +974,10 @@ md_assemble(char *line)
 		return;
 	}
 
-	if (insn->templ->flags & TIC64X_OP_FIXED_UNITNO) {
-		if (((insn->templ->flags & TIC64X_OP_FIXED_UNIT2) &&
-					insn->unit_num != 2) ||
-		    (!(insn->templ->flags & TIC64X_OP_FIXED_UNIT2) &&
-					insn->unit_num != 1)) {
-			as_bad("\"%s\" can't execute on unit %d ",
-					insn->templ->mnemonic, insn->unit_num);
-			return;
-		}
-	}
-
-	if (insn->templ->flags & TIC64X_OP_MEMACCESS) {
-		/* We should find either T1 or T2 at end of unit specifier,
-		 * indicating which data path the loaded/stored data will
-		 * travel through (only address needs to be in same unit) */
-		if (*line++ != 'T') {
-			as_bad("Expected memory datapath T1/T2 in unit "
-				"specifier for \"%s\"", insn->templ->mnemonic);
-			free(insn);
-			return;
-		}
-
+	/* We might find either T1 or T2 at end of unit specifier, indicating
+	 * which data path the loaded/stored data will travel through */
+	if (*line == 'T') {
+		line++;
 		insn->mem_unit_num = *line++ - 0x30;
 		if (insn->mem_unit_num != 1 && insn->mem_unit_num != 2) {
 			as_bad("%d not a valid unit number for memory data path"
@@ -1012,6 +986,8 @@ md_assemble(char *line)
 			free(insn);
 			return;
 		}
+	} else {
+		insn->mem_unit_num = -1;
 	}
 
 	/* Turn string of operands into array of string pointers */
@@ -1025,6 +1001,38 @@ md_assemble(char *line)
 			i++;
 		}
 		line++;
+	}
+
+	/* Horror: if we have multiple operations for this mnemonic,
+	 * start guessing which one we are. Grrr. */
+	/* XXX this */
+
+	/* Now that our instruction is definate, some checks */
+	if (UNITCHAR_2_FLAG(insn->unit) !=
+				(insn->templ->flags & TIC64X_OP_UNIT_MASK)) {
+		as_bad("Instruction \"%s\" can't go in unit %C. XXX - currently"
+			" have no way of representing instructions that go "
+			"in multiple units", insn->templ->mnemonic, insn->unit);
+		return;
+	}
+
+	if (insn->templ->flags & TIC64X_OP_FIXED_UNITNO) {
+		if (((insn->templ->flags & TIC64X_OP_FIXED_UNIT2) &&
+					insn->unit_num != 2) ||
+		    (!(insn->templ->flags & TIC64X_OP_FIXED_UNIT2) &&
+					insn->unit_num != 1)) {
+			as_bad("\"%s\" can't execute on unit %d ",
+				insn->templ->mnemonic, insn->unit_num);
+			return;
+		}
+	}
+
+	if (insn->templ->flags & TIC64X_OP_MEMACCESS) {
+		if (insn->mem_unit_num == -1) {
+			as_bad("Expected memory datapath T1/T2 in unit "
+				"specifier for \"%s\"", insn->templ->mnemonic);
+			return;
+		}
 	}
 
 	for (i = 0; i < TIC64X_MAX_TXT_OPERANDS && operands[i]; i++) {
