@@ -762,10 +762,19 @@ void
 tic64x_opreader_register(char *line, struct tic64x_insn *insn,
 				enum tic64x_text_operand type)
 {
+	struct tic64x_register *reg;
 
-	UNUSED(line);
+	/* Expect only a single piece of text, should be register */
+	reg = tic64x_sym_to_reg(line);
+	if (!reg) {
+		as_bad("Expected \"%s\" to be register", line);
+		return;
+	}
+
+	as_bad("INSERT HERE: logic selecting txttype->optype");
+
+	UNUSED(type);
 	UNUSED(insn);
-	as_bad("Unsupported operand type");
 	return;
 }
 
