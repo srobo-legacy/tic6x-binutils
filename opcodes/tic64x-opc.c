@@ -38,7 +38,7 @@ struct tic64x_op_template tic64x_opcodes[] = {
 	TIC64X_OP_UNIT_L | TIC64X_OP_COND | TIC64X_OP_SIDE |
 	TIC64X_OP_MULTI_MNEMONIC | TIC64X_OP_USE_XPATH |
 	TIC64X_OP_XPATH_SRC2,
-	{ tic64x_optxt_srcreg1, tic64x_optxt_srcreg2, tic64x_optxt_destreg},
+	{ tic64x_optxt_srcreg1, tic64x_optxt_srcreg2, tic64x_optxt_dstreg},
 	{
 		{tic64x_operand_dstreg,			23,		5},
 		{tic64x_operand_srcreg1,		13,		5},
@@ -98,7 +98,7 @@ struct tic64x_op_template tic64x_opcodes[] = {
 {"mvk",		0x28,		0x7C,
 	TIC64X_OP_UNIT_D | TIC64X_OP_UNIT_S | TIC64X_OP_UNIT_L |
 	TIC64X_OP_UNITNO | TIC64X_OP_COND,
-	{ tic64x_optxt_sconstant, tic64x_optxt_destreg, tic64x_optxt_none},
+	{ tic64x_optxt_sconstant, tic64x_optxt_dstreg, tic64x_optxt_none},
 	{
 		{tic64x_operand_vconstant,		7,		16},
 		{tic64x_operand_dstreg,			23,		5},
