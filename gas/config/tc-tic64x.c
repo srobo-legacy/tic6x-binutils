@@ -1161,8 +1161,7 @@ md_assemble(char *line)
 	}
 
 	/* Now that our instruction is definate, some checks */
-	if (UNITCHAR_2_FLAG(insn->unit) !=
-				(insn->templ->flags & TIC64X_OP_UNIT_MASK)) {
+	if (!(UNITCHAR_2_FLAG(insn->unit) & insn->templ->flags)) {
 		as_bad("Instruction \"%s\" can't go in unit %C. XXX - currently"
 			" have no way of representing instructions that go "
 			"in multiple units", insn->templ->mnemonic, insn->unit);

@@ -57,36 +57,34 @@ struct tic64x_op_template {
 	uint32_t flags;			/* Some flags - operands that are always
 					 * in exactly the same place but not
 					 * necessarily present in all insns */
-#define TIC64X_OP_UNIT_MASK	3	/* Bit mask for finding instructions
-					 * execution unit */
-#define TIC64X_OP_UNIT_D	0
-#define TIC64X_OP_UNIT_L	1
-#define TIC64X_OP_UNIT_S	2
-#define TIC64X_OP_UNIT_M	3	/* Pretty self explanitory */
+#define TIC64X_OP_UNIT_D	1
+#define TIC64X_OP_UNIT_L	2
+#define TIC64X_OP_UNIT_S	4
+#define TIC64X_OP_UNIT_M	8	/* Pretty self explanitory */
 
-#define TIC64X_OP_UNITNO	4	/* Insn has 'y' bit at bit 7, specifying
+#define TIC64X_OP_UNITNO	0x10	/* Insn has 'y' bit at bit 7, specifying
 					 * unit 1 or 2 */
-#define TIC64X_OP_COND		8	/* Has conditional execution field,
+#define TIC64X_OP_COND		0x20	/* Has conditional execution field,
 					 * top three bits of insn. Implies
 					 * that there's also a 'z' field */
-#define TIC64X_OP_SIDE		0x10	/* 'Side' A/B for destination register*/
-#define TIC64X_OP_MEMACCESS	0x20	/* Accesses memory, ie is a load or
+#define TIC64X_OP_SIDE		0x40	/* 'Side' A/B for destination register*/
+#define TIC64X_OP_MEMACCESS	0x80	/* Accesses memory, ie is a load or
 					 * store instruction. Used to work out
 					 * when we should have a T1 or T2 suffix
 					 * to the execution unit specifier */
-#define TIC64X_OP_FIXED_UNITNO	0x40	/* Instruction can only execute on one
+#define TIC64X_OP_FIXED_UNITNO	0x100	/* Instruction can only execute on one
 					 * side of processor */
-#define TIC64X_OP_FIXED_UNIT2	0x80	/* Insn only executes on unit 2; not
+#define TIC64X_OP_FIXED_UNIT2	0x200	/* Insn only executes on unit 2; not
 					 * set means unit 1 */
-#define TIC64X_OP_MEMSZ_MASK	0x300	/* Mask for finding memory access size
+#define TIC64X_OP_MEMSZ_MASK	0xC00	/* Mask for finding memory access size
 					 * power */
-#define TIC64X_OP_MEMSZ_SHIFT	8	/* Values need to be shr'd 8 bits... */
+#define TIC64X_OP_MEMSZ_SHIFT	10	/* Values need to be shr'd 8 bits... */
 #define TIC64X_OP_MEMSZ_BYTE	0x0
-#define TIC64X_OP_MEMSZ_HWORD	0x100
-#define TIC64X_OP_MEMSZ_WORD	0x200
-#define TIC64X_OP_MEMSZ_DWORD	0x300
+#define TIC64X_OP_MEMSZ_HWORD	0x400
+#define TIC64X_OP_MEMSZ_WORD	0x800
+#define TIC64X_OP_MEMSZ_DWORD	0xC00
 
-#define TIC64X_OP_MULTI_MNEMONIC 0x400	/* This instruction is the first in a
+#define TIC64X_OP_MULTI_MNEMONIC 0x1000	/* This instruction is the first in a
 					 * set that all have the same mnemonic
 					 * but are actually different templates:
 					 * md_assemble expects this to come
