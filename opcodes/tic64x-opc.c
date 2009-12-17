@@ -47,7 +47,7 @@ struct tic64x_op_template tic64x_opcodes[] = {
 		{tic64x_operand_invalid,		0,		0}
 	}
 },
-{"add",		0x47C,		0xFFC,
+{"add",		0x478,		0xFFC,
 	TIC64X_OP_UNIT_L | TIC64X_OP_COND | TIC64X_OP_SIDE |
 	TIC64X_OP_USE_XPATH | TIC64X_OP_XPATH_SRC2,
 	{ tic64x_optxt_srcreg1, tic64x_optxt_srcreg2, tic64x_optxt_dwdst},
