@@ -59,7 +59,6 @@ static void tic64x_asg(int x);
 static void tic64x_sect(int x);
 static void tic64x_fail(int x);
 static struct tic64x_register *tic64x_sym_to_reg(char *name);
-static char *tic64x_parse_operand(char *line, struct tic64x_insn *i,int op_num);
 static void tic64x_opreader_none(char *line, struct tic64x_insn *insn,
 					enum tic64x_text_operand optype);
 static void tic64x_opreader_memaccess(char *line, struct tic64x_insn *insn,
@@ -916,52 +915,14 @@ tic64x_opreader_constant(char *line, struct tic64x_insn *insn,
 	return;
 }
 
-char *
-tic64x_parse_operand(char *line, struct tic64x_insn *insn, int op_num)
-{
-	enum tic64x_text_operand optype;
-	char *operand;
-	int i;
-	char end;
-
-	/* Read up til end of operand */
-	operand = line;
-	while (*line != ',' && !is_end_of_line[(int)*line])
-		line++;
-
-	/* Mark end of operand */
-	end = *line;
-	*line = 0;
-
-	/* We have some text, lookup what kind of operand we expect, and call
-	 * its parser / handler / whatever */
-	optype = insn->templ->textops[op_num];
-	for (i = 0; tic64x_operand_readers[i].reader != NULL; i++) {
-		if (tic64x_operand_readers[i].type == optype)
-			break;
-	}
-
-	if (tic64x_operand_readers[i].reader) {
-		tic64x_operand_readers[i].reader(operand, insn, optype);
-	} else {
-		as_bad("\"%s\" has unrecognised operand %d",
-				insn->templ->mnemonic, op_num);
-	}
-
-	*line = end;
-	if (end == ',')
-		line++;
-
-	return line;
-}
-
 void
 md_assemble(char *line)
 {
 	char *operands[TIC64X_MAX_TXT_OPERANDS];
 	struct tic64x_insn *insn;
 	char *mnemonic;
-	int i;
+	enum tic64x_text_operand optype;
+	int i, j;
 
 	insn = malloc(sizeof(*insn));
 	memset(insn, 0, sizeof(*insn));
@@ -1060,13 +1021,20 @@ md_assemble(char *line)
 	}
 
 	for (i = 0; i < TIC64X_MAX_TXT_OPERANDS && operands[i]; i++) {
-		/* XXX */
-	}
+		/* We have some text, lookup what kind of operand we expect,
+		 * and call its parser / handler / whatever */
+		optype = insn->templ->textops[i];
+		for (j = 0; tic64x_operand_readers[j].reader != NULL; j++) {
+			if (tic64x_operand_readers[j].type == optype)
+				break;
+		}
 
-	/* Remove this */
-	i = 0;
-	while (!is_end_of_line[(int)*line] && i < TIC64X_MAX_OPERANDS) {
-		line = tic64x_parse_operand(line, insn, i++);
+		if (tic64x_operand_readers[j].reader) {
+			tic64x_operand_readers[j].reader(operands[i], insn, i);
+		} else {
+			as_bad("\"%s\" has unrecognised operand %d",
+				insn->templ->mnemonic, i);
+		}
 	}
 
 	printf("Got mnemonic %s unit %C num %d memunit %d\n",
