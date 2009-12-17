@@ -985,7 +985,7 @@ tic64x_opreader_constant(char *line, struct tic64x_insn *insn,
 			 * assumption that c64x is twos-compliment signed */
 			tmp >>= 1;
 			if (expr.X_add_number >= tmp ||
-						expr.X_add_number > -tmp) {
+						expr.X_add_number < -tmp) {
 				as_bad("Signed constant too large for field");
 				return;
 			}
