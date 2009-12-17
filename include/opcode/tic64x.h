@@ -95,7 +95,8 @@ struct tic64x_op_template {
 
 #define TIC64X_OP_USE_XPATH	0x2000	/* An operand uses cross path, must
 					 * have x bit 12 in opcode */
-#define TIC64X_OP_XPATH_SRC2	0x4000	/* Set -> src2 is xpath, unset -> src1*/
+#define TIC64X_OP_XPATH_SRC1	0x0000	/* Not set -> src1 */
+#define TIC64X_OP_XPATH_SRC2	0x4000	/* Set -> src2 is xpath */
 
 
 #define TIC64X_MAX_TXT_OPERANDS	3
