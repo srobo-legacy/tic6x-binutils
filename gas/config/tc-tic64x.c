@@ -650,6 +650,14 @@ md_assemble(char *line)
 		return;
 	}
 
+	if (UNITCHAR_2_FLAG(insn->unit) !=
+			(insn->templ->flags & TIC64X_OP_UNIT_MASK)) {
+		as_bad("Instruction \"%s\" can't go in unit %C. XXX - currently"
+			" have no way of representing instructions that go "
+			"in multiple units", insn->templ->mnemonic, insn->unit);
+		return;
+	}
+
 	/* I will scream if someone says "what if it isn't ascii" */
 	insn->unit_num = *line++ - 0x30;
 	if (insn->unit_num != 1 && insn->unit_num != 2) {
