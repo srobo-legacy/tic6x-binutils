@@ -37,7 +37,8 @@ enum tic64x_text_operand {
 	tic64x_optxt_srcreg1,
 	tic64x_optxt_srcreg2,
 	tic64x_optxt_dwreg,
-	tic64x_optxt_constant
+	tic64x_optxt_uconstant,
+	tic64x_optxt_sconstant
 };
 
 #define TIC64X_ADDRMODE_NEG		0
