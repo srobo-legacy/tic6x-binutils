@@ -397,7 +397,7 @@ tic64x_opreader_memaccess(char *line, struct tic64x_insn *insn)
 	expressionS expr;
 	char *regname, *offs;
 	struct tic64x_register *reg, *offsetreg;
-	int off_reg, pos_neg, pre_post, nomod_modify, has_offset;
+	int off_reg, pos_neg, pre_post, nomod_modify, has_offset, i, tmp, sc;
 	char c;
 
 	off_reg = -1;
@@ -588,6 +588,22 @@ tic64x_opreader_memaccess(char *line, struct tic64x_insn *insn)
 		return;
 	}
 	/* Someone with more sleep needs to think up more checks */
+
+	/* So - we have a base register, addressing mode, offset and scale bit,
+	 * which we need to fill out in insn. Simple ones first */
+	for (i = 0; i < TIC64X_MAX_OPERANDS; i++) {
+		if (insn->templ->operands[i].type == tic64x_operand_basereg) {
+			insn->operand_values[i].value = reg->num & 0x1F;
+			insn->operand_values[i].resolved = 1;
+			break;
+		}
+	}
+
+	if (i == TIC64X_MAX_OPERANDS)
+		as_fatal("tic64x_opreader_memaccess: instruction \"%s\" has "
+			"tic64x_optxt_memaccess operand, but no corresponding "
+			"tic64x_operand_basereg operand field",
+					insn->templ->mnemonic);
 
 	return;
 }
