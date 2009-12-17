@@ -1003,6 +1003,17 @@ md_assemble(char *line)
 		return;
 	}
 
+	if (insn->templ->flags & TIC64X_OP_FIXED_UNITNO) {
+		if (((insn->templ->flags & TIC64X_OP_FIXED_UNIT2) &&
+					insn->unit_num != 2) ||
+		    (!(insn->templ->flags & TIC64X_OP_FIXED_UNIT2) &&
+					insn->unit_num != 1)) {
+			as_bad("\"%s\" can't execute on unit %d ",
+					insn->templ->mnemonic, insn->unit_num);
+			return;
+		}
+	}
+
 	if (insn->templ->flags & TIC64X_OP_MEMACCESS) {
 		/* We should find either T1 or T2 at end of unit specifier,
 		 * indicating which data path the loaded/stored data will
