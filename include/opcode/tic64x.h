@@ -99,6 +99,11 @@ struct tic64x_op_template {
 #define TIC64X_OP_XPATH_SRC1	0x0000	/* Not set -> src1 */
 #define TIC64X_OP_XPATH_SRC2	0x4000	/* Set -> src2 is xpath */
 
+#define TIC64X_OP_MEMACC_SCALE	0x8000	/* Some memory access insns always
+					 * scale the operand by the size of
+					 * data access, instead of providing
+					 * a scale bit */
+
 
 #define TIC64X_MAX_TXT_OPERANDS	3
 	enum tic64x_text_operand textops[TIC64X_MAX_TXT_OPERANDS];

@@ -190,6 +190,19 @@ struct tic64x_op_template tic64x_opcodes[] = {
 		{tic64x_operand_invalid,		0,		0}
 	}
 },
+{"lddw",	0x164,		0x17C,
+	TIC64X_OP_COND | TIC64X_OP_UNIT_D | TIC64X_OP_SIDE |
+	TIC64X_OP_UNITNO | TIC64X_OP_MEMACCESS | TIC64X_OP_MEMSZ_DWORD |
+	TIC64X_OP_MEMACC_SCALE,
+	{ tic64x_optxt_memaccess, tic64x_optxt_dwdst, tic64x_optxt_none},
+	{
+		{tic64x_operand_dwdst,			23,		5},
+		{tic64x_operand_basereg,		18,		5},
+		{tic64x_operand_addrmode,		9,		4},
+		{tic64x_operand_rcoffset,		13,		5},
+		{tic64x_operand_invalid,		0,		0}
+	}
+},
 {"ldndw",	 0x124,		0x17C,
 	TIC64X_OP_COND | TIC64X_OP_UNIT_D | TIC64X_OP_SIDE |
 	TIC64X_OP_UNITNO | TIC64X_OP_MEMACCESS | TIC64X_OP_MEMSZ_DWORD,
