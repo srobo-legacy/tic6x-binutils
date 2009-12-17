@@ -396,7 +396,7 @@ tic64x_opreader_memaccess(char *line, struct tic64x_insn *insn)
 {
 	expressionS expr;
 	char *regname, *offs;
-	struct tic64x_register *reg, *offsreg;
+	struct tic64x_register *reg, *offsetreg;
 	int off_reg, pos_neg, pre_post, nomod_modify, has_offset;
 	char c;
 
@@ -502,7 +502,7 @@ tic64x_opreader_memaccess(char *line, struct tic64x_insn *insn)
 	}
 
 	/* Look for offset register of constant */
-	offsreg = NULL;
+	offsetreg = NULL;
 	if (*line == '[' || *line == '(') {
 		has_offset = 1;
 		c = (*line++ == '[') ? ']' : ')';
@@ -527,8 +527,8 @@ tic64x_opreader_memaccess(char *line, struct tic64x_insn *insn)
 		/* Need to know early whether this is a register or not - if it
 		 * is, should just be a single symbol that we can translate. */
 		if (expr.X_op == O_symbol) {
-			offsreg = tic64x_sym_to_reg(offs);
-			if (offsreg) {
+			offsetreg = tic64x_sym_to_reg(offs);
+			if (offsetreg) {
 				/* woot, it's a register. Just check: */
 				if (expr.X_add_number != 0) {
 					as_bad("Cannot add/subtract from "
@@ -536,7 +536,7 @@ tic64x_opreader_memaccess(char *line, struct tic64x_insn *insn)
 					return;
 				}
 
-				offs_reg = TIC64X_ADDRMODE_REGISTER;
+				off_reg = TIC64X_ADDRMODE_REGISTER;
 				/* Memory addr registers _have_ to come from the
 				 * side of the processor we're executing on */
 				if (((reg->num & TIC64X_REG_UNIT2) &&
@@ -553,7 +553,7 @@ tic64x_opreader_memaccess(char *line, struct tic64x_insn *insn)
 	} else {
 		/* No offset, so set offs to constant zero */
 		has_offset = 0;
-		offs_reg = TIC64X_ADDRMODE_OFFSET;
+		off_reg = TIC64X_ADDRMODE_OFFSET;
 	}
 
 	/* Offset / reg should be the last thing we (might) read - ensure that
