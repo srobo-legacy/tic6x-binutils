@@ -605,6 +605,33 @@ tic64x_opreader_memaccess(char *line, struct tic64x_insn *insn)
 			"tic64x_operand_basereg operand field",
 					insn->templ->mnemonic);
 
+	/* Addressing mode - ditch any fields that haven't been set or are zero.
+	 * We rely on earlier checks (XXX not written yet...) to ensure it's
+	 * a valid mode that the user expects */
+	tmp = 0;
+	if (off_reg > 0)
+		tmp |= off_reg;
+	if (pos_neg > 0)
+		tmp |= pos_neg;
+	if (pre_post > 0)
+		tmp |= pre_post;
+	if (nomod_modify > 0)
+		tmp |= nomod_modify;
+
+	for (i = 0; i < TIC64X_MAX_OPERANDS; i++) {
+		if (insn->templ->operands[i].type == tic64x_operand_addrmode) {
+			insn->operand_values[i].value = tmp;
+			insn->operand_values[i].resolved = 1;
+			break;
+		}
+	}
+
+	if (i == TIC64X_MAX_OPERANDS)
+		as_fatal("tic64x_opreader_memaccess: instruction \"%s\" has "
+			"tic64x_optxt_memaccess operand, but no corresponding "
+			"tic64x_operand_addrmode operand field",
+					insn->templ->mnemonic);
+
 	return;
 }
 
