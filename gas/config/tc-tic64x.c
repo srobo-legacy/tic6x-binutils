@@ -1123,6 +1123,10 @@ md_assemble(char *line)
 		insn->uses_xpath = 0;
 	}
 
+	/* Nom any leading spaces */
+	while (ISSPACE(*line))
+		line++;
+
 	/* Turn string of operands into array of string pointers */
 	memset(operands, 0, sizeof(operands));
 	operands[0] = line;
