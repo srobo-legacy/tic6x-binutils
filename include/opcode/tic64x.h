@@ -12,14 +12,15 @@ struct tic64x_register {
 enum tic64x_operand_type {
 	tic64x_operand_invalid = 0,
 	tic64x_operand_addrmode,		/* Addressing mode field */
-	tic64x_operand_dwreg,			/* Doubleword register pair */
+	tic64x_operand_dstreg,			/* Destination register */
+	tic64x_operand_dwdst,			/* Doubleword reg destination */
 	tic64x_operand_basereg,			/* Base address register, l/s */
 	tic64x_operand_rcoffset,		/* Register/Constant offset */
 	tic64x_operand_scale,			/* Scale bit for rcoffset */
 	tic64x_operand_vconstant,		/* Generic constant, any size */
 	tic64x_operand_srcreg1,			/* Generic source registers */
 	tic64x_operand_srcreg2,			/* one and two, any use */
-	tic64x_operand_dstreg			/* Destination register */
+	tic64x_operand_dwsrc			/* Doubleword source regs */
 };
 
 /* Represent operand in opcode */
@@ -37,7 +38,8 @@ enum tic64x_text_operand {
 	tic64x_optxt_destreg,
 	tic64x_optxt_srcreg1,
 	tic64x_optxt_srcreg2,
-	tic64x_optxt_dwreg,
+	tic64x_optxt_dwdst,
+	tic64x_optxt_dwsrc,
 	tic64x_optxt_uconstant,
 	tic64x_optxt_sconstant
 };

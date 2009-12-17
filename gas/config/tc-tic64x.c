@@ -116,7 +116,8 @@ struct {
 {tic64x_optxt_destreg,	tic64x_opreader_register,tic64x_optest_register},
 {tic64x_optxt_srcreg1,	tic64x_opreader_register,tic64x_optest_register},
 {tic64x_optxt_srcreg2,	tic64x_opreader_register,tic64x_optest_register},
-{tic64x_optxt_dwreg,	tic64x_opreader_double_register,tic64x_optest_double_register},
+{tic64x_optxt_dwdst,	tic64x_opreader_double_register,tic64x_optest_double_register},
+{tic64x_optxt_dwsrc,	tic64x_opreader_double_register,tic64x_optest_double_register},
 {tic64x_optxt_uconstant,tic64x_opreader_constant,tic64x_optest_constant},
 {tic64x_optxt_sconstant,tic64x_opreader_constant,tic64x_optest_constant},
 {tic64x_optxt_none,	NULL, NULL}
@@ -854,10 +855,11 @@ tic64x_opreader_register(char *line, struct tic64x_insn *insn,
 }
 
 void tic64x_opreader_double_register(char *line, struct tic64x_insn *insn,
-			enum tic64x_text_operand optype ATTRIBUTE_UNUSED)
+			enum tic64x_text_operand optype)
 {
 	struct tic64x_register *reg1, *reg2;
 	char *rtext;
+	enum tic64x_operand_type type;
 	int tmp, i;
 	char c;
 
@@ -916,9 +918,18 @@ void tic64x_opreader_double_register(char *line, struct tic64x_insn *insn,
 	}
 
 	/* These are fine and can be written into opcode operand */
+	if (optype == tic64x_optxt_dwdst) {
+		type = tic64x_operand_dwdst;
+	} else if (optype == tic64x_optxt_dwsrc) {
+		type = tic64x_operand_dwsrc;
+	} else {
+		as_bad("tic64x_opreader_double_register: unknown operand type");
+		return;
+	}
+
 	tmp = reg2->num >> 1;
 	for (i = 0; i < TIC64X_MAX_OPERANDS; i++) {
-		if (insn->templ->operands[i].type == tic64x_operand_dwreg) {
+		if (insn->templ->operands[i].type == type) {
 			insn->operand_values[i].value = tmp;
 			insn->operand_values[i].resolved = 1;
 			break;
@@ -928,7 +939,7 @@ void tic64x_opreader_double_register(char *line, struct tic64x_insn *insn,
 	if (i == TIC64X_MAX_OPERANDS)
 		as_fatal("tic64x_opreader_double_register: instruction \"%s\" "
 			"has tic64x_optxt_dwreg operand, but no corresponding "
-			"tic64x_operand_dwreg operand field",
+			"tic64x_operand_dw{src,dst} operand field",
 					insn->templ->mnemonic);
 
 	return;
