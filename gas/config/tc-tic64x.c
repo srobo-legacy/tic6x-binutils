@@ -336,14 +336,11 @@ tic64x_sym_to_reg(char *regname)
 	if (!reg) {
 		subsym = hash_find(tic64x_subsyms, regname);
 		if (!subsym) {
-			as_bad("\"%s\" not a register or symbolic name",
-								regname);
 			return NULL;
 		}
 
 		reg = hash_find(tic64x_reg_names, subsym);
 		if (!reg) {
-			as_bad("\"%s\" is not a register", regname);
 			return NULL;
 		}
 	}
@@ -446,8 +443,10 @@ tic64x_opreader_memaccess(char *line, struct tic64x_insn *insn)
 	*line = 0;
 	reg = tic64x_sym_to_reg(regname);
 	*line = c;
-	if (!reg)
+	if (!reg) {
+		as_bad("\"%s\" is not a register", regname);
 		return;
+	}
 
 	/* We should now have a register to work with - it can be suffixed
 	 * with a postdecrement/increment, offset constant or register */
