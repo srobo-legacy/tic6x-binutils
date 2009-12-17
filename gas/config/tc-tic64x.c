@@ -173,7 +173,8 @@ md_begin()
 		 * one instruction with the same mnemonic, skip through until
 		 * we find a different one */
 		if (op->flags & TIC64X_OP_MULTI_MNEMONIC)
-			while (!strcmp(op->mnemonic, (op+1)->mnemonic))
+			while ((op+1)->mnemonic &&
+					!strcmp(op->mnemonic, (op+1)->mnemonic))
 				op++;
 	}
 
