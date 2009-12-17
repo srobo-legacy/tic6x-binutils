@@ -483,10 +483,12 @@ tic64x_opreader_memaccess(char *line, struct tic64x_insn *insn)
 	}
 
 	/* Look for offset register of constant */
+	offsreg = NULL;
 	if (*line == '[' || *line == '(') {
+		c = (*line++ == '[') ? ']' : ')';
 		offs = line;
-		while (*line != ']' && *line != ')' &&
-				!is_end_of_line[(int)*line])
+
+		while (*line != c && !is_end_of_line[(int)*line])
 			line++;
 
 		if (is_end_of_line[(int)*line]) {
@@ -495,15 +497,20 @@ tic64x_opreader_memaccess(char *line, struct tic64x_insn *insn)
 			return;
 		}
 
-		printf("Dear me: these offsets/locations/exprs whatever are "
-			"a gigantic face. Enjoy your trap\n");
-		__asm__("int $3");
-
+		/* We have an offset - read it into an expr, then
+		 * leave it for the moment */
 		c = *line;
 		*line = 0;
-		tic64x_parse_expr(line, &expr);
-		offsreg = tic64x_sym_to_reg(offs);
-	} /* XXX */
+		tic64x_parse_expr(offs, &expr);
+		*line++ = c;
+	}
+
+	/* Offset / reg should be the last thing we (might) read - ensure that
+	 * we're at the end of the string we were passed */
+	if (*line != 0) {
+		as_bad("Trailing rubbish at end of address operand");
+		return;
+	}
 
 	/* At this point we either need to have had + or - at the start, or
 	 * pre/post inc/decrementors. Verify we don't have invalid combination
