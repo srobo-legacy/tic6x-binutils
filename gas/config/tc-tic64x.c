@@ -527,7 +527,7 @@ tic64x_opreader_memaccess(char *line, struct tic64x_insn *insn)
 		/* Need to know early whether this is a register or not - if it
 		 * is, should just be a single symbol that we can translate. */
 		if (expr.X_op == O_symbol) {
-			offsreg = tic64x_sym_to_reg();
+			offsreg = tic64x_sym_to_reg(offs);
 			if (offsreg) {
 				/* woot, it's a register. Just check: */
 				if (expr.X_add_number != 0) {
@@ -537,6 +537,17 @@ tic64x_opreader_memaccess(char *line, struct tic64x_insn *insn)
 				}
 
 				offs_reg = TIC64X_ADDRMODE_REGISTER;
+				/* Memory addr registers _have_ to come from the
+				 * side of the processor we're executing on */
+				if (((reg->num & TIC64X_REG_UNIT2) &&
+						insn->unit_num != 2) ||
+				    (!(reg->num & TIC64X_REG_UNIT2) &&
+						insn->unit_num != 1)) {
+					as_bad("Base address register must be "
+						"on same side of processor "
+						"as instruction");
+					return;
+				}
 			}
 		}
 	} else {
