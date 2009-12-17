@@ -13,6 +13,13 @@
 				(x) == 'S' ? TIC64X_OP_UNIT_S :		\
 				TIC64X_OP_UNIT_M)
 
+#define TXTOPERAND_CAN_XPATH(insn, type) 					\
+		((((insn)->templ->flags & TIC64X_OP_XPATH_SRC2) &&		\
+					(type) == tic64x_optxt_srcreg2) ||	\
+		(!(insn->templ->flags & TIC64X_OP_XPATH_SRC2) &&		\
+					(type) == tic64x_optxt_srcreg1))
+
+
 struct tic64x_insn {
 	struct tic64x_op_template *templ;
 	char unit;				/* Unit character ie 'L' */
@@ -443,8 +450,7 @@ tic64x_optest_register(char *line, struct tic64x_insn *insn,
 
 		/* Is xpath on, and does it match our register */
 		if ((insn->templ->flags & TIC64X_OP_USE_XPATH) &&
-(((insn->templ->flags & TIC64X_OP_XPATH_SRC2) && type == tic64x_optxt_srcreg2) ||
-(!(insn->templ->flags & TIC64X_OP_XPATH_SRC2) && type == tic64x_optxt_srcreg1))){
+					TXTOPERAND_CAN_XPATH(insn, type)) {
 			/* Xpath on, matches us, we're valid. */
 			return 1;
 		/* We're also excused if we're dest/src of a load/store */
