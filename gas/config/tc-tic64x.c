@@ -113,7 +113,7 @@ struct {
 } tic64x_operand_readers[] = {
 {tic64x_optxt_none,	tic64x_opreader_none,	tic64x_optest_none},
 {tic64x_optxt_memaccess,tic64x_opreader_memaccess,tic64x_optest_memaccess},
-{tic64x_optxt_destreg,	tic64x_opreader_register,tic64x_optest_register},
+{tic64x_optxt_dstreg,	tic64x_opreader_register,tic64x_optest_register},
 {tic64x_optxt_srcreg1,	tic64x_opreader_register,tic64x_optest_register},
 {tic64x_optxt_srcreg2,	tic64x_opreader_register,tic64x_optest_register},
 {tic64x_optxt_dwdst,	tic64x_opreader_double_register,tic64x_optest_double_register},
