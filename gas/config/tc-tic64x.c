@@ -919,7 +919,6 @@ tic64x_opreader_constant(char *line, struct tic64x_insn *insn,
 							sizeof(expr));
 	}
 
-	as_bad("Unsupported operand type");
 	return;
 }
 
