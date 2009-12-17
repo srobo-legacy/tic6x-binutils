@@ -86,6 +86,12 @@ struct tic64x_op_template {
 #define TIC64X_OP_MEMSZ_WORD	0x200
 #define TIC64X_OP_MEMSZ_DWORD	0x300
 
+#define TIC64X_OP_MULTI_MNEMONIC 0x400	/* This instruction is the first in a
+					 * set that all have the same mnemonic
+					 * but are actually different templates:
+					 * md_assemble expects this to come
+					 * first */
+
 #define TIC64X_MAX_TXT_OPERANDS	3
 	enum tic64x_text_operand textops[TIC64X_MAX_TXT_OPERANDS];
 #define TIC64X_MAX_OPERANDS	5
