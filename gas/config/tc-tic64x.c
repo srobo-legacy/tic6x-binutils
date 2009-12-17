@@ -837,13 +837,13 @@ void tic64x_opreader_double_register(char *line, struct tic64x_insn *insn,
 	}
 
 	/* Consecutive? */
-	if ((reg1->num & 0x1F) + 1 != (reg2->num & 0x1F)) {
+	if ((reg1->num & 0x1F) != (reg2->num & 0x1F) + 1) {
 		as_bad("Double register operands must be consecutive");
 		return;
 	}
 
 	/* These are fine and can be written into opcode operand */
-	tmp = reg1->num >> 1;
+	tmp = reg2->num >> 1;
 	for (i = 0; i < TIC64X_MAX_OPERANDS; i++) {
 		if (insn->templ->operands[i].type == tic64x_operand_dwreg) {
 			insn->operand_values[i].value = tmp;
