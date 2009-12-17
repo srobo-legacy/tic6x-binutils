@@ -30,7 +30,9 @@ struct tic64x_operand {
 enum tic64x_text_operand {
 	tic64x_optxt_none = 0,
 	tic64x_optxt_memaccess,
-	tic64x_optxt_register,
+	tic64x_optxt_destreg,
+	tic64x_optxt_srcreg1,
+	tic64x_optxt_srcreg2,
 	tic64x_optxt_constant
 };
 
