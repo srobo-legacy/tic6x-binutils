@@ -839,7 +839,9 @@ void
 tic64x_opreader_register(char *line, struct tic64x_insn *insn,
 				enum tic64x_text_operand type)
 {
+	enum tic64x_operand_type t2;
 	struct tic64x_register *reg;
+	int i;
 
 	/* Expect only a single piece of text, should be register */
 	reg = tic64x_sym_to_reg(line);
@@ -848,10 +850,34 @@ tic64x_opreader_register(char *line, struct tic64x_insn *insn,
 		return;
 	}
 
-	as_bad("INSERT HERE: logic selecting txttype->optype");
+	switch (type) {
+	case tic64x_optxt_srcreg1:
+		t2 = tic64x_operand_srcreg1;
+		break;
+	case tic64x_optxt_srcreg2:
+		t2 = tic64x_operand_srcreg2;
+		break;
+	case tic64x_optxt_dstreg:
+		t2 = tic64x_operand_dstreg;
+		break;
+	default:
+		as_bad("Unexpected operand type in tic64x_opreader_register");
+		return;
+	}
 
-	UNUSED(type);
-	UNUSED(insn);
+	for (i = 0; i < TIC64X_MAX_OPERANDS; i++) {
+		if (insn->templ->operands[i].type == t2) {
+			insn->operand_values[i].value = reg->num & 0x1F;
+			insn->operand_values[i].resolved = 1;
+			break;
+		}
+	}
+	if (i == TIC64X_MAX_OPERANDS)
+		as_fatal("tic64x_opreader_memaccess: instruction \"%s\" has "
+			"tic64x_optxt_memaccess operand, but no corresponding "
+			"tic64x_operand_scale operand field",
+				insn->templ->mnemonic);
+
 	return;
 }
 
