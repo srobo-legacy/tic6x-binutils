@@ -523,8 +523,26 @@ tic64x_opreader_memaccess(char *line, struct tic64x_insn *insn)
 		*line = 0;
 		tic64x_parse_expr(offs, &expr);
 		*line++ = c;
+
+		/* Need to know early whether this is a register or not - if it
+		 * is, should just be a single symbol that we can translate. */
+		if (expr.X_op == O_symbol) {
+			offsreg = tic64x_sym_to_reg();
+			if (offsreg) {
+				/* woot, it's a register. Just check: */
+				if (expr.X_add_number != 0) {
+					as_bad("Cannot add/subtract from "
+						"register in offset field");
+					return;
+				}
+
+				offs_reg = TIC64X_ADDRMODE_REGISTER;
+			}
+		}
 	} else {
+		/* No offset, so set offs to constant zero */
 		has_offset = 0;
+		offs_reg = TIC64X_ADDRMODE_OFFSET;
 	}
 
 	/* Offset / reg should be the last thing we (might) read - ensure that
