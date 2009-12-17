@@ -1063,9 +1063,27 @@ void tic64x_opreader_double_register(char *line, struct tic64x_insn *insn,
 	 * identifier in one mode, then in another the same field is used for
 	 * addressing a pair: do we know for certain that pair addresses are
 	 * always shifted, even if there's a spare bit? */
-	tmp = reg2->num >> 1;
+	/* Update - spru732h p 241 has a comment indicating that for 5 bit wide
+	 * address fields, we don't shift, and ensure the lowest bit is 0 */
+
 	for (i = 0; i < TIC64X_MAX_OPERANDS; i++) {
 		if (insn->templ->operands[i].type == type) {
+			/* If we have 4 bits, shr 1 to address the pair */
+			if (insn->templ->operands[i].size == 4) {
+				tmp = reg2->num >> 1;
+			/* If 5, just ensure lowest bit isn't set */
+			} else if (insn->templ->operands[i].size == 5) {
+				tmp = reg2->num;
+				if (tmp & 1) as_fatal(
+					"tic64x_opreader_double_register: low "
+					"bit set in register address");
+			/* Otherwise, bail out */
+			} else if (insn->templ->operands[i].size != 5) {
+				as_fatal("tic64x_opreader_double_register: "
+					"\"%s\" has !{4,5} bits",
+					insn->templ->mnemonic);
+			}
+
 			insn->operand_values[i].value = tmp;
 			insn->operand_values[i].resolved = 1;
 			break;
