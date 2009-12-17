@@ -75,6 +75,9 @@ static void tic64x_opreader_constant(char *line, struct tic64x_insn *insn,
 					enum tic64x_text_operand optype);
 static int tic64x_optest_constant(char *line);
 
+static int tic64x_compare_operands(struct tic64x_op_template *templ,
+							char **operands);
+
 /* A few things we might want to handle - more complete table in tic54x, also
  * see spru186 for a full reference */
 const pseudo_typeS md_pseudo_table[] =
@@ -978,6 +981,48 @@ tic64x_opreader_constant(char *line, struct tic64x_insn *insn,
 	return;
 }
 
+int
+tic64x_compare_operands(struct tic64x_op_template *templ, char **ops)
+{
+	enum tic64x_text_operand type;
+	int i, j, ret;
+
+	/* Loop through all operands, looking up expected type and calling
+	 * test function for that type. Return true if they all match. Expects
+	 * that there's at least one operand */
+
+	for (i = 0; i < TIC64X_MAX_TXT_OPERANDS; i++) {
+		if (ops[i] == NULL)
+			/* Wherever in loop we are, we haven't errored out, so
+			 * it looks like this matches */
+			return 1;
+
+		type = templ->textops[i];
+		for (j = 0; tic64x_operand_readers[j].test; j++) {
+			if (tic64x_operand_readers[j].type == type) {
+				ret = tic64x_operand_readers[j].test(ops[i]);
+				break;
+			}
+		}
+
+		if (tic64x_operand_readers[j].test == NULL) {
+			/* We hit a bad opcode record */
+			as_fatal("tic64x_compare_operands: \"%s\" opcode has "
+				"textop operand not in readers",
+						templ->mnemonic);
+		}
+
+		if (ret == 0)
+			return 0;
+
+		/* Otherwise, move along to next operand */
+	}
+
+	/* If we ran out of operands, they must have all matched */
+	return 1;
+}
+
+
 void
 md_assemble(char *line)
 {
@@ -1081,8 +1126,10 @@ md_assemble(char *line)
 				continue;
 
 			/* No such luck - probe each operand to see if it's
-			 * what we expect it to be */
-			/* XXX - do this */
+			 * what we expect it to be. So ugly it has to go in
+			 * a different function */
+			if (tic64x_compare_operands(insn->templ, operands))
+				break;
 		}
 
 		if (strcmp(multi->mnemonic, insn->templ->mnemonic)) {
