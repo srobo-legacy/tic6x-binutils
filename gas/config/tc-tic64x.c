@@ -1022,7 +1022,7 @@ md_assemble(char *line)
 	while (!is_end_of_line[(int)*line] && i < TIC64X_MAX_TXT_OPERANDS) {
 		if (*line == ',') {
 			*line = 0;
-			operands[i] = line;
+			operands[i] = line + 1;
 			i++;
 		}
 		line++;
