@@ -423,10 +423,38 @@ tic64x_optest_none(char *line ATTRIBUTE_UNUSED,
 
 int
 tic64x_optest_register(char *line, struct tic64x_insn *insn,
-				enum tic64x_text_operand op)
+				enum tic64x_text_operand type)
 {
+	struct tic64x_register *reg;
 
-	return (tic64x_sym_to_reg(line)) ? 1 : 0;
+	reg = tic64x_sym_to_reg(line);
+	if (!reg)
+		return 0;
+
+	if (((reg->num & TIC64X_REG_UNIT2) && insn->unit_num == 1) ||
+	    (!(reg->num & TIC64X_REG_UNIT2) && insn->unit_num == 2)) {
+		/* Register doesn't match the side of processor we're using.
+		 * There are a few circumstances where this permittable though*/
+
+		/* Is xpath on, and does it match our register */
+		if ((insn->templ->flags & TIC64X_OP_USE_XPATH) &&
+(((insn->templ->flags & TIC64X_OP_XPATH_SRC2) && type == tic64x_optxt_srcreg2) ||
+(!(insn->templ->flags & TIC64X_OP_XPATH_SRC2) && type == tic64x_optxt_srcreg1))){
+			/* Xpath on, matches us, we're valid. */
+			return 1;
+		/* We're also excused if we're dest/src of a load/store */
+		} else if (insn->mem_unit_num != -1 &&
+		(((reg->num & TIC64X_REG_UNIT2) && insn->mem_unit_num == 2) ||
+		(!(reg->num & TIC64X_REG_UNIT2) && insn->mem_unit_num == 1))) {
+			return 1;
+		} else {
+			/* Wrong side, no excuse, doesn't match */
+			return 0;
+		}
+	}
+
+	/* On right side, it's good */
+	return 1;
 }
 
 int
@@ -874,28 +902,12 @@ tic64x_opreader_register(char *line, struct tic64x_insn *insn,
 		return;
 	}
 
-	if (((reg->num & TIC64X_REG_UNIT2) && insn->unit_num == 1) ||
-	    (!(reg->num & TIC64X_REG_UNIT2) && insn->unit_num == 2)) {
-		/* Register doesn't match the side of processor we're using.
-		 * There are a few circumstances where this permittable though*/
-
-		/* Is xpath on, and does it match our register */
-		if ((insn->templ->flags & TIC64X_OP_USE_XPATH) &&
-(((insn->templ->flags & TIC64X_OP_XPATH_SRC2) && t2 == tic64x_operand_srcreg2) ||
-(!(insn->templ->flags & TIC64X_OP_XPATH_SRC2) && t2 == tic64x_operand_srcreg1))){
-			/* Xpath on, matches us, woo. Dummy statement. */
-			i = 0;
-		/* We're also excused if we're dest/src of a load/store */
-		} else if (insn->mem_unit_num != -1 &&
-		(((reg->num & TIC64X_REG_UNIT2) && insn->mem_unit_num == 2) ||
-		 (!(reg->num & TIC64X_REG_UNIT2) && insn->mem_unit_num == 1))) {
-			/* We're fine */
-			i = 0;
-		} else {
-			as_bad("Expected operand in same unit num as "
-					"instruction");
-			return;
-		}
+	/* Verify register is in same unit num as this instruction, or that
+	 * we have a good excuse for using another one */
+	if (!tic64x_optest_register(line, insn, type)) {
+		as_bad("Register \"%s\" not suitable for this instruction "
+			"format", insn->templ->mnemonic);
+		return;
 	}
 
 	for (i = 0; i < TIC64X_MAX_OPERANDS; i++) {
