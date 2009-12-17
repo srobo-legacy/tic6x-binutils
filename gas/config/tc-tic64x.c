@@ -1270,6 +1270,12 @@ md_assemble(char *line)
 				"specifier for \"%s\"", insn->templ->mnemonic);
 			return;
 		}
+	} else {
+		if (insn->mem_unit_num != -1) {
+			as_bad("Memory datapath T1/T2 specifier found for "
+				"non-memory access instruction");
+			return;
+		}
 	}
 
 	for (i = 0; i < TIC64X_MAX_TXT_OPERANDS && operands[i]; i++) {
