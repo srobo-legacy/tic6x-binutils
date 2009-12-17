@@ -1145,6 +1145,11 @@ md_assemble(char *line)
 					multi->mnemonic);
 			}
 
+			/* Reject template if it doesn't support the execution
+			 * unit specified by the user */
+			if (!(UNITCHAR_2_FLAG(insn->unit) & multi->flags))
+				continue;
+
 			/* No such luck - probe each operand to see if it's
 			 * what we expect it to be. So ugly it has to go in
 			 * a different function */
