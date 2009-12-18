@@ -396,11 +396,8 @@ tic64x_sym_to_reg(char *regname)
 		subsym = hash_find(tic64x_subsyms, regname);
 		if (!subsym) {
 			return NULL;
-		}
-
-		reg = hash_find(tic64x_reg_names, subsym);
-		if (!reg) {
-			return NULL;
+		} else {
+			reg = hash_find(tic64x_reg_names, subsym);
 		}
 	}
 
