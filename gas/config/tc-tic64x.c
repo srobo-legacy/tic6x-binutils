@@ -1586,8 +1586,11 @@ tic64x_output_insn(struct tic64x_insn *insn)
 		if (insn->operand_values[i].value >=
 				(uint32_t)(1 << insn->templ->operands[i].size))
 			as_fatal("Instruction \"%s\" operand %d larger than "
-						"field size (internal error)",
-						insn->templ->mnemonic, i);
+						"field size (internal error) "
+						"(%d val, %d sz)",
+						insn->templ->mnemonic, i,
+						insn->operand_values[i].value,
+						insn->templ->operands[i].size);
 
 		if (insn->templ->operands[i].size +
 					insn->templ->operands[i].position > 32)
