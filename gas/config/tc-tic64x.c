@@ -32,6 +32,8 @@ struct tic64x_insn {
 						 * to write it to the other
 						 * side */
 	int8_t parallel;			/* || prefix? */
+	int8_t cond_nz;				/* Condition flag, zero or nz? */
+	int16_t cond_reg;			/* Register for comparison */
 
 	/* Template holds everything needed to build the instruction, but
 	 * we need some data to actually build with. Each entry in operands
@@ -1471,6 +1473,47 @@ md_assemble(char *line)
 			return;
 		}
 	}
+
+	/* Did pre-read hook see a condition statement? Done here to allow
+	 * more checking against unit/unit-no */
+	if (tic64x_line_had_cond) {
+		insn->cond_nz = tic64x_line_had_nz_cond;
+		insn->cond_reg = tic64x_line_had_cond_reg->num;
+
+		if ((insn->unit_num == 1 && (insn->cond_reg & TIC64X_REG_UNIT2))
+		|| (insn->unit_num == 2 && !(insn->cond_reg & TIC64X_REG_UNIT2)))
+			if (insn->uses_xpath)
+				as_warn("Caution: condition register on opposite"
+					" side of processor, and xpath is used "
+					"in instruction; author is uncertain"
+					" whether this is permitted");
+
+		/* See creg format */
+		switch (insn->cond_reg) {
+		case TIC64X_REG_UNIT2 | 0:
+			insn->cond_reg = 1;
+			break;
+		case TIC64X_REG_UNIT2 | 1:
+			insn->cond_reg = 2;
+			break;
+		case TIC64X_REG_UNIT2 | 2:
+			insn->cond_reg = 3;
+			break;
+		case 1:
+			insn->cond_reg = 4;
+			break;
+		case 2:
+			insn->cond_reg = 5;
+			break;
+		case 0:
+			insn->cond_reg = 6;
+			break;
+		default:
+			as_bad("Invalid register for conditional, must be 0-2");
+			return;
+		}
+	}
+	/* Leave untouched if no condition - all zeros means unconditional */
 
 	for (i = 0; i < TIC64X_MAX_TXT_OPERANDS && operands[i]; i++) {
 		/* We have some text, lookup what kind of operand we expect,
