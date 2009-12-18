@@ -460,6 +460,7 @@ tic64x_start_line_hook(void)
 		*line = ' ';
 	} else {
 		tic64x_line_had_cond = 0;
+		tic64x_line_had_cond_reg = NULL;
 	}
 
 	return;
