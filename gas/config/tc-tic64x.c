@@ -1581,8 +1581,9 @@ tic64x_output_insn(struct tic64x_insn *insn)
 			if (insn->operand_values[i].expr.X_op == O_symbol) {
 				continue;
 			} else {
-				as_fatal("Unresolved operand is not a symbol "
-					"(internal error)");
+				as_fatal("Unresolved operand %d for \"%s\" is "
+					"not a symbol (internal error)",
+					i, insn->templ->mnemonic);
 			}
 		}
 
