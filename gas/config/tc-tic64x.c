@@ -738,13 +738,15 @@ tic64x_opreader_memaccess(char *line, struct tic64x_insn *insn,
 		off_reg = TIC64X_ADDRMODE_OFFSET;
 	}
 
-	/* Replace trailing bracket character; done here so that it doesn't
-	 * intefere with the above register name munging */
-	*line++ = c;
+	/* For completeness, we could/should replace the (possibly) trailing
+	 * bracket here */
+	if (c)
+		*line++ = c;
 
 	/* Offset / reg should be the last thing we (might) read - ensure that
 	 * we're at the end of the string we were passed */
 	if (*line != 0) {
+printf("line \"%s\"", line);
 		as_bad("Trailing rubbish at end of address operand");
 		return;
 	}
