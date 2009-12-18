@@ -1119,15 +1119,18 @@ void tic64x_opreader_double_register(char *line, struct tic64x_insn *insn,
 
 	for (i = 0; i < TIC64X_MAX_OPERANDS; i++) {
 		if (insn->templ->operands[i].type == type) {
+
 			/* If we have 4 bits, shr 1 to address the pair */
 			if (insn->templ->operands[i].size == 4) {
-				tmp = reg2->num >> 1;
+				tmp = (reg2->num & 0x1F) >> 1;
+
 			/* If 5, just ensure lowest bit isn't set */
 			} else if (insn->templ->operands[i].size == 5) {
-				tmp = reg2->num;
+				tmp = (reg2->num & 0x1F);
 				if (tmp & 1) as_fatal(
 					"tic64x_opreader_double_register: low "
 					"bit set in register address");
+
 			/* Otherwise, bail out */
 			} else if (insn->templ->operands[i].size != 5) {
 				as_fatal("tic64x_opreader_double_register: "
