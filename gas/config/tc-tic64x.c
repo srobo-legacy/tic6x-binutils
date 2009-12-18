@@ -259,6 +259,8 @@ tic64x_asg(int x ATTRIBUTE_UNUSED)
 		as_fatal("OOM @ %s %d", __FILE__, __LINE__);
 
 	err = hash_jam(tic64x_subsyms, sym, str);
+	if (err)
+		as_bad("hash_jam failed handling .asg: \"%s\"", err);
 
 	return;
 }
