@@ -73,6 +73,9 @@ static struct hash_control *tic64x_ops;
 static struct hash_control *tic64x_reg_names;
 static struct hash_control *tic64x_subsyms;
 int tic64x_line_had_parallel_prefix;
+int tic64x_line_had_cond;
+int tic64x_line_had_nz_cond;
+struct tic64x_register *tic64x_line_had_cond_reg;
 
 static char *tic64x_parse_expr(char *s, expressionS *exp);
 static void tic64x_asg(int x);
@@ -407,9 +410,9 @@ void
 tic64x_start_line_hook(void)
 {
 	char *line;
+	char *reg;
 
-	/* Only thing we want to know/do is stop gas tripping over "||"
-	 * bars indicating parallel execution */
+	/* Do we have a "||" prefix? */
 	line = input_line_pointer;
 	while (ISSPACE(*line) && !is_end_of_line[(int)*line])
 		line++;
@@ -420,6 +423,43 @@ tic64x_start_line_hook(void)
 		tic64x_line_had_parallel_prefix = 1;
 	} else {
 		tic64x_line_had_parallel_prefix = 0;
+	}
+
+	/* Is there a conditional prefix? */
+	while (ISSPACE(*line) && !is_end_of_line[(int)*line])
+		line++;
+
+	if (*line == '[') {
+		tic64x_line_had_cond = 1;
+		*line++ = ' ';
+		tic64x_line_had_nz_cond = (*line == '!') ? 1 : 0;
+		*line++ = ' ';
+
+		reg = line;
+		while (*line != ']' && !is_end_of_line[(int)*line])
+			line++;
+
+		if (is_end_of_line[(int)*line]) {
+			as_bad("Unexpected end of line reading conditional "
+				"register name");
+			return;
+		}
+
+		*line = 0;
+		tic64x_line_had_cond_reg = tic64x_sym_to_reg(reg);
+		if (tic64x_line_had_cond_reg == NULL) {
+			as_bad("Expected register in conditional prefix");
+			return;
+		}
+
+		/* And to make sure nothing else stumbles over this, overwrite
+		 * that register name with spaces */
+		for ( ; reg != line; reg++)
+			*reg = ' ';
+
+		*line = ' ';
+	} else {
+		tic64x_line_had_cond = 0;
 	}
 
 	return;
