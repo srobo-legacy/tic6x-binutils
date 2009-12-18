@@ -1310,14 +1310,15 @@ md_assemble(char *line)
 	if (!strcmp(mnemonic, "ret")) {
 		strcpy(mnemonic, "b");
 	} else if (!strcmp(mnemonic, "mv")) {
-		/* XXX kludge: TI define a "mv" pseudo-op to describe writing the
-		 * contents of one register to another. Their assembler
+		/* XXX kludge: TI define a "mv" pseudo-op to describe writing
+		 * the contents of one register to another. Their assembler
 		 * apparently will read this, look at what's currently scheduled
 		 * and select the most appropriate instruction that doesn't lead
-		 * to a stall. This is entirely beyond what gas is supposed to do		 * so hack it instead */
+		 * to a stall. This is entirely beyond what gas is supposed to
+		 * do so hack it instead */
 		mnemonic = "add";
-		as_warn("Replacing \"mv\" instruction with add 0; schedule your "
-			"own instructions");
+		as_warn("Replacing \"mv\" instruction with add 0; schedule your"
+			" own instructions");
 		mvfail = 1; /* Horror */
 	}
 	/* Is this an instruction we've heard of? */
