@@ -705,7 +705,6 @@ tic64x_opreader_memaccess(char *line, struct tic64x_insn *insn,
 		c = *line;
 		*line = 0;
 		tic64x_parse_expr(offs, &expr);
-		*line++ = c;
 
 		/* Need to know early whether this is a register or not - if it
 		 * is, should just be a single symbol that we can translate. */
@@ -738,6 +737,10 @@ tic64x_opreader_memaccess(char *line, struct tic64x_insn *insn,
 		has_offset = 0;
 		off_reg = TIC64X_ADDRMODE_OFFSET;
 	}
+
+	/* Replace trailing bracket character; done here so that it doesn't
+	 * intefere with the above register name munging */
+	*line++ = c;
 
 	/* Offset / reg should be the last thing we (might) read - ensure that
 	 * we're at the end of the string we were passed */
