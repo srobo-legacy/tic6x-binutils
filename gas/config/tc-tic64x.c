@@ -98,6 +98,7 @@ static optester tic64x_optest_constant;
 static int tic64x_compare_operands(struct tic64x_insn *insn,
 					struct tic64x_op_template *templ,
 							char **operands);
+static void tic64x_output_insn(struct tic64x_insn *insn);
 
 /* A few things we might want to handle - more complete table in tic54x, also
  * see spru186 for a full reference */
@@ -1538,6 +1539,76 @@ md_assemble(char *line)
 	printf("Got mnemonic %s unit %C num %d memunit %d\n",
 		insn->templ->mnemonic, insn->unit, insn->unit_num,
 					insn->mem_unit_num);
-	free(insn);
+
+	tic64x_output_insn(insn);
+
+	return;
+}
+
+void
+tic64x_output_insn(struct tic64x_insn *insn)
+{
+	char *out;
+	uint32_t opcode;
+	int i;
+
+	opcode = insn->templ->opcode;
+
+	/* From bottom to top, fixed fields, the other operands */
+	if (insn->parallel)
+		opcode |= TIC64X_BIT_PARALLEL;
+
+	if (insn->templ->flags & TIC64X_OP_SIDE)
+		opcode |= (insn->side == 2) ? TIC64X_BIT_SIDE : 0;
+
+	if (insn->templ->flags & TIC64X_OP_UNITNO)
+		opcode |= (insn->side == 2) ? TIC64X_BIT_UNITNO : 0;
+
+	if (insn->templ->flags & TIC64X_OP_COND) {
+		opcode |= (insn->cond_nz) ? 0 : TIC64X_BIT_Z;
+		opcode |= insn->cond_reg << TIC64X_SHIFT_CREG;
+	}
+
+	for (i = 0; i < TIC64X_MAX_OPERANDS; i++) {
+		if (insn->templ->operands[i].type == tic64x_operand_invalid)
+			continue;
+
+		/* Don't set unresolved symbols; use fixup later */
+		if (!insn->operand_values[i].resolved) {
+			if (insn->operand_values[i].expr.X_op == O_symbol) {
+				continue;
+			} else {
+				as_fatal("Unresolved operand is not a symbol "
+					"(internal error)");
+			}
+		}
+
+		if (insn->operand_values[i].value >=
+				(uint32_t)(1 << insn->templ->operands[i].size))
+			as_fatal("Instruction \"%s\" operand %d larger than "
+						"field size (internal error)",
+						insn->templ->mnemonic, i);
+
+		if (insn->templ->operands[i].size +
+					insn->templ->operands[i].position > 32)
+			as_fatal("Instruction \"%s\" operand %d falls off end "
+						"of opcode (internal error)",
+						insn->templ->mnemonic, i);
+
+		opcode |= insn->operand_values[i].value <<
+				insn->templ->operands[i].position;
+	}
+
+	/* That should have generated our instruction with all the available
+	 * data, now align and write that out */
+
+	frag_align(2 /* align to 4 */, 0, 0);
+	out = frag_more(4);
+
+	/* Assume everything is little endian for now */
+	bfd_putl32(opcode, out);
+
+	/* Now go back through and look for relocs */
+	/* XXX - do this */
 	return;
 }
