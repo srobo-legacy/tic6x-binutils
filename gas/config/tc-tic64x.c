@@ -31,6 +31,7 @@ struct tic64x_insn {
 						 * register, as it's impossible
 						 * to write it to the other
 						 * side */
+	int8_t parallel;			/* || prefix? */
 
 	/* Template holds everything needed to build the instruction, but
 	 * we need some data to actually build with. Each entry in operands
@@ -1225,6 +1226,10 @@ md_assemble(char *line)
 	mvfail = 0;
 	insn = malloc(sizeof(*insn));
 	memset(insn, 0, sizeof(*insn));
+
+	/* pre-read hook will tell us if this had parallel double bar */
+	if (tic64x_line_had_parallel_prefix)
+		insn->parallel = 1;
 
 	mnemonic = line;
 	while (!ISSPACE(*line) && !is_end_of_line[(int)*line])
