@@ -362,6 +362,78 @@ struct tic64x_op_template tic64x_opcodes[] = {
 		{tic64x_operand_invalid,		0,		0}
 	}
 },
+{"sub",		0x5E0,		0xFFC,
+	TIC64X_OP_UNIT_S | TIC64X_OP_COND | TIC64X_OP_SIDE |
+	TIC64X_OP_USE_XPATH | TIC64X_OP_XPATH_SRC2,
+	{ tic64x_optxt_srcreg1, tic64x_optxt_srcreg2, tic64x_optxt_dstreg},
+	{
+		{tic64x_operand_dstreg,			23,		5},
+		{tic64x_operand_srcreg1,		13,		5},
+		{tic64x_operand_srcreg2,		18,		5},
+		{tic64x_operand_x,			12,		1},
+		{tic64x_operand_invalid,		0,		0}
+	}
+},
+{"sub",		0x5A0,		0xFFC,
+	TIC64X_OP_UNIT_S | TIC64X_OP_COND | TIC64X_OP_SIDE |
+	TIC64X_OP_USE_XPATH | TIC64X_OP_XPATH_SRC2,
+	{ tic64x_optxt_sconstant, tic64x_optxt_srcreg2, tic64x_optxt_dstreg},
+	{
+		{tic64x_operand_dstreg,			23,		5},
+		{tic64x_operand_vconstant,		13,		5},
+		{tic64x_operand_srcreg2,		18,		5},
+		{tic64x_operand_x,			12,		1},
+		{tic64x_operand_invalid,		0,		0}
+	}
+},
+/* TI comment p 459 says operands are swapped here */
+/* Also, first (only) instance of instruction with no cond */
+{"sub",		0xD70,		0xFFC,
+	TIC64X_OP_UNIT_S | TIC64X_OP_SIDE |
+	TIC64X_OP_USE_XPATH | TIC64X_OP_XPATH_SRC1,
+	{ tic64x_optxt_srcreg2, tic64x_optxt_srcreg1, tic64x_optxt_dstreg},
+	{
+		{tic64x_operand_dstreg,			23,		5},
+		{tic64x_operand_srcreg1,		13,		5},
+		{tic64x_operand_srcreg2,		18,		5},
+		{tic64x_operand_x,			12,		1},
+		{tic64x_operand_invalid,		0,		0}
+	}
+},
+{"sub",		0x8C0,		0x1FFC,
+	TIC64X_OP_UNIT_D | TIC64X_OP_COND | TIC64X_OP_SIDE,
+	{ tic64x_optxt_srcreg2, tic64x_optxt_srcreg1, tic64x_optxt_dstreg},
+	{
+		{tic64x_operand_dstreg,			23,		5},
+		{tic64x_operand_srcreg1,		13,		5},
+		{tic64x_operand_srcreg2,		18,		5},
+		{tic64x_operand_invalid,		0,		0},
+		{tic64x_operand_invalid,		0,		0}
+	}
+},
+{"sub",		0x9C0,		0x1FFC,
+	TIC64X_OP_UNIT_D | TIC64X_OP_COND | TIC64X_OP_SIDE,
+	{ tic64x_optxt_srcreg2, tic64x_optxt_uconstant, tic64x_optxt_dstreg},
+	{
+		{tic64x_operand_dstreg,			23,		5},
+		{tic64x_operand_vconstant,		13,		5},
+		{tic64x_operand_srcreg2,		18,		5},
+		{tic64x_operand_invalid,		0,		0},
+		{tic64x_operand_invalid,		0,		0}
+	}
+},
+{"sub",		0xB30,		0xFFC,
+	TIC64X_OP_UNIT_D | TIC64X_OP_COND | TIC64X_OP_SIDE |
+	TIC64X_OP_USE_XPATH | TIC64X_OP_XPATH_SRC2,
+	{ tic64x_optxt_srcreg1, tic64x_optxt_srcreg2, tic64x_optxt_dstreg},
+	{
+		{tic64x_operand_dstreg,			23,		5},
+		{tic64x_operand_srcreg1,		13,		5},
+		{tic64x_operand_srcreg2,		18,		5},
+		{tic64x_operand_x,			12,		1},
+		{tic64x_operand_invalid,		0,		0}
+	}
+},
 {"subabs4",	0xB58,		0xFFC,
 	TIC64X_OP_UNIT_L | TIC64X_OP_COND | TIC64X_OP_SIDE |
 	TIC64X_OP_USE_XPATH | TIC64X_OP_XPATH_SRC2,
