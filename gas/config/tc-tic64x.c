@@ -895,6 +895,23 @@ tic64x_opreader_memaccess(char *line, struct tic64x_insn *insn,
 				"corresponding tic64x_operand_rcoffset operand "
 				"field", insn->templ->mnemonic);
 
+		/* Set scale bit to resolved - I don't forsee a situation where
+		 * someone's going to both have an unresolved offset, _and_
+		 * have it extremely large. XXX is appropriate I guess */
+		for (i = 0; i < TIC64X_MAX_OPERANDS; i++) {
+			if (insn->templ->operands[i].type ==
+					tic64x_operand_scale) {
+				insn->operand_values[i].value = 0;
+				insn->operand_values[i].resolved = 0;
+				break;
+			}
+		}
+
+		if (i == TIC64X_MAX_OPERANDS)
+			as_fatal("tic64x_opreader_memaccess: instruction \"%s\""
+				" has tic64x_optxt_memaccess operand, but no "
+				"corresponding tic64x_operand_rcoffset operand "
+				"field", insn->templ->mnemonic);
 		goto skip_offset; /* Mwuuhahahaaaha */
 	}
 
