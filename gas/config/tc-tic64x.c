@@ -661,6 +661,7 @@ tic64x_opreader_memaccess(char *line, struct tic64x_insn *insn,
 			nomod_modify = TIC64X_ADDRMODE_MODIFY;
 			pos_neg = TIC64X_ADDRMODE_NEG;
 			pre_post = TIC64X_ADDRMODE_POST;
+			line += 2;
 		} else {
 			as_bad("Bad operator following address register");
 			return;
@@ -676,6 +677,7 @@ tic64x_opreader_memaccess(char *line, struct tic64x_insn *insn,
 			nomod_modify = TIC64X_ADDRMODE_MODIFY;
 			pos_neg = TIC64X_ADDRMODE_POS;
 			pre_post = TIC64X_ADDRMODE_POST;
+			line += 2;
 		} else {
 			as_bad("Bad operator following address register");
 			return;
