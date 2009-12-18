@@ -32,6 +32,10 @@ struct tic64x_register tic64x_regs[] = {
 	{NULL,	0}
 };
 
+/* NB: When transcribing add instructions, I may have missed some of the ti
+ * comments about which way around operands are (ie, src1 and src2). Doesn't
+ * matter functionally because it's add, but this may need to be fixed in the
+ * future */
 struct tic64x_op_template tic64x_opcodes[] = {
 {"add",		0x78,		0xFFC,
 	TIC64X_OP_UNIT_L | TIC64X_OP_COND | TIC64X_OP_SIDE |
