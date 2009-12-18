@@ -27,8 +27,8 @@ enum tic64x_operand_type {
 /* Represent operand in opcode */
 struct tic64x_operand {
 	enum tic64x_operand_type type;
-	int position;		/* Location in opcode, bits from zero */
-	int size;		/* Size of operand in bits */
+	unsigned int position;		/* Location in opcode, bits from zero */
+	unsigned int size;		/* Size of operand in bits */
 };
 
 /* Represent operand in text - simplifies how parser/disassembler works out
