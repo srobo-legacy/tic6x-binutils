@@ -1220,8 +1220,9 @@ md_assemble(char *line)
 	struct tic64x_op_template *multi;
 	char *mnemonic;
 	enum tic64x_text_operand optype;
-	int i, j;
+	int i, j, mvfail;
 
+	mvfail = 0;
 	insn = malloc(sizeof(*insn));
 	memset(insn, 0, sizeof(*insn));
 
@@ -1233,9 +1234,19 @@ md_assemble(char *line)
 	/* XXX quirk - TI assembly uses "RET {reg}" instead of "B {reg}". If
 	 * there are more cases of renames like this it should be handled
 	 * generically, but for now patch it up here (ugh) */
-	if (!strcmp(mnemonic, "ret"))
+	if (!strcmp(mnemonic, "ret")) {
 		strcpy(mnemonic, "b");
-
+	} else if (!strcmp(mnemonic, "mv")) {
+		/* XXX kludge: TI define a "mv" pseudo-op to describe writing the
+		 * contents of one register to another. Their assembler
+		 * apparently will read this, look at what's currently scheduled
+		 * and select the most appropriate instruction that doesn't lead
+		 * to a stall. This is entirely beyond what gas is supposed to do		 * so hack it instead */
+		mnemonic = "add";
+		as_warn("Replacing \"mv\" instruction with add 0; schedule your "
+			"own instructions");
+		mvfail = 1; /* Horror */
+	}
 	/* Is this an instruction we've heard of? */
 	insn->templ = hash_find(tic64x_ops, mnemonic);
 	if (!insn->templ) {
@@ -1311,6 +1322,12 @@ md_assemble(char *line)
 			i++;
 		}
 		line++;
+	}
+
+	if (mvfail) {
+		/* We replaced mv with add, fiddle with operands */
+		operands[2] = operands[1];
+		operands[1] = "0";
 	}
 
 	/* Horror: if we have multiple operations for this mnemonic,
