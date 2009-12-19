@@ -10,6 +10,31 @@
 static void print_insn(struct tic64x_op_template *templ, uint32_t opcode,
 					struct disassemble_info *info);
 
+typedef void (op_printer) (struct tic64x_op_template *t,
+				struct disassemble_info *i,
+				enum tic64x_text_operand type);
+
+op_printer print_op_none;
+op_printer print_op_memaccess;
+op_printer print_op_register;
+op_printer print_op_dwreg;
+op_printer print_op_constant;
+
+struct {
+	enum tic64x_text_operand type;
+	op_printer *print;
+} operand_printers[] = {
+{ tic64x_optxt_none,		print_op_none		},
+{ tic64x_optxt_memaccess,	print_op_memaccess	},
+{ tic64x_optxt_dstreg,		print_op_register	},
+{ tic64x_optxt_srcreg1,		print_op_register	},
+{ tic64x_optxt_srcreg2,		print_op_register	},
+{ tic64x_optxt_dwdst,		print_op_dwreg		},
+{ tic64x_optxt_dwsrc,		print_op_dwreg		},
+{ tic64x_optxt_uconstant,	print_op_constant	},
+{ tic64x_optxt_sconstant,	print_op_constant	}
+};
+
 int
 print_insn_tic64x(bfd_vma addr, struct disassemble_info *info)
 {
@@ -44,6 +69,7 @@ void
 print_insn(struct tic64x_op_template *templ, uint32_t opcode,
 				struct disassemble_info *info)
 {
+	int i, j;
 	char unit, unit_no, tchar, memnum, xpath;
 
 	/* All instructions have 'p' bit AFAIK */
@@ -160,4 +186,19 @@ print_insn(struct tic64x_op_template *templ, uint32_t opcode,
 	info->fprintf_func(info->stream, ".%C%C%C%C%C  ", unit, unit_no,
 						tchar, memnum, xpath);
 
+	/* Now put some operands out - needs some abstraction though */
+	for (i = 0; i < TIC64X_MAX_TXT_OPERANDS; i++) {
+		for (j = 0; operand_printers[j].print != NULL; j++) {
+			if (operand_printers[j].type == templ->textops[i]) {
+				operand_printers[j].print(templ, info,
+							templ->textops[i]);
+				break;
+			}
+		}
+
+		if (operand_printers[j].print == NULL)
+			fprintf(stderr, "tic64x print_insn, couldn't find "
+					"printer for \"%s\" operand %d\n",
+							templ->mnemonic, i);
+	}
 }
