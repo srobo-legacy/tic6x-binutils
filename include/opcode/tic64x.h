@@ -123,4 +123,11 @@ extern struct tic64x_register tic64x_regs[];
 
 #define TIC64X_SHIFT_CREG		29
 
+/* Utility macros(s) */
+
+#define UNITCHAR_2_FLAG(x) ((x) == 'D' ? TIC64X_OP_UNIT_D :		\
+				(x) == 'L' ? TIC64X_OP_UNIT_L :		\
+				(x) == 'S' ? TIC64X_OP_UNIT_S :		\
+				TIC64X_OP_UNIT_M)
+
 #endif /* _OPCODE_TIC64X_H_ */

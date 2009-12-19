@@ -8,10 +8,6 @@
 #include "struc-symbol.h"
 
 #define UNUSED(x) ((x) = (x))
-#define UNITCHAR_2_FLAG(x) ((x) == 'D' ? TIC64X_OP_UNIT_D :		\
-				(x) == 'L' ? TIC64X_OP_UNIT_L :		\
-				(x) == 'S' ? TIC64X_OP_UNIT_S :		\
-				TIC64X_OP_UNIT_M)
 
 #define TXTOPERAND_CAN_XPATH(insn, type) 				\
 		((((insn)->templ->flags & TIC64X_OP_XPATH_SRC2) &&	\
