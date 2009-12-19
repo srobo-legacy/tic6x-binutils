@@ -1147,8 +1147,7 @@ void tic64x_opreader_double_register(char *line, struct tic64x_insn *insn,
 	/* Also in this series - if this dw pair happen to be the destintation,
 	 * set the side field for this insn */
 	if (optype == tic64x_optxt_dwdst) {
-		i = find_operand_index(insn->templ, tic64x_operand_s);
-		if (i < 0)
+		if (!(insn->templ->flags & TIC64X_OP_SIDE))
 			abort_no_operand(insn, "tic64x_operand_s");
 
 		err = tic64x_set_operand(&insn->opcode, tic64x_operand_s,
