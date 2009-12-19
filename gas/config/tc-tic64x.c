@@ -1038,7 +1038,7 @@ void tic64x_opreader_double_register(char *line, struct tic64x_insn *insn,
 			enum tic64x_text_operand optype)
 {
 	struct tic64x_register *reg1, *reg2;
-	char *rtext;
+	char *rtext, *err;
 	enum tic64x_operand_type type;
 	int tmp, i;
 	char c;
@@ -1099,9 +1099,35 @@ void tic64x_opreader_double_register(char *line, struct tic64x_insn *insn,
 
 	/* These are fine and can be written into opcode operand */
 	if (optype == tic64x_optxt_dwdst) {
-		type = tic64x_operand_dwdst;
+
+		/* dword destination operands can have two forms - 5 bit
+		 * register address of the even one of the pair, or four
+		 * bit address, top bits of destination regs. Identify
+		 * which way around we are, adjust value accordingly */
+
+		i = find_operand_index(insn->templ, tic64x_operand_dwdst5);
+		if (i < 0) {
+			i = find_operand_index(insn->templ,
+					tic64x_operand_dwdst4);
+			if (i < 0)
+				abort_no_operand(insn, "dwdst");
+
+			type = tic64x_operand_dwdst4;
+			tmp = (reg2->num & 0x1F) >> 1;
+		} else {
+			type = tic64x_operand_dwdst5;
+			tmp = (reg2->num & 0x1F);
+			if (tmp & 1) as_fatal(
+				"tic64x_opreader_double_register: low "
+				"bit set in register address");
+		}
 	} else if (optype == tic64x_optxt_dwsrc) {
+		i = find_operand_index(insn->templ, tic64x_operand_dwsrc);
+		if (i < 0)
+			abort_no_operand(insn, "dwsrc");
+
 		type = tic64x_operand_dwsrc;
+		tmp = (reg2->num & 0x1F);
 	} else {
 		as_bad("tic64x_opreader_double_register: unknown operand type");
 		return;
@@ -1114,48 +1140,21 @@ void tic64x_opreader_double_register(char *line, struct tic64x_insn *insn,
 	/* Update - spru732h p 241 has a comment indicating that for 5 bit wide
 	 * address fields, we don't shift, and ensure the lowest bit is 0 */
 
-	for (i = 0; i < TIC64X_MAX_OPERANDS; i++) {
-		if (insn->templ->operands[i].type == type) {
-
-			/* If we have 4 bits, shr 1 to address the pair */
-			if (insn->templ->operands[i].size == 4) {
-				tmp = (reg2->num & 0x1F) >> 1;
-
-			/* If 5, just ensure lowest bit isn't set */
-			} else if (insn->templ->operands[i].size == 5) {
-				tmp = (reg2->num & 0x1F);
-				if (tmp & 1) as_fatal(
-					"tic64x_opreader_double_register: low "
-					"bit set in register address");
-
-			/* Otherwise, bail out */
-			} else if (insn->templ->operands[i].size != 5) {
-				as_fatal("tic64x_opreader_double_register: "
-					"\"%s\" has !{4,5} bits",
-					insn->templ->mnemonic);
-			}
-
-			insn->operand_values[i].value = tmp;
-			insn->operand_values[i].resolved = 1;
-			break;
-		}
-	}
-
-	if (i == TIC64X_MAX_OPERANDS)
-		as_fatal("tic64x_opreader_double_register: instruction \"%s\" "
-			"has tic64x_optxt_dwreg operand, but no corresponding "
-			"tic64x_operand_dw{src,dst} operand field",
-					insn->templ->mnemonic);
+	err = tic64x_set_operand(&insn->opcode, type, tmp);
+	if (err)
+		abort_setop_fail(insn, "dwreg", err);
 
 	/* Also in this series - if this dw pair happen to be the destintation,
 	 * set the side field for this insn */
 	if (optype == tic64x_optxt_dwdst) {
-		if (insn->side != 0) {
-			as_fatal("tic64x_opreader_register: side field already "
-								"set");
-		}
+		i = find_operand_index(insn->templ, tic64x_operand_s);
+		if (i < 0)
+			abort_no_operand(insn, "tic64x_operand_s");
 
-		insn->side = (reg1->num & TIC64X_REG_UNIT2) ? 2 : 1;
+		err = tic64x_set_operand(&insn->opcode, tic64x_operand_s,
+				(reg1->num & TIC64X_REG_UNIT2) ? 1 : 0);
+		if (err)
+			abort_setop_fail(insn, "tic64x_operand_s", err);
 	}
 
 	return;
