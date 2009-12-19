@@ -90,5 +90,18 @@ print_insn(struct tic64x_op_template *templ, uint32_t opcode,
 	}
 
 	/* Mnemonic */
-	info->fprintf_func(info->stream, "%-7s", templ->mnemonic);
+	info->fprintf_func(info->stream, "%-8s", templ->mnemonic);
+
+	/* Unit, no, xpath, memunit */
+	info->fprintf_func(info->stream, ".");
+
+	/* XXX XXX XXX - we can't determine which execution unit we're using
+	 * if an opcode format supports more than one, as there are no fields
+	 * saying where to execute. Presumably the c6x cores themselves decide
+	 * on-the-fly where it's going to execute. Anyhoo; only way to do this
+	 * is to read an instruction packet and decode it all in one go, which
+	 * right now is more trouble that it's worth. So instead just print
+	 * whichever unit matches first; this can still be assembled in
+	 * exactly the same way. */
+	info->fprintf_func(info->stream, "%C", UNITFLAGS_2_CHAR(templ->flags));
 }
