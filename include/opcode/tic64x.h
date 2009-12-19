@@ -114,11 +114,6 @@ struct tic64x_op_template {
 extern struct tic64x_op_template tic64x_opcodes[];
 extern struct tic64x_register tic64x_regs[];
 
-struct disassemble_info;
-extern const struct tic64x_op_template *tic64x_get_insn (
-					struct disassemble_info *dis,
-					bfd_vma, unsigned short, int *);
-
 /* Finally, some actual bit definitions */
 #define TIC64X_BIT_PARALLEL		1
 #define TIC64X_BIT_SIDE			2
