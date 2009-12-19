@@ -20,6 +20,10 @@
 			"operand type " type " (internal error)",	\
 					insn->templ->mnemonic);
 
+#define abort_setop_fail(insn, type, err) 				\
+		as_fatal("Couldn't set operand " type " for "		\
+			"instruction %s: %s", insn->templ->mnemonic,	\
+			err);
 
 struct tic64x_insn {
 	struct tic64x_op_template *templ;
