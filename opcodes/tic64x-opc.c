@@ -32,6 +32,21 @@ struct tic64x_register tic64x_regs[] = {
 	{NULL,	0}
 };
 
+char *
+tic64x_set_operand(uint32_t *op, enum tic64x_operand_type type, uint32_t value)
+{
+
+	return "ENOTSUP";
+}
+
+char *
+tic64x_get_operand(uint32_t opcode, unsigned int *value,
+					enum tic64x_operand_type t)
+{
+
+	return "ENOTSUP";
+}
+
 /* NB: When transcribing add instructions, I may have missed some of the ti
  * comments about which way around operands are (ie, src1 and src2). Doesn't
  * matter functionally because it's add, but this may need to be fixed in the

@@ -35,21 +35,6 @@ struct {
 { tic64x_optxt_sconstant,	print_op_constant	}
 };
 
-char *
-tic64x_set_operand(uint32_t *op, enum tic64x_operand_type type, uint32_t value)
-{
-
-	return "ENOTSUP";
-}
-
-char *
-tic64x_get_operand(uint32_t opcode, unsigned int *value,
-					enum tic64x_operand_type t)
-{
-
-	return "ENOTSUP";
-}
-
 int
 print_insn_tic64x(bfd_vma addr, struct disassemble_info *info)
 {
