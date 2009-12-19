@@ -104,4 +104,36 @@ print_insn(struct tic64x_op_template *templ, uint32_t opcode,
 	 * whichever unit matches first; this can still be assembled in
 	 * exactly the same way. */
 	info->fprintf_func(info->stream, "%C", UNITFLAGS_2_CHAR(templ->flags));
+
+	/*  Bleaugh - a million and one ifs. Is there a better way? */
+	if (!(templ->flags & TIC64X_OP_FIXED_UNITNO) {
+		/* Re-name required! */
+		if (templ->flags & TIC64X_OP_UNITNO) {
+			/* Instruction is probably memory access, specifies
+			 * the side of processor to use regs / execute on
+			 * through 'y' bit */
+
+			if (opcode & TIC64X_BIT_UNITNO) {
+				info->fprintf_func(info->stream, "2");
+			} else {
+				info->fprintf_func(info->stream, "1");
+			}
+		} else if (templ->flags & TIC64X_OP_SIDE) {
+			info->fprintf_func(info->stream, "%d",
+				(opcode & TIC64X_BIT_SIDE) ? 2 : 1);
+		} else {
+			fprintf(stderr, "tic64x print_insn: instruction with "
+				"no fixed unit, but not side bit?\n");
+			info->fprintf_func(info->stream, "?");
+			return;
+		}
+	} else {
+		if (templ->flags & TIC64X_OP_FIXED_UNIT_2) {
+			info->fprintf_func(info->stream, "2");
+		} else {
+			info->fprintf_func(info->stream, "1");
+		}
+	}
+
+	/* T1/T2 specifier? */
 }
