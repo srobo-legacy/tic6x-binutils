@@ -64,8 +64,32 @@ static struct {
 char *
 tic64x_set_operand(uint32_t *op, enum tic64x_operand_type type, int value)
 {
+	uint32_t opcode;
 
-	return "ENOTSUP";
+	/* Is it already set? */
+	opcode = *op;
+	opcode >>= operand_positions[type].position;
+	opcode &= ((1 << operand_positions[type].size) - 1);
+	if (opcode)
+		return "Operand already nonzero";
+
+	if (value < 0) {
+		if (-value >= (1 << operand_positions[type].size)) {
+			return "Operand too large for position";
+		}
+	} else {
+		if (value >= (1 << operand_positions[type].size)) {
+			return "Operand too large for position";
+		}
+	}
+
+	if (operand_positions[type].position + operand_positions[type].size >32)
+		return "Operand type falls off end of opcode";
+
+	value &= ((1 << operand_positions[type].size) - 1);
+	value <<= operand_positions[type].position;
+	*op |= value;
+	return NULL;
 }
 
 char *
