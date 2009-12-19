@@ -62,15 +62,14 @@ static struct {
 };
 
 char *
-tic64x_set_operand(uint32_t *op, enum tic64x_operand_type type, uint32_t value)
+tic64x_set_operand(uint32_t *op, enum tic64x_operand_type type, int value)
 {
 
 	return "ENOTSUP";
 }
 
 char *
-tic64x_get_operand(uint32_t opcode, unsigned int *value,
-					enum tic64x_operand_type t)
+tic64x_get_operand(uint32_t opcode, int *value, enum tic64x_operand_type t)
 {
 
 	return "ENOTSUP";

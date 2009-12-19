@@ -125,9 +125,8 @@ extern struct tic64x_register tic64x_regs[];
 
 /* get/set calls for actual operands. Return null on success, or error string */
 char *tic64x_set_operand(uint32_t *opcode, enum tic64x_operand_type type,
-							uint32_t value);
-char *tic64x_get_operand(uint32_t opcode, unsigned int *value,
-						enum tic64x_operand_type);
+								 int value);
+char *tic64x_get_operand(uint32_t opcode, int *value, enum tic64x_operand_type);
 
 /* Finally, some actual bit definitions */
 #define TIC64X_BIT_PARALLEL		1
