@@ -44,6 +44,7 @@ void
 print_insn(struct tic64x_op_template *templ, uint32_t opcode,
 				struct disassemble_info *info)
 {
+	char unit, unit_no, tchar, memnum, xpath;
 
 	/* All instructions have 'p' bit AFAIK */
 	if (opcode & TIC64X_BIT_PARALLEL)
@@ -92,9 +93,6 @@ print_insn(struct tic64x_op_template *templ, uint32_t opcode,
 	/* Mnemonic */
 	info->fprintf_func(info->stream, "%-8s", templ->mnemonic);
 
-	/* Unit, no, xpath, memunit */
-	info->fprintf_func(info->stream, ".");
-
 	/* XXX XXX XXX - we can't determine which execution unit we're using
 	 * if an opcode format supports more than one, as there are no fields
 	 * saying where to execute. Presumably the c6x cores themselves decide
@@ -103,10 +101,10 @@ print_insn(struct tic64x_op_template *templ, uint32_t opcode,
 	 * right now is more trouble that it's worth. So instead just print
 	 * whichever unit matches first; this can still be assembled in
 	 * exactly the same way. */
-	info->fprintf_func(info->stream, "%C", UNITFLAGS_2_CHAR(templ->flags));
+	unit = UNITFLAGS_2_CHAR(templ->flags);
 
 	/*  Bleaugh - a million and one ifs. Is there a better way? */
-	if (!(templ->flags & TIC64X_OP_FIXED_UNITNO) {
+	if (!(templ->flags & TIC64X_OP_FIXED_UNITNO)) {
 		/* Re-name required! */
 		if (templ->flags & TIC64X_OP_UNITNO) {
 			/* Instruction is probably memory access, specifies
@@ -114,44 +112,52 @@ print_insn(struct tic64x_op_template *templ, uint32_t opcode,
 			 * through 'y' bit */
 
 			if (opcode & TIC64X_BIT_UNITNO) {
-				info->fprintf_func(info->stream, "2");
+				unit_no = '2';
 			} else {
-				info->fprintf_func(info->stream, "1");
+				unit_no = '1';
 			}
 		} else if (templ->flags & TIC64X_OP_SIDE) {
-			info->fprintf_func(info->stream, "%d",
-				(opcode & TIC64X_BIT_SIDE) ? 2 : 1);
+			unit_no = (opcode & TIC64X_BIT_SIDE) ? '2' : '1';
 		} else {
 			fprintf(stderr, "tic64x print_insn: instruction with "
 				"no fixed unit, but not side bit?\n");
-			info->fprintf_func(info->stream, "?");
+			unit_no = '?';
 			return;
 		}
 	} else {
-		if (templ->flags & TIC64X_OP_FIXED_UNIT_2) {
-			info->fprintf_func(info->stream, "2");
+		if (templ->flags & TIC64X_OP_FIXED_UNIT2) {
+			unit_no = '2';
 		} else {
-			info->fprintf_func(info->stream, "1");
+			unit_no = '1';
 		}
 	}
 
 	/* T1/T2 specifier? */
 	if (templ->flags & TIC64X_OP_MEMACCESS) {
+		tchar = 'T';
 		if (!(templ->flags & TIC64X_OP_SIDE)) {
 			fprintf(stderr, "tic64x print_insn: instruction with "
 				"memory access but not dest/side bit?");
-			info->fprintf_func(info->stream, "T?");
+			memnum = '?';
 		} else {
 			if (opcode & TIC64X_BIT_SIDE) {
-				info->fprintf_func(info->stream, "T2");
+				memnum = '2';
 			} else {
-				info->fprintf_func(info->stream, "T1");
+				memnum = '1';
 			}
 		}
+	} else {
+		tchar = ' ';
+		memnum = ' ';
 	}
 
 	/* Cross-path? */
 	if (templ->flags & TIC64X_OP_USE_XPATH && opcode & TIC64X_BIT_XPATH)
-		info->fprintf_func(info->stream, "X");
+		xpath = 'X';
+	else
+		xpath = ' ';
+
+	info->fprintf_func(info->stream, ".%C%C%C%C%C  ", unit, unit_no,
+						tchar, memnum, xpath);
 
 }
