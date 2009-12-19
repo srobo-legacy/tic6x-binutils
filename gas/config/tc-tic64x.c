@@ -597,7 +597,7 @@ tic64x_opreader_memaccess(char *line, struct tic64x_insn *insn,
 			enum tic64x_text_operand type ATTRIBUTE_UNUSED)
 {
 	expressionS expr;
-	char *regname, *offs;
+	char *regname, *offs, *err;
 	struct tic64x_register *reg, *offsetreg;
 	int off_reg, pos_neg, pre_post, nomod_modify, has_offset, i, tmp, sc;
 	char c;
@@ -799,19 +799,16 @@ tic64x_opreader_memaccess(char *line, struct tic64x_insn *insn,
 
 	/* So - we have a base register, addressing mode, offset and maybe scale
 	 * bit, which we need to fill out in insn. Simple ones first */
-	for (i = 0; i < TIC64X_MAX_OPERANDS; i++) {
-		if (insn->templ->operands[i].type == tic64x_operand_basereg) {
-			insn->operand_values[i].value = reg->num & 0x1F;
-			insn->operand_values[i].resolved = 1;
-			break;
-		}
-	}
+	i = find_operand_index(insn->templ, tic64x_operand_basereg);
+	if (i < 0)
+		abort_no_operand(insn, "tic64x_operand_basereg");
 
-	if (i == TIC64X_MAX_OPERANDS)
-		as_fatal("tic64x_opreader_memaccess: instruction \"%s\" has "
-			"tic64x_optxt_memaccess operand, but no corresponding "
-			"tic64x_operand_basereg operand field",
-					insn->templ->mnemonic);
+	err = tic64x_set_operand(&insn->opcode, tic64x_operand_basereg,
+							reg->num & 0x1F);
+	if (err)
+		abort_setop_fail(insn, "tic64x_operand_basereg", err);
+
+	insn->operand_values[i].resolved = 1;
 
 	/* Addressing mode - ditch any fields that haven't been set or are zero.
 	 * We rely on earlier checks (XXX not written yet...) to ensure it's
@@ -826,19 +823,14 @@ tic64x_opreader_memaccess(char *line, struct tic64x_insn *insn,
 	if (nomod_modify > 0)
 		tmp |= nomod_modify;
 
-	for (i = 0; i < TIC64X_MAX_OPERANDS; i++) {
-		if (insn->templ->operands[i].type == tic64x_operand_addrmode) {
-			insn->operand_values[i].value = tmp;
-			insn->operand_values[i].resolved = 1;
-			break;
-		}
-	}
+	i = find_operand_index(insn->templ, tic64x_operand_addrmode);
+	if (i < 0)
+		abort_no_operand(insn, "tic64x_operand_addrmode");
 
-	if (i == TIC64X_MAX_OPERANDS)
-		as_fatal("tic64x_opreader_memaccess: instruction \"%s\" has "
-			"tic64x_optxt_memaccess operand, but no corresponding "
-			"tic64x_operand_addrmode operand field",
-					insn->templ->mnemonic);
+	err = tic64x_set_operand(&insn->opcode, tic64x_operand_addrmode, tmp);
+	if (err)
+		abort_setop_fail(insn, "tic64x_operand_addrmode", err);
+	insn->operand_values[i].resolved = 1;
 
 	/* Tricky part - offset might not be resolved (with 5 bits, not certain
 	 * _why_ that would be, but never mind) so we'll check if it's a
@@ -904,72 +896,45 @@ tic64x_opreader_memaccess(char *line, struct tic64x_insn *insn,
 	} else {
 		/* offset, not reg, not constant, so it has a symbol.
 		 * resolve that later */
-		for (i = 0; i < TIC64X_MAX_OPERANDS; i++) {
-			if (insn->templ->operands[i].type ==
-					tic64x_operand_rcoffset) {
-				memcpy(&insn->operand_values[i].expr, &expr,
-								sizeof(expr));
-				break;
-			}
-		}
+		i = find_operand_index(insn->templ, tic64x_operand_rcoffset);
+		if (i < 0)
+			abort_no_operand(insn, "tic64x_operand_rcoffset");
 
-		if (i == TIC64X_MAX_OPERANDS)
-			as_fatal("tic64x_opreader_memaccess: instruction \"%s\""
-				" has tic64x_optxt_memaccess operand, but no "
-				"corresponding tic64x_operand_rcoffset operand "
-				"field", insn->templ->mnemonic);
+		memcpy(&insn->operand_values[i].expr, &expr, sizeof(expr));
 
 		/* Set scale bit to resolved - I don't forsee a situation where
 		 * someone's going to both have an unresolved offset, _and_
 		 * have it extremely large. XXX is appropriate I guess */
-		for (i = 0; i < TIC64X_MAX_OPERANDS; i++) {
-			if (insn->templ->operands[i].type ==
-					tic64x_operand_scale) {
-				insn->operand_values[i].value = 0;
-				insn->operand_values[i].resolved = 0;
-				break;
-			}
-		}
+		i = find_operand_index(insn->templ, tic64x_operand_scale);
+		if (i < 0)
+			abort_no_operand(insn, "tic64x_operand_scale");
 
-		if (i == TIC64X_MAX_OPERANDS)
-			as_fatal("tic64x_opreader_memaccess: instruction \"%s\""
-				" has tic64x_optxt_memaccess operand, but no "
-				"corresponding tic64x_operand_rcoffset operand "
-				"field", insn->templ->mnemonic);
+		err = tic64x_set_operand(&insn->opcode, tic64x_operand_scale,0);
+		if (err)
+			abort_setop_fail(insn, "tic64x_operand_scale", err);
+		insn->operand_values[i].resolved = 1;
+
 		goto skip_offset; /* Mwuuhahahaaaha */
 	}
 
 	/* Write offset/scale values - scale only if we have a scale bit */
-	for (i = 0; i < TIC64X_MAX_OPERANDS; i++) {
-		if (insn->templ->operands[i].type == tic64x_operand_rcoffset) {
-			insn->operand_values[i].value = tmp;
-			insn->operand_values[i].resolved = 1;
-			break;
-		}
-	}
+	i = find_operand_index(insn->templ, tic64x_operand_rcoffset);
+	if (i < 0)
+		abort_no_operand(insn, "tic64x_operand_rcoffset");
 
-	if (i == TIC64X_MAX_OPERANDS)
-		as_fatal("tic64x_opreader_memaccess: instruction \"%s\" has "
-			"tic64x_optxt_memaccess operand, but no corresponding "
-			"tic64x_operand_rcoffset operand field",
-					insn->templ->mnemonic);
+	err = tic64x_set_operand(&insn->opcode, tic64x_operand_rcoffset, tmp);
+	if (err)
+		abort_setop_fail(insn, "tic64x_operand_rcoffset", err);
+	insn->operand_values[i].resolved = 1;
 
-	if (!(insn->templ->flags & TIC64X_OP_MEMACC_SCALE)) {
-		for (i = 0; i < TIC64X_MAX_OPERANDS; i++) {
-			if (insn->templ->operands[i].type ==
-							tic64x_operand_scale) {
-				insn->operand_values[i].value = sc;
-				insn->operand_values[i].resolved = 1;
-				break;
-			}
-		}
+	i = find_operand_index(insn->templ, tic64x_operand_scale);
+	if (i < 0)
+		abort_no_operand(insn, "tic64x_operand_scale");
 
-		if (i == TIC64X_MAX_OPERANDS)
-			as_fatal("tic64x_opreader_memaccess: instruction \"%s\""
-				" has tic64x_optxt_memaccess operand, but no "
-				"corresponding tic64x_operand_scale operand "
-				"field", insn->templ->mnemonic);
-	}
+	err = tic64x_set_operand(&insn->opcode, tic64x_operand_scale, sc);
+	if (err)
+		abort_setop_fail(insn, "tic64x_operand_scale", err);
+	insn->operand_values[i].resolved = 1;
 
 	skip_offset:
 	return;
