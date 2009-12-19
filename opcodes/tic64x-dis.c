@@ -11,7 +11,7 @@ static void print_insn(struct tic64x_op_template *templ, uint32_t opcode,
 					struct disassemble_info *info);
 
 typedef void (op_printer) (struct tic64x_op_template *t,
-				struct disassemble_info *i,
+				uint32_t opcode, struct disassemble_info *i,
 				enum tic64x_text_operand type);
 
 op_printer print_op_none;
@@ -190,7 +190,7 @@ print_insn(struct tic64x_op_template *templ, uint32_t opcode,
 	for (i = 0; i < TIC64X_MAX_TXT_OPERANDS; i++) {
 		for (j = 0; operand_printers[j].print != NULL; j++) {
 			if (operand_printers[j].type == templ->textops[i]) {
-				operand_printers[j].print(templ, info,
+				operand_printers[j].print(templ, opcode, info,
 							templ->textops[i]);
 				break;
 			}
@@ -204,31 +204,31 @@ print_insn(struct tic64x_op_template *templ, uint32_t opcode,
 }
 
 void
-print_op_none(struct tic64x_op_template *t, struct disassemble_info *i,
-					enum tic64x_text_operand type)
+print_op_none(struct tic64x_op_template *t, uint32_t opcode,
+		struct disassemble_info *info, enum tic64x_text_operand type)
 {
 }
 
 void
-print_op_memaccess(struct tic64x_op_template *t, struct disassemble_info *i,
-					enum tic64x_text_operand type)
+print_op_memaccess(struct tic64x_op_template *t, uint32_t opcode,
+		struct disassemble_info *info, enum tic64x_text_operand type)
 {
 }
 
 void
-print_op_register(struct tic64x_op_template *t, struct disassemble_info *i,
-					enum tic64x_text_operand type)
+print_op_register(struct tic64x_op_template *t, uint32_t opcode,
+		struct disassemble_info *info, enum tic64x_text_operand type)
 {
 }
 
 void
-print_op_dwreg(struct tic64x_op_template *t, struct disassemble_info *i,
-					enum tic64x_text_operand type)
+print_op_dwreg(struct tic64x_op_template *t, uint32_t opcode,
+		struct disassemble_info *info, enum tic64x_text_operand type)
 {
 }
 
 void
-print_op_constant((struct tic64x_op_template *t, struct disassemble_info *i,
-					enum tic64x_text_operand type);
+print_op_constant((struct tic64x_op_template *t, uint32_t opcode,
+		struct disassemble_info *info, enum tic64x_text_operand type)
 {
 }
