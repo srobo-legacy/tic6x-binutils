@@ -15,6 +15,11 @@
 		(!(insn->templ->flags & TIC64X_OP_XPATH_SRC2) &&	\
 					(type) == tic64x_optxt_srcreg1))
 
+#define abort_no_operand(insn, type)					\
+		as_fatal("Instruction \"%s\" does not have expected "	\
+			"operand type " type " (internal error)",	\
+					insn->templ->mnemonic);
+
 
 struct tic64x_insn {
 	struct tic64x_op_template *templ;
