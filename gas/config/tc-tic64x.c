@@ -1164,50 +1164,47 @@ tic64x_opreader_constant(char *line, struct tic64x_insn *insn,
 			enum tic64x_text_operand type)
 {
 	expressionS expr;
-	int opindex, tmp;
+	char *err;
+	enum tic64x_operand_type realtype;
+	int i;
 
 	/* Pre-lookup the operand index we expect... */
-	for (opindex = 0; opindex < TIC64X_MAX_OPERANDS; opindex++) {
-		if (insn->templ->operands[opindex].type ==
-					tic64x_operand_vconstant)
-			break;
+	if ((i = find_operand_index(insn->templ, tic64x_operand_const5)) >= 0) {
+		realtype = tic64x_operand_const5;
+	} else if ((i = find_operand_index(insn->templ,
+					tic64x_operand_const5p2)) >= 0) {
+		realtype = tic64x_operand_const5p2;
+	} else if ((i = find_operand_index(insn->templ,
+					tic64x_operand_const21)) >= 0) {
+		realtype = tic64x_operand_const21;
+	} else if ((i = find_operand_index(insn->templ,
+					tic64x_operand_const16)) >= 0) {
+		realtype = tic64x_operand_const16;
+	} else {
+		abort_no_operand(insn, "tic64x_operand_const*");
 	}
-
-	if (opindex == TIC64X_MAX_OPERANDS)
-		as_fatal("tic64x_opreader_memaccess: instruction \"%s\" has "
-			"tic64x_optxt_dwreg operand, but no corresponding "
-			"tic64x_operand_scale operand field",
-					insn->templ->mnemonic);
 
 	tic64x_parse_expr(line, &expr);
 	if (expr.X_op == O_constant) {
-		/* Seeing how it's a constant, we can resolve operand now */
-		/* Question 1 - is it small enough? */
-		tmp = insn->templ->operands[opindex].size;
-		tmp = 1 << tmp;
-
-		if (type == tic64x_optxt_uconstant) {
-			if (expr.X_add_number >= tmp) {
-				as_bad("Unsigned constant too large for field");
-				return;
-			}
-		} else if (type == tic64x_optxt_sconstant) {
-			/* XXX XXX XXX - I'm making the quite reasonable
-			 * assumption that c64x is twos-compliment signed */
-			tmp >>= 1;
-			if (expr.X_add_number >= tmp ||
-						expr.X_add_number < -tmp) {
-				as_bad("Signed constant too large for field");
-				return;
-			}
+		if (type == tic64x_optxt_sconstant && expr.X_add_number < 0) {
+			as_bad("Negative operand, expected unsigned");
+			return;
 		}
 
-		insn->operand_values[opindex].value = expr.X_add_number;
-		insn->operand_values[opindex].resolved = 1;
+		err = tic64x_set_operand(&insn->opcode, realtype,
+						expr.X_add_number);
+		if (err) {
+			/* Don't abort this time - user is allowed to enter
+			 * a constant that's too large, it's not an internal
+			 * error if that occurs */
+			as_bad("Error setting constant operand: %s", err);
+			return;
+		}
+
+		insn->operand_values[i].resolved = 1;
 	} else {
 		/* Not something useful right now, leave unresovled */
-		memcpy(&insn->operand_values[opindex].expr, &expr,
-							sizeof(expr));
+		memcpy(&insn->operand_values[i].expr, &expr, sizeof(expr));
 	}
 
 	return;
