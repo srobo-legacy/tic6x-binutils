@@ -96,6 +96,9 @@ char *
 tic64x_get_operand(uint32_t opcode, int *value, enum tic64x_operand_type t)
 {
 
+	opcode = opcode;
+	value = value;
+	t = t;
 	return "ENOTSUP";
 }
 
@@ -110,11 +113,11 @@ struct tic64x_op_template tic64x_opcodes[] = {
 	TIC64X_OP_XPATH_SRC2,
 	{ tic64x_optxt_srcreg1, tic64x_optxt_srcreg2, tic64x_optxt_dstreg},
 	{
-		{tic64x_operand_dstreg,			23,		5},
-		{tic64x_operand_srcreg1,		13,		5},
-		{tic64x_operand_srcreg2,		18,		5},
-		{tic64x_operand_x,			12,		1},
-		{tic64x_operand_invalid,		0,		0}
+		tic64x_operand_dstreg,
+		tic64x_operand_srcreg1,
+		tic64x_operand_srcreg2,
+		tic64x_operand_x,
+		tic64x_operand_invalid
 	}
 },
 {"add",		0x478,		0xFFC,
@@ -122,11 +125,11 @@ struct tic64x_op_template tic64x_opcodes[] = {
 	TIC64X_OP_USE_XPATH | TIC64X_OP_XPATH_SRC2,
 	{ tic64x_optxt_srcreg1, tic64x_optxt_srcreg2, tic64x_optxt_dwdst},
 	{
-		{tic64x_operand_dwdst,			23,		5},
-		{tic64x_operand_srcreg1,		13,		5},
-		{tic64x_operand_srcreg2,		18,		5},
-		{tic64x_operand_x,			12,		1},
-		{tic64x_operand_invalid,		0,		0}
+		tic64x_operand_dwdst5,
+		tic64x_operand_srcreg1,
+		tic64x_operand_srcreg2,
+		tic64x_operand_x,
+		tic64x_operand_invalid
 	}
 },
 {"add",		0x438,		0xFFC,
@@ -134,11 +137,11 @@ struct tic64x_op_template tic64x_opcodes[] = {
 	TIC64X_OP_USE_XPATH | TIC64X_OP_XPATH_SRC1,
 	{ tic64x_optxt_srcreg1, tic64x_optxt_dwsrc, tic64x_optxt_dwdst},
 	{
-		{tic64x_operand_dwdst,			23,		5},
-		{tic64x_operand_srcreg1,		13,		5},
-		{tic64x_operand_dwsrc,			18,		5},
-		{tic64x_operand_x,			12,		1},
-		{tic64x_operand_invalid,		0,		0}
+		tic64x_operand_dwdst5,
+		tic64x_operand_srcreg1,
+		tic64x_operand_dwsrc,
+		tic64x_operand_x,
+		tic64x_operand_invalid
 	}
 },
 {"add",		0x58,		0xFFC,
@@ -146,22 +149,22 @@ struct tic64x_op_template tic64x_opcodes[] = {
 	TIC64X_OP_USE_XPATH | TIC64X_OP_XPATH_SRC2,
 	{ tic64x_optxt_srcreg2, tic64x_optxt_sconstant, tic64x_optxt_dstreg},
 	{
-		{tic64x_operand_dstreg,			23,		5},
-		{tic64x_operand_vconstant,		13,		5},
-		{tic64x_operand_srcreg2,		18,		5},
-		{tic64x_operand_x,			12,		1},
-		{tic64x_operand_invalid,		0,		0}
+		tic64x_operand_dstreg,
+		tic64x_operand_const5,
+		tic64x_operand_srcreg2,
+		tic64x_operand_x,
+		tic64x_operand_invalid
 	}
 },
 {"add",		0x418,		0xFFC,
 	TIC64X_OP_UNIT_L | TIC64X_OP_COND | TIC64X_OP_SIDE, /* no xpath today */
 	{ tic64x_optxt_sconstant, tic64x_optxt_dwsrc, tic64x_optxt_dwdst},
 	{
-		{tic64x_operand_dwdst,			23,		5},
-		{tic64x_operand_vconstant,		13,		5},
-		{tic64x_operand_dwsrc,			18,		5},
-		{tic64x_operand_invalid,		0,		0},
-		{tic64x_operand_invalid,		0,		0}
+		tic64x_operand_dwdst5,
+		tic64x_operand_const5,
+		tic64x_operand_dwsrc,
+		tic64x_operand_invalid,
+		tic64x_operand_invalid
 	}
 },
 {"add",		0x1E0,		0xFFC,
@@ -169,11 +172,11 @@ struct tic64x_op_template tic64x_opcodes[] = {
 	TIC64X_OP_USE_XPATH | TIC64X_OP_XPATH_SRC2,
 	{ tic64x_optxt_srcreg1, tic64x_optxt_srcreg2, tic64x_optxt_dstreg},
 	{
-		{tic64x_operand_dstreg,			23,		5},
-		{tic64x_operand_srcreg1,		13,		5},
-		{tic64x_operand_srcreg2,		18,		5},
-		{tic64x_operand_x,			12,		1},
-		{tic64x_operand_invalid,		0,		0}
+		tic64x_operand_dstreg,
+		tic64x_operand_srcreg1,
+		tic64x_operand_srcreg2,
+		tic64x_operand_x,
+		tic64x_operand_invalid
 	}
 },
 {"add",		0x1A0,		0xFFC,
@@ -181,11 +184,11 @@ struct tic64x_op_template tic64x_opcodes[] = {
 	TIC64X_OP_USE_XPATH | TIC64X_OP_XPATH_SRC2,
 	{ tic64x_optxt_sconstant, tic64x_optxt_srcreg2, tic64x_optxt_dstreg},
 	{
-		{tic64x_operand_dstreg,			23,		5},
-		{tic64x_operand_vconstant,		13,		5},
-		{tic64x_operand_srcreg2,		18,		5},
-		{tic64x_operand_x,			12,		1},
-		{tic64x_operand_invalid,		0,		0}
+		tic64x_operand_dstreg,
+		tic64x_operand_const5,
+		tic64x_operand_srcreg2,
+		tic64x_operand_x,
+		tic64x_operand_invalid
 	}
 },
 /* Caution - opcode map field reverses in ti spec for some reason
@@ -194,22 +197,22 @@ struct tic64x_op_template tic64x_opcodes[] = {
 	TIC64X_OP_UNIT_D | TIC64X_OP_COND | TIC64X_OP_SIDE,
 	{ tic64x_optxt_srcreg1, tic64x_optxt_srcreg2, tic64x_optxt_dstreg},
 	{
-		{tic64x_operand_dstreg,			23,		5},
-		{tic64x_operand_srcreg1,		13,		5},
-		{tic64x_operand_srcreg2,		18,		5},
-		{tic64x_operand_invalid,		0,		0},
-		{tic64x_operand_invalid,		0,		0}
+		tic64x_operand_dstreg,
+		tic64x_operand_srcreg1,
+		tic64x_operand_srcreg2,
+		tic64x_operand_invalid,
+		tic64x_operand_invalid
 	}
 },
 {"add",		0x940,		0x1FFC,
 	TIC64X_OP_UNIT_D | TIC64X_OP_COND | TIC64X_OP_SIDE,
 	{ tic64x_optxt_uconstant, tic64x_optxt_srcreg2, tic64x_optxt_dstreg},
 	{
-		{tic64x_operand_dstreg,			23,		5},
-		{tic64x_operand_vconstant,		13,		5},
-		{tic64x_operand_srcreg2,		18,		5},
-		{tic64x_operand_invalid,		0,		0},
-		{tic64x_operand_invalid,		0,		0}
+		tic64x_operand_dstreg,
+		tic64x_operand_const5,
+		tic64x_operand_srcreg2,
+		tic64x_operand_invalid,
+		tic64x_operand_invalid
 	}
 },
 {"add",		0xAB0,		0xFFC,
@@ -217,11 +220,11 @@ struct tic64x_op_template tic64x_opcodes[] = {
 	TIC64X_OP_USE_XPATH | TIC64X_OP_XPATH_SRC2,
 	{ tic64x_optxt_srcreg1, tic64x_optxt_srcreg2, tic64x_optxt_dstreg},
 	{
-		{tic64x_operand_dstreg,			23,		5},
-		{tic64x_operand_srcreg1,		13,		5},
-		{tic64x_operand_srcreg2,		18,		5},
-		{tic64x_operand_x,			12,		1},
-		{tic64x_operand_invalid,		0,		0}
+		tic64x_operand_dstreg,
+		tic64x_operand_srcreg1,
+		tic64x_operand_srcreg2,
+		tic64x_operand_x,
+		tic64x_operand_invalid
 	}
 },
 {"add",		0xAF0,		0xFFC,
@@ -229,11 +232,11 @@ struct tic64x_op_template tic64x_opcodes[] = {
 	TIC64X_OP_USE_XPATH | TIC64X_OP_XPATH_SRC2,
 	{ tic64x_optxt_sconstant, tic64x_optxt_srcreg2, tic64x_optxt_dstreg},
 	{
-		{tic64x_operand_dstreg,			23,		5},
-		{tic64x_operand_vconstant,		13,		5},
-		{tic64x_operand_srcreg2,		18,		5},
-		{tic64x_operand_x,			12,		1},
-		{tic64x_operand_invalid,		0,		0}
+		tic64x_operand_dstreg,
+		tic64x_operand_const5,
+		tic64x_operand_srcreg2,
+		tic64x_operand_x,
+		tic64x_operand_invalid
 	}
 },
 {"b",		0x10,		0x7C,
@@ -241,24 +244,24 @@ struct tic64x_op_template tic64x_opcodes[] = {
 	TIC64X_OP_MULTI_MNEMONIC,
 	{ tic64x_optxt_sconstant, tic64x_optxt_none, tic64x_optxt_none},
 	{
-		{tic64x_operand_vconstant,		7,		21},
-		{tic64x_operand_invalid,		0,		0},
-		{tic64x_operand_invalid,		0,		0},
-		{tic64x_operand_invalid,		0,		0},
-		{tic64x_operand_invalid,		0,		0}
+		tic64x_operand_const21,
+		tic64x_operand_invalid,
+		tic64x_operand_invalid,
+		tic64x_operand_invalid,
+		tic64x_operand_invalid
 	}
 },
 {"b",		0x360,		0x0F83EFFC,
 	TIC64X_OP_COND | TIC64X_OP_UNIT_S | TIC64X_OP_SIDE |
 	TIC64X_OP_FIXED_UNITNO | TIC64X_OP_FIXED_UNIT2 |
 	TIC64X_OP_USE_XPATH | TIC64X_OP_XPATH_SRC1,
-	{ tic64x_optxt_srcreg1, tic64x_optxt_none, tic64x_optxt_none},
+	{ tic64x_optxt_srcreg2, tic64x_optxt_none, tic64x_optxt_none},
 	{
-		{tic64x_operand_srcreg1,		18,		5},
-		{tic64x_operand_x,			12,		1},
-		{tic64x_operand_invalid,		0,		0},
-		{tic64x_operand_invalid,		0,		0},
-		{tic64x_operand_invalid,		0,		0}
+		tic64x_operand_srcreg2,
+		tic64x_operand_x,
+		tic64x_operand_invalid,
+		tic64x_operand_invalid,
+		tic64x_operand_invalid
 	}
 },
 {"dotpu4",	0x1B0,		0xFFC,
@@ -266,11 +269,11 @@ struct tic64x_op_template tic64x_opcodes[] = {
 	TIC64X_OP_USE_XPATH | TIC64X_OP_XPATH_SRC2,
 	{ tic64x_optxt_srcreg1, tic64x_optxt_srcreg2, tic64x_optxt_dstreg},
 	{
-		{tic64x_operand_dstreg,			23,		5},
-		{tic64x_operand_srcreg1,		13,		5},
-		{tic64x_operand_srcreg2,		18,		5},
-		{tic64x_operand_x,			12,		1},
-		{tic64x_operand_invalid,		0,		0}
+		tic64x_operand_dstreg,
+		tic64x_operand_srcreg1,
+		tic64x_operand_srcreg2,
+		tic64x_operand_x,
+		tic64x_operand_invalid
 	}
 },
 {"lddw",	0x164,		0x17C,
@@ -279,11 +282,11 @@ struct tic64x_op_template tic64x_opcodes[] = {
 	TIC64X_OP_MEMACC_SCALE,
 	{ tic64x_optxt_memaccess, tic64x_optxt_dwdst, tic64x_optxt_none},
 	{
-		{tic64x_operand_dwdst,			23,		5},
-		{tic64x_operand_basereg,		18,		5},
-		{tic64x_operand_addrmode,		9,		4},
-		{tic64x_operand_rcoffset,		13,		5},
-		{tic64x_operand_invalid,		0,		0}
+		tic64x_operand_dwdst5,
+		tic64x_operand_basereg,
+		tic64x_operand_addrmode,
+		tic64x_operand_rcoffset,
+		tic64x_operand_invalid
 	}
 },
 {"ldndw",	 0x124,		0x17C,
@@ -291,11 +294,11 @@ struct tic64x_op_template tic64x_opcodes[] = {
 	TIC64X_OP_UNITNO | TIC64X_OP_MEMACCESS | TIC64X_OP_MEMSZ_DWORD,
 	{ tic64x_optxt_memaccess, tic64x_optxt_dwdst, tic64x_optxt_none },
 	{
-		{tic64x_operand_dwdst,			24,		4},
-		{tic64x_operand_basereg,		18,		5},
-		{tic64x_operand_addrmode,		9,		4},
-		{tic64x_operand_rcoffset,		13,		5},
-		{tic64x_operand_scale,			23,		1}
+		tic64x_operand_dwdst4,
+		tic64x_operand_basereg,
+		tic64x_operand_addrmode,
+		tic64x_operand_rcoffset,
+		tic64x_operand_scale
 	}
 },
 {"mvk",		0x28,		0x7C,
@@ -303,11 +306,11 @@ struct tic64x_op_template tic64x_opcodes[] = {
 	TIC64X_OP_MULTI_MNEMONIC,
 	{ tic64x_optxt_sconstant, tic64x_optxt_dstreg, tic64x_optxt_none},
 	{
-		{tic64x_operand_vconstant,		7,		16},
-		{tic64x_operand_dstreg,			23,		5},
-		{tic64x_operand_invalid,		0,		0},
-		{tic64x_operand_invalid,		0,		0},
-		{tic64x_operand_invalid,		0,		0}
+		tic64x_operand_const16,
+		tic64x_operand_dstreg,
+		tic64x_operand_invalid,
+		tic64x_operand_invalid,
+		tic64x_operand_invalid
 	}
 },
 /* XXX XXX XXX - spru732h p327, says xpath bit present, but not in opcode map,
@@ -317,11 +320,11 @@ struct tic64x_op_template tic64x_opcodes[] = {
 	TIC64X_OP_UNIT_L | TIC64X_OP_COND | TIC64X_OP_SIDE,
 	{ tic64x_optxt_sconstant, tic64x_optxt_dstreg, tic64x_optxt_none},
 	{
-		{tic64x_operand_vconstant,		18,		5},
-		{tic64x_operand_dstreg,			23,		5},
-		{tic64x_operand_invalid,		0,		0},
-		{tic64x_operand_invalid,		0,		0},
-		{tic64x_operand_invalid,		0,		0}
+		tic64x_operand_const5p2,
+		tic64x_operand_dstreg,
+		tic64x_operand_invalid,
+		tic64x_operand_invalid,
+		tic64x_operand_invalid
 	}
 },
 /* XXX XXX XXX - spru732h p327 again, "src2" field present in opcode, but
@@ -331,11 +334,11 @@ struct tic64x_op_template tic64x_opcodes[] = {
 	TIC64X_OP_UNIT_D | TIC64X_OP_COND | TIC64X_OP_SIDE,
 	{tic64x_optxt_sconstant, tic64x_optxt_dstreg, tic64x_optxt_none},
 	{
-		{tic64x_operand_vconstant,		13,		5},
-		{tic64x_operand_dstreg,			23,		5},
-		{tic64x_operand_invalid,		0,		0},
-		{tic64x_operand_invalid,		0,		0},
-		{tic64x_operand_invalid,		0,		0}
+		tic64x_operand_const5,
+		tic64x_operand_dstreg,
+		tic64x_operand_invalid,
+		tic64x_operand_invalid,
+		tic64x_operand_invalid
 	}
 },
 {"pack2",	0x18,		0xFFC,
@@ -343,11 +346,11 @@ struct tic64x_op_template tic64x_opcodes[] = {
 	TIC64X_OP_USE_XPATH | TIC64X_OP_XPATH_SRC2 | TIC64X_OP_MULTI_MNEMONIC,
 	{ tic64x_optxt_srcreg1, tic64x_optxt_srcreg2, tic64x_optxt_dstreg},
 	{
-		{tic64x_operand_dstreg,			23,		5},
-		{tic64x_operand_srcreg1,		13,		5},
-		{tic64x_operand_srcreg2,		18,		5},
-		{tic64x_operand_x,			12,		1},
-		{tic64x_operand_invalid,		0,		0}
+		tic64x_operand_dstreg,
+		tic64x_operand_srcreg1,
+		tic64x_operand_srcreg2,
+		tic64x_operand_x,
+		tic64x_operand_invalid
 	}
 },
 {"pack2",	0xFF0,		0xFFC,
@@ -355,11 +358,11 @@ struct tic64x_op_template tic64x_opcodes[] = {
 	TIC64X_OP_USE_XPATH | TIC64X_OP_XPATH_SRC2,
 	{ tic64x_optxt_srcreg1, tic64x_optxt_srcreg2, tic64x_optxt_dstreg},
 	{
-		{tic64x_operand_dstreg,			23,		5},
-		{tic64x_operand_srcreg1,		13,		5},
-		{tic64x_operand_srcreg2,		18,		5},
-		{tic64x_operand_x,			12,		1},
-		{tic64x_operand_invalid,		0,		0}
+		tic64x_operand_dstreg,
+		tic64x_operand_srcreg1,
+		tic64x_operand_srcreg2,
+		tic64x_operand_x,
+		tic64x_operand_invalid
 	}
 },
 {"sub",		0xF8,		0xFFC,
@@ -367,11 +370,11 @@ struct tic64x_op_template tic64x_opcodes[] = {
 	TIC64X_OP_USE_XPATH | TIC64X_OP_XPATH_SRC2 | TIC64X_OP_MULTI_MNEMONIC,
 	{ tic64x_optxt_srcreg1, tic64x_optxt_srcreg2, tic64x_optxt_dstreg},
 	{
-		{tic64x_operand_dstreg,			23,		5},
-		{tic64x_operand_srcreg1,		13,		5},
-		{tic64x_operand_srcreg2,		18,		5},
-		{tic64x_operand_x,			12,		1},
-		{tic64x_operand_invalid,		0,		0}
+		tic64x_operand_dstreg,
+		tic64x_operand_srcreg1,
+		tic64x_operand_srcreg2,
+		tic64x_operand_x,
+		tic64x_operand_invalid
 	}
 },
 {"sub",		0x2F8,		0xFFC,
@@ -379,11 +382,11 @@ struct tic64x_op_template tic64x_opcodes[] = {
 	TIC64X_OP_USE_XPATH | TIC64X_OP_XPATH_SRC1,
 	{ tic64x_optxt_srcreg1, tic64x_optxt_srcreg2, tic64x_optxt_dstreg},
 	{
-		{tic64x_operand_dstreg,			23,		5},
-		{tic64x_operand_srcreg1,		13,		5},
-		{tic64x_operand_srcreg2,		18,		5},
-		{tic64x_operand_x,			12,		1},
-		{tic64x_operand_invalid,		0,		0}
+		tic64x_operand_dstreg,
+		tic64x_operand_srcreg1,
+		tic64x_operand_srcreg2,
+		tic64x_operand_x,
+		tic64x_operand_invalid
 	}
 },
 {"sub",		0x4F8,		0xFFC,
@@ -391,11 +394,11 @@ struct tic64x_op_template tic64x_opcodes[] = {
 	TIC64X_OP_USE_XPATH | TIC64X_OP_XPATH_SRC2,
 	{ tic64x_optxt_srcreg1, tic64x_optxt_srcreg2, tic64x_optxt_dwdst},
 	{
-		{tic64x_operand_dwdst,			23,		5},
-		{tic64x_operand_srcreg1,		13,		5},
-		{tic64x_operand_srcreg2,		18,		5},
-		{tic64x_operand_x,			12,		1},
-		{tic64x_operand_invalid,		0,		0}
+		tic64x_operand_dwdst5,
+		tic64x_operand_srcreg1,
+		tic64x_operand_srcreg2,
+		tic64x_operand_x,
+		tic64x_operand_invalid
 	}
 },
 {"sub",		0x6F8,		0xFFC,
@@ -403,11 +406,11 @@ struct tic64x_op_template tic64x_opcodes[] = {
 	TIC64X_OP_USE_XPATH | TIC64X_OP_XPATH_SRC1,
 	{ tic64x_optxt_srcreg1, tic64x_optxt_srcreg2, tic64x_optxt_dwdst},
 	{
-		{tic64x_operand_dwdst,			23,		5},
-		{tic64x_operand_srcreg1,		13,		5},
-		{tic64x_operand_srcreg2,		18,		5},
-		{tic64x_operand_x,			12,		1},
-		{tic64x_operand_invalid,		0,		0}
+		tic64x_operand_dwdst5,
+		tic64x_operand_srcreg1,
+		tic64x_operand_srcreg2,
+		tic64x_operand_x,
+		tic64x_operand_invalid,
 	}
 },
 {"sub",		0x0D8,		0xFFC,
@@ -415,22 +418,22 @@ struct tic64x_op_template tic64x_opcodes[] = {
 	TIC64X_OP_USE_XPATH | TIC64X_OP_XPATH_SRC2,
 	{ tic64x_optxt_sconstant, tic64x_optxt_srcreg2, tic64x_optxt_dstreg},
 	{
-		{tic64x_operand_dstreg,			23,		5},
-		{tic64x_operand_vconstant,		13,		5},
-		{tic64x_operand_srcreg2,		18,		5},
-		{tic64x_operand_x,			12,		1},
-		{tic64x_operand_invalid,		0,		0}
+		tic64x_operand_dstreg,
+		tic64x_operand_const5,
+		tic64x_operand_srcreg2,
+		tic64x_operand_x,
+		tic64x_operand_invalid
 	}
 },
 {"sub",		0x498,		0xFFC,
 	TIC64X_OP_UNIT_L | TIC64X_OP_COND | TIC64X_OP_SIDE,
 	{ tic64x_optxt_sconstant, tic64x_optxt_dwsrc, tic64x_optxt_dwdst},
 	{
-		{tic64x_operand_dwdst,			23,		5},
-		{tic64x_operand_vconstant,		13,		5},
-		{tic64x_operand_dwsrc,			18,		5},
-		{tic64x_operand_invalid,		0,		0},
-		{tic64x_operand_invalid,		0,		0}
+		tic64x_operand_dwdst5,
+		tic64x_operand_const5,
+		tic64x_operand_dwsrc,
+		tic64x_operand_invalid,
+		tic64x_operand_invalid
 	}
 },
 {"sub",		0x5E0,		0xFFC,
@@ -438,11 +441,11 @@ struct tic64x_op_template tic64x_opcodes[] = {
 	TIC64X_OP_USE_XPATH | TIC64X_OP_XPATH_SRC2,
 	{ tic64x_optxt_srcreg1, tic64x_optxt_srcreg2, tic64x_optxt_dstreg},
 	{
-		{tic64x_operand_dstreg,			23,		5},
-		{tic64x_operand_srcreg1,		13,		5},
-		{tic64x_operand_srcreg2,		18,		5},
-		{tic64x_operand_x,			12,		1},
-		{tic64x_operand_invalid,		0,		0}
+		tic64x_operand_dstreg,
+		tic64x_operand_srcreg1,
+		tic64x_operand_srcreg2,
+		tic64x_operand_x,
+		tic64x_operand_invalid
 	}
 },
 {"sub",		0x5A0,		0xFFC,
@@ -450,11 +453,11 @@ struct tic64x_op_template tic64x_opcodes[] = {
 	TIC64X_OP_USE_XPATH | TIC64X_OP_XPATH_SRC2,
 	{ tic64x_optxt_sconstant, tic64x_optxt_srcreg2, tic64x_optxt_dstreg},
 	{
-		{tic64x_operand_dstreg,			23,		5},
-		{tic64x_operand_vconstant,		13,		5},
-		{tic64x_operand_srcreg2,		18,		5},
-		{tic64x_operand_x,			12,		1},
-		{tic64x_operand_invalid,		0,		0}
+		tic64x_operand_dstreg,
+		tic64x_operand_const5,
+		tic64x_operand_srcreg2,
+		tic64x_operand_x,
+		tic64x_operand_invalid
 	}
 },
 /* TI comment p 459 says operands are swapped here */
@@ -464,33 +467,33 @@ struct tic64x_op_template tic64x_opcodes[] = {
 	TIC64X_OP_USE_XPATH | TIC64X_OP_XPATH_SRC1,
 	{ tic64x_optxt_srcreg2, tic64x_optxt_srcreg1, tic64x_optxt_dstreg},
 	{
-		{tic64x_operand_dstreg,			23,		5},
-		{tic64x_operand_srcreg1,		13,		5},
-		{tic64x_operand_srcreg2,		18,		5},
-		{tic64x_operand_x,			12,		1},
-		{tic64x_operand_invalid,		0,		0}
+		tic64x_operand_dstreg,
+		tic64x_operand_srcreg1,
+		tic64x_operand_srcreg2,
+		tic64x_operand_x,
+		tic64x_operand_invalid
 	}
 },
 {"sub",		0x8C0,		0x1FFC,
 	TIC64X_OP_UNIT_D | TIC64X_OP_COND | TIC64X_OP_SIDE,
 	{ tic64x_optxt_srcreg2, tic64x_optxt_srcreg1, tic64x_optxt_dstreg},
 	{
-		{tic64x_operand_dstreg,			23,		5},
-		{tic64x_operand_srcreg1,		13,		5},
-		{tic64x_operand_srcreg2,		18,		5},
-		{tic64x_operand_invalid,		0,		0},
-		{tic64x_operand_invalid,		0,		0}
+		tic64x_operand_dstreg,
+		tic64x_operand_srcreg1,
+		tic64x_operand_srcreg2,
+		tic64x_operand_invalid,
+		tic64x_operand_invalid
 	}
 },
 {"sub",		0x9C0,		0x1FFC,
 	TIC64X_OP_UNIT_D | TIC64X_OP_COND | TIC64X_OP_SIDE,
 	{ tic64x_optxt_srcreg2, tic64x_optxt_uconstant, tic64x_optxt_dstreg},
 	{
-		{tic64x_operand_dstreg,			23,		5},
-		{tic64x_operand_vconstant,		13,		5},
-		{tic64x_operand_srcreg2,		18,		5},
-		{tic64x_operand_invalid,		0,		0},
-		{tic64x_operand_invalid,		0,		0}
+		tic64x_operand_dstreg,
+		tic64x_operand_const5,
+		tic64x_operand_srcreg2,
+		tic64x_operand_invalid,
+		tic64x_operand_invalid
 	}
 },
 {"sub",		0xB30,		0xFFC,
@@ -498,11 +501,11 @@ struct tic64x_op_template tic64x_opcodes[] = {
 	TIC64X_OP_USE_XPATH | TIC64X_OP_XPATH_SRC2,
 	{ tic64x_optxt_srcreg1, tic64x_optxt_srcreg2, tic64x_optxt_dstreg},
 	{
-		{tic64x_operand_dstreg,			23,		5},
-		{tic64x_operand_srcreg1,		13,		5},
-		{tic64x_operand_srcreg2,		18,		5},
-		{tic64x_operand_x,			12,		1},
-		{tic64x_operand_invalid,		0,		0}
+		tic64x_operand_dstreg,
+		tic64x_operand_srcreg1,
+		tic64x_operand_srcreg2,
+		tic64x_operand_x,
+		tic64x_operand_invalid
 	}
 },
 {"subabs4",	0xB58,		0xFFC,
@@ -510,11 +513,11 @@ struct tic64x_op_template tic64x_opcodes[] = {
 	TIC64X_OP_USE_XPATH | TIC64X_OP_XPATH_SRC2,
 	{ tic64x_optxt_srcreg1, tic64x_optxt_srcreg2, tic64x_optxt_dstreg},
 	{
-		{tic64x_operand_dstreg,			23,		5},
-		{tic64x_operand_srcreg1,		13,		5},
-		{tic64x_operand_srcreg2,		18,		5},
-		{tic64x_operand_x,			12,		1},
-		{tic64x_operand_invalid,		0,		0}
+		tic64x_operand_dstreg,
+		tic64x_operand_srcreg1,
+		tic64x_operand_srcreg2,
+		tic64x_operand_x,
+		tic64x_operand_invalid
 	}
 },
 /* XXX XXX XXX XXX XXX XXX XXX XXX XXX */
@@ -528,33 +531,34 @@ struct tic64x_op_template tic64x_opcodes[] = {
 	TIC64X_OP_MULTI_MNEMONIC,
 	{ tic64x_optxt_dstreg, tic64x_optxt_none, tic64x_optxt_none},
 	{
-		{tic64x_operand_dstreg,			23,		5},
-		{tic64x_operand_invalid,		0,		0},
-		{tic64x_operand_invalid,		0,		0},
-		{tic64x_operand_invalid,		0,		0},
-		{tic64x_operand_invalid,		0,		0}
+		tic64x_operand_dstreg,
+		tic64x_operand_invalid,
+		tic64x_operand_invalid,
+		tic64x_operand_invalid,
+		tic64x_operand_invalid
 	}
 },
 {"zero",	0xBC0,		0x7FFFFC,
 	TIC64X_OP_UNIT_L | TIC64X_OP_COND | TIC64X_OP_SIDE,
 	{ tic64x_optxt_dstreg, tic64x_optxt_none, tic64x_optxt_none},
 	{
-		{tic64x_operand_dstreg,			23,		5},
-		{tic64x_operand_invalid,		0,		0},
-		{tic64x_operand_invalid,		0,		0},
-		{tic64x_operand_invalid,		0,		0},
-		{tic64x_operand_invalid,		0,		0}
+		tic64x_operand_dstreg,
+		tic64x_operand_invalid,
+		tic64x_operand_invalid,
+		tic64x_operand_invalid,
+		tic64x_operand_invalid
 	}
 },
 {"zero",	0x1BC0,		0x7FFFFC,
 	TIC64X_OP_UNIT_L | TIC64X_OP_COND | TIC64X_OP_SIDE,
 	{ tic64x_optxt_dwdst, tic64x_optxt_none, tic64x_optxt_none},
 	{
-		{tic64x_operand_dwdst,			23,		5},
-		{tic64x_operand_invalid,		0,		0},
-		{tic64x_operand_invalid,		0,		0},
-		{tic64x_operand_invalid,		0,		0},
-		{tic64x_operand_invalid,		0,		0}
+/* XXX XXX XXX - I've no idea whether this could be dwdst4 for zero */
+		tic64x_operand_dwdst5,
+		tic64x_operand_invalid,
+		tic64x_operand_invalid,
+		tic64x_operand_invalid,
+		tic64x_operand_invalid
 	}
 },
 /* See preceeding XXX's, this opcode is identical to one of the L opcodes,
@@ -563,21 +567,21 @@ struct tic64x_op_template tic64x_opcodes[] = {
 	TIC64X_OP_UNIT_S | TIC64X_OP_COND | TIC64X_OP_SIDE,
 	{ tic64x_optxt_dstreg, tic64x_optxt_none, tic64x_optxt_none},
 	{
-		{tic64x_operand_dstreg,			23,		5},
-		{tic64x_operand_invalid,		0,		0},
-		{tic64x_operand_invalid,		0,		0},
-		{tic64x_operand_invalid,		0,		0},
-		{tic64x_operand_invalid,		0,		0}
+		tic64x_operand_dstreg,
+		tic64x_operand_invalid,
+		tic64x_operand_invalid,
+		tic64x_operand_invalid,
+		tic64x_operand_invalid
 	}
 },
 {NULL, 		0,		0,		0,
 	{ tic64x_optxt_none, tic64x_optxt_none, tic64x_optxt_none },
 	{
-		{tic64x_operand_invalid,		0,		0},
-		{tic64x_operand_invalid,		0,		0},
-		{tic64x_operand_invalid,		0,		0},
-		{tic64x_operand_invalid,		0,		0},
-		{tic64x_operand_invalid,		0,		0}
+		tic64x_operand_invalid,
+		tic64x_operand_invalid,
+		tic64x_operand_invalid,
+		tic64x_operand_invalid,
+		tic64x_operand_invalid
 	}
 }
 };
