@@ -149,4 +149,9 @@ print_insn(struct tic64x_op_template *templ, uint32_t opcode,
 			}
 		}
 	}
+
+	/* Cross-path? */
+	if (templ->flags & TIC64X_OP_USE_XPATH && opcode & TIC64X_BIT_XPATH)
+		info->fprintf_func(info->stream, "X");
+
 }
