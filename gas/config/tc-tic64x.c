@@ -27,6 +27,8 @@
 
 struct tic64x_insn {
 	struct tic64x_op_template *templ;
+	uint32_t opcode;			/* Code, filled with operands
+						 * as we parse them */
 	char unit;				/* Unit character ie 'L' */
 	int8_t unit_num;			/* Unit number, 1 or 2 */
 	int8_t mem_unit_num;			/* Memory data path, 1 or 2 */
@@ -48,7 +50,6 @@ struct tic64x_insn {
 		 * expression for later resolvement, or set the value and
 		 * set "resolved" to 1 */
 		expressionS expr;
-		uint32_t value;
 		int resolved;
 	} operand_values[TIC64X_MAX_OPERANDS];
 };
