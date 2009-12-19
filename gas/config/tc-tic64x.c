@@ -13,10 +13,10 @@
 				(x) == 'S' ? TIC64X_OP_UNIT_S :		\
 				TIC64X_OP_UNIT_M)
 
-#define TXTOPERAND_CAN_XPATH(insn, type) 					\
-		((((insn)->templ->flags & TIC64X_OP_XPATH_SRC2) &&		\
-					(type) == tic64x_optxt_srcreg2) ||	\
-		(!(insn->templ->flags & TIC64X_OP_XPATH_SRC2) &&		\
+#define TXTOPERAND_CAN_XPATH(insn, type) 				\
+		((((insn)->templ->flags & TIC64X_OP_XPATH_SRC2) &&	\
+					(type) == tic64x_optxt_srcreg2) ||\
+		(!(insn->templ->flags & TIC64X_OP_XPATH_SRC2) &&	\
 					(type) == tic64x_optxt_srcreg1))
 
 
@@ -32,7 +32,7 @@ struct tic64x_insn {
 						 * to write it to the other
 						 * side */
 	int8_t parallel;			/* || prefix? */
-	int8_t cond_nz;				/* Condition flag, zero or nz? */
+	int8_t cond_nz;				/* Condition flag, zero or nz?*/
 	int16_t cond_reg;			/* Register for comparison */
 
 	/* Template holds everything needed to build the instruction, but
@@ -746,7 +746,6 @@ tic64x_opreader_memaccess(char *line, struct tic64x_insn *insn,
 	/* Offset / reg should be the last thing we (might) read - ensure that
 	 * we're at the end of the string we were passed */
 	if (*line != 0) {
-printf("line \"%s\"", line);
 		as_bad("Trailing rubbish at end of address operand");
 		return;
 	}
@@ -945,8 +944,8 @@ printf("line \"%s\"", line);
 		}
 
 		if (i == TIC64X_MAX_OPERANDS)
-			as_fatal("tic64x_opreader_memaccess: instruction \"%s\" "
-				"has tic64x_optxt_memaccess operand, but no "
+			as_fatal("tic64x_opreader_memaccess: instruction \"%s\""
+				" has tic64x_optxt_memaccess operand, but no "
 				"corresponding tic64x_operand_scale operand "
 				"field", insn->templ->mnemonic);
 	}
@@ -1047,9 +1046,9 @@ tic64x_opreader_register(char *line, struct tic64x_insn *insn,
 		}
 
 		if (i == TIC64X_MAX_OPERANDS)
-			as_fatal("tic64x_opreader_memaccess: instruction \"%s\" "
-				"has xpath enabled operand, but no corresponding"
-				" tic64x_operand_x operand field",
+			as_fatal("tic64x_opreader_memaccess: instruction \"%s\""
+				" has xpath enabled operand, but no "
+				"corresponding tic64x_operand_x operand field",
 					insn->templ->mnemonic);
 	}
 
@@ -1496,8 +1495,8 @@ md_assemble(char *line)
 
 	if (!(insn->templ->flags & TIC64X_OP_USE_XPATH)) {
 		if (insn->uses_xpath != 0) {
-			as_bad("Unexpected 'X' in unit specifier for instruction"
-				" that does not use cross-path");
+			as_bad("Unexpected 'X' in unit specifier for "
+				"instruction that does not use cross-path");
 			return;
 		}
 	}
@@ -1509,12 +1508,12 @@ md_assemble(char *line)
 		insn->cond_reg = tic64x_line_had_cond_reg->num;
 
 		if ((insn->unit_num == 1 && (insn->cond_reg & TIC64X_REG_UNIT2))
-		|| (insn->unit_num == 2 && !(insn->cond_reg & TIC64X_REG_UNIT2)))
+		||(insn->unit_num == 2 && !(insn->cond_reg & TIC64X_REG_UNIT2)))
 			if (insn->uses_xpath)
-				as_warn("Caution: condition register on opposite"
-					" side of processor, and xpath is used "
-					"in instruction; author is uncertain"
-					" whether this is permitted");
+				as_warn("Caution: condition register on "
+					"opposite side of processor, and xpath "
+					"is used in instruction; author is "
+					"uncertain whether this is permitted");
 
 		/* See creg format */
 		switch (insn->cond_reg) {
