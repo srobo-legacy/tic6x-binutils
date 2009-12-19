@@ -33,13 +33,6 @@ enum tic64x_operand_type {
 	tic64x_operand_creg			/* Conditional reg num */
 };
 
-/* Represent operand in opcode */
-struct tic64x_operand {
-	enum tic64x_operand_type type;
-	unsigned int position;		/* Location in opcode, bits from zero */
-	unsigned int size;		/* Size of operand in bits */
-};
-
 /* Represent operand in text - simplifies how parser/disassembler works out
  * what to expect when dealing with an instruction */
 enum tic64x_text_operand {
@@ -117,7 +110,7 @@ struct tic64x_op_template {
 #define TIC64X_MAX_TXT_OPERANDS	3
 	enum tic64x_text_operand textops[TIC64X_MAX_TXT_OPERANDS];
 #define TIC64X_MAX_OPERANDS	5
-	struct tic64x_operand operands[TIC64X_MAX_OPERANDS];
+	enum tic64x_operand_type operands[TIC64X_MAX_OPERANDS];
 };
 
 extern struct tic64x_op_template tic64x_opcodes[];
