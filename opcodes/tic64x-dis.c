@@ -136,4 +136,17 @@ print_insn(struct tic64x_op_template *templ, uint32_t opcode,
 	}
 
 	/* T1/T2 specifier? */
+	if (templ->flags & TIC64X_OP_MEMACCESS) {
+		if (!(templ->flags & TIC64X_OP_SIDE)) {
+			fprintf(stderr, "tic64x print_insn: instruction with "
+				"memory access but not dest/side bit?");
+			info->fprintf_func(info->stream, "T?");
+		} else {
+			if (opcode & TIC64X_BIT_SIDE) {
+				info->fprintf_func(info->stream, "T2");
+			} else {
+				info->fprintf_func(info->stream, "T1");
+			}
+		}
+	}
 }
