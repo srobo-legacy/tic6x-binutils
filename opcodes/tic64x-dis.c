@@ -7,7 +7,8 @@
 
 #define UNUSED(x) ((x) = (x))
 
-static void print_insn(struct tic64x_op_template *templ, uint32_t opcode);
+static void print_insn(struct tic64x_op_template *templ, uint32_t opcode,
+					struct disassemble_info *info);
 
 int
 print_insn_tic64x(bfd_vma addr, struct disassemble_info *info)
@@ -26,7 +27,7 @@ print_insn_tic64x(bfd_vma addr, struct disassemble_info *info)
 	opcode = bfd_getl32(opbuf);
 
 	for (templ = tic64x_opcodes; templ->mnemonic; templ++) {
-		if ((opcode & templ->operand_mask) == templ->opcode)
+		if ((opcode & templ->opcode_mask) == templ->opcode)
 			break;
 	}
 
@@ -35,12 +36,13 @@ print_insn_tic64x(bfd_vma addr, struct disassemble_info *info)
 		return 0;
 	}
 
-	print_insn(templ, opcode);
+	print_insn(templ, opcode, info);
 	return 0;
 }
 
 void
-print_insn(struct tic64x_op_template *templ, uint32_t opcode)
+print_insn(struct tic64x_op_template *templ, uint32_t opcode,
+				struct disassemble_info *info)
 {
 
 	/* All instructions have 'p' bit AFAIK */
