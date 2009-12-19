@@ -80,6 +80,8 @@ static void tic64x_asg(int x);
 static void tic64x_sect(int x);
 static void tic64x_fail(int x);
 static struct tic64x_register *tic64x_sym_to_reg(char *name);
+static int find_operand_index(struct tic64x_op_template,
+			enum tic64x_operand_type type);
 static opreader tic64x_opreader_none;
 static optester tic64x_optest_none;
 static opreader tic64x_opreader_memaccess;
@@ -400,6 +402,18 @@ tic64x_sym_to_reg(char *regname)
 	}
 
 	return reg;
+}
+
+int
+find_operand_index(struct tic64x_op_template, enum tic64x_operand_type type)
+{
+	int i;
+
+	for (i = 0; i < TIC64X_MAX_OPERANDS; i++)
+		if (templ->operands[i] == type)
+			return i;
+
+	return -1;
 }
 
 /* Some kind of convention as to what can be md_blah and what needs to be
