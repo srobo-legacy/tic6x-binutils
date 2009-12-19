@@ -38,3 +38,55 @@ print_insn_tic64x(bfd_vma addr, struct disassemble_info *info)
 	print_insn(templ, opcode);
 	return 0;
 }
+
+void
+print_insn(struct tic64x_op_template *templ, uint32_t opcode)
+{
+
+	/* All instructions have 'p' bit AFAIK */
+	if (opcode & TIC64X_BIT_PARALLEL)
+		info->fprintf_func(info->stream, "||");
+	else
+		info->fprintf_func(info->stream, "  ");
+
+	/* Conditional? */
+	if (templ->flags & TIC64X_OP_COND) {
+		info->fprintf_func(info->stream, "[");
+
+		if (opcode & TIC64X_BIT_Z)
+			info->fprintf_func(info->stream, "!");
+		else
+			info->fprintf_func(info->stream, " ");
+
+		switch (opcode >> TIC64X_SHIFT_CREG) {
+		case 1:
+			info->fprintf_func(info->stream, "B0");
+			break;
+		case 2:
+			info->fprintf_func(info->stream, "B1");
+			break;
+		case 3:
+			info->fprintf_func(info->stream, "B2");
+			break;
+		case 4:
+			info->fprintf_func(info->stream, "A1");
+			break;
+		case 5:
+			info->fprintf_func(info->stream, "A2");
+			break;
+		case 6:
+			info->fprintf_func(info->stream, "A0");
+			break;
+		default:
+			info->fprintf_func(info->stream, "??");
+			break;
+		}
+
+		info->fprintf_func(info->stream, "]");
+	} else {
+		info->fprintf_func(info->stream, "     ");
+	}
+
+	/* Mnemonic */
+	info->fprintf_func(info->stream, "%-7s", templ->mnemonic);
+}
