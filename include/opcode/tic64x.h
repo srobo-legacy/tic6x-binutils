@@ -13,15 +13,24 @@ enum tic64x_operand_type {
 	tic64x_operand_invalid = 0,
 	tic64x_operand_addrmode,		/* Addressing mode field */
 	tic64x_operand_dstreg,			/* Destination register */
-	tic64x_operand_dwdst,			/* Doubleword reg destination */
+	tic64x_operand_dwdst4,			/* Doubleword reg destination,*/
+	tic64x_operand_dwdst5,			/* pair or lowest address */
 	tic64x_operand_basereg,			/* Base address register, l/s */
 	tic64x_operand_rcoffset,		/* Register/Constant offset */
 	tic64x_operand_scale,			/* Scale bit for rcoffset */
 	tic64x_operand_x,			/* Crosspath bit */
-	tic64x_operand_vconstant,		/* Generic constant, any size */
+	tic64x_operand_const5,			/* Generic constants */
+	tic64x_operand_const5p2,		/* 5 bit, in position 2 (<<18)*/
+	tic64x_operand_const21,
+	tic64x_operand_const16,
 	tic64x_operand_srcreg1,			/* Generic source registers */
 	tic64x_operand_srcreg2,			/* one and two, any use */
-	tic64x_operand_dwsrc			/* Doubleword source regs */
+	tic64x_operand_dwsrc,			/* Doubleword source regs */
+	tic64x_operand_p,			/* Parallel bit */
+	tic64x_operand_s,			/* Side bit */
+	tic64x_operand_y,			/* Memaccess srcs side bit */
+	tic64x_operand_z,			/* Conditional zero test */
+	tic64x_operand_creg			/* Conditional reg num */
 };
 
 /* Represent operand in opcode */

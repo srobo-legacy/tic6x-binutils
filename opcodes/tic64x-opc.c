@@ -32,6 +32,35 @@ struct tic64x_register tic64x_regs[] = {
 	{NULL,	0}
 };
 
+static struct {
+	int	position;
+	int	size;
+} operand_positions [] = {
+/* Note - this array indexed by tic64x_operand_type, if ordering is changed
+ * here, you need to change that enum definition */
+{	0,	0	},	/* invalid */
+{	9,	4	},	/* addrmode */
+{	23,	5	},	/* dstreg */
+{	24,	4	},	/* dwdst4 */
+{	23,	5	},	/* dwdst5 */
+{	18,	5	},	/* basereg */
+{	13,	5	},	/* rcoffset */
+{	23,	1	},	/* scale */
+{	12,	1	},	/* x */
+{	13,	5	},	/* const5 */
+{	18,	5	},	/* const5p2 */
+{	7,	21	},	/* const21 */
+{	7,	16	},	/* const16 */
+{	13,	5	},	/* srcreg1 */
+{	18,	5	},	/* srcreg2 */
+{	18,	5	},	/* dwsrc */
+{	0,	1	},	/* p */
+{	1,	1	},	/* s */
+{	7,	1	},	/* y */
+{	28,	1	},	/* z */
+{	29,	3	}	/* creg */
+};
+
 char *
 tic64x_set_operand(uint32_t *op, enum tic64x_operand_type type, uint32_t value)
 {
