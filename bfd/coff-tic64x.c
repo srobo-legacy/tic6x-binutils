@@ -37,6 +37,36 @@ static bfd_boolean tic64x_set_section_contents(bfd *b, sec_ptr section,
 bfd_coff_backend_data *dummy_backend_0 = &ticoff0_swap_table;
 bfd_coff_backend_data *dummy_backend_1 = &ticoff1_swap_table;
 
+static void
+rtype2howto(arelent *internal, struct internal_reloc *dst)
+{
+
+	internal = NULL;
+	dst = NULL;
+	fprintf(stderr, "jmorse: implement rtype2howto\n");
+	exit(1);
+}
+
+static bfd_boolean
+tic64x_set_arch_mach(bfd *b, enum bfd_architecture arch, unsigned long machine)
+{
+
+	if (arch == bfd_arch_unknown)
+		arch = bfd_arch_tic64x;
+	else if (arch != bfd_arch_tic64x)
+		return FALSE;
+
+	return bfd_default_set_arch_mach(b, arch, machine);
+}
+
+static bfd_boolean
+tic64x_set_section_contents(bfd *b, sec_ptr section, const PTR location,
+		file_ptr offset, bfd_size_type bytes)
+{
+
+	return coff_set_section_contents(b, section, location, offset, bytes);
+}
+
 const bfd_target tic64x_coff2_vec =
 {
 	"coff2-c64x",				/* Name */
@@ -93,33 +123,3 @@ const bfd_target tic64x_coff2_vec =
 	NULL,
 	&ticoff2_swap_table
 };
-
-static void
-rtype2howto(arelent *internal, struct internal_reloc *dst)
-{
-
-	internal = NULL;
-	dst = NULL;
-	fprintf(stderr, "jmorse: implement rtype2howto\n");
-	exit(1);
-}
-
-static bfd_boolean
-tic64x_set_arch_mach(bfd *b, enum bfd_architecture arch, unsigned long machine)
-{
-
-	if (arch == bfd_arch_unknown)
-		arch = bfd_arch_tic64x;
-	else if (arch != bfd_arch_tic64x)
-		return FALSE;
-
-	return bfd_default_set_arch_mach(b, arch, machine);
-}
-
-static bfd_boolean
-tic64x_set_section_contents(bfd *b, sec_ptr section, const PTR location,
-		file_ptr offset, bfd_size_type bytes)
-{
-
-	return coff_set_section_contents(b, section, location, offset, bytes);
-}
