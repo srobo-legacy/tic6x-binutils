@@ -1143,6 +1143,7 @@ void tic64x_opreader_double_register(char *line, struct tic64x_insn *insn,
 	err = tic64x_set_operand(&insn->opcode, type, tmp);
 	if (err)
 		abort_setop_fail(insn, "dwreg", err);
+	insn->operand_values[i].resolved = 1;
 
 	/* Also in this series - if this dw pair happen to be the destintation,
 	 * set the side field for this insn */
