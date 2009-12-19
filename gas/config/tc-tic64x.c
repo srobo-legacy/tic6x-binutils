@@ -944,8 +944,9 @@ void
 tic64x_opreader_register(char *line, struct tic64x_insn *insn,
 				enum tic64x_text_operand type)
 {
-	enum tic64x_operand_type t2;
+	char *err;
 	struct tic64x_register *reg;
+	enum tic64x_operand_type t2;
 	int i, tmp;
 
 	/* Expect only a single piece of text, should be register */
@@ -978,19 +979,16 @@ tic64x_opreader_register(char *line, struct tic64x_insn *insn,
 		return;
 	}
 
-	for (i = 0; i < TIC64X_MAX_OPERANDS; i++) {
-		if (insn->templ->operands[i].type == t2) {
-			insn->operand_values[i].value = reg->num & 0x1F;
-			insn->operand_values[i].resolved = 1;
-			break;
-		}
-	}
+	i = find_operand_index(insn->templ, t2);
+	if (i < 0)
+		/* XXX - I guess those abort routines should just print the
+		 * enumeration number, as we're unlikely to have the text name*/
+		abort_no_operand(insn, "{register}");
 
-	if (i == TIC64X_MAX_OPERANDS)
-		as_fatal("tic64x_opreader_memaccess: instruction \"%s\" has "
-			"tic64x_optxt_memaccess operand, but no corresponding "
-			"tic64x_operand_scale operand field",
-				insn->templ->mnemonic);
+	err = tic64x_set_operand(&insn->opcode, t2, reg->num & 0x1F);
+	if (err)
+		abort_setop_fail(insn, "{register}", err);
+	insn->operand_values[i].resolved = 1;
 
 	/* Now set some more interesting fields - if working on destination reg,
 	 * set the side of processor we're working on. Also set xpath field */
@@ -1023,22 +1021,15 @@ tic64x_opreader_register(char *line, struct tic64x_insn *insn,
 			return;
 		}
 
-		for (i = 0; i < TIC64X_MAX_OPERANDS; i++) {
-			if (insn->templ->operands[i].type == tic64x_operand_x) {
-				insn->operand_values[i].value = tmp;
-				insn->operand_values[i].resolved = 1;
-				break;
-			}
-		}
+		i = find_operand_index(insn->templ, tic64x_operand_x);
+		if (i < 0)
+			abort_no_operand(insn, "tic64x_operand_x");
 
-		if (i == TIC64X_MAX_OPERANDS)
-			as_fatal("tic64x_opreader_memaccess: instruction \"%s\""
-				" has xpath enabled operand, but no "
-				"corresponding tic64x_operand_x operand field",
-					insn->templ->mnemonic);
+		err = tic64x_set_operand(&insn->opcode, tic64x_operand_x, tmp);
+		if (err)
+			abort_setop_fail(insn, "tic64x_operand_x", err);
+		insn->operand_values[i].resolved = 1;
 	}
-
-
 
 	return;
 }
