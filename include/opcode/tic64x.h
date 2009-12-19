@@ -130,4 +130,9 @@ extern struct tic64x_register tic64x_regs[];
 				(x) == 'S' ? TIC64X_OP_UNIT_S :		\
 				TIC64X_OP_UNIT_M)
 
+#define UNITFLAGS_2_CHAR(o) ((o) & TIC64X_OP_UNIT_D ? 'D' :		\
+				(o) & TIC64X_OP_UNIT_L ? 'L' :		\
+				(o) & TIC64X_OP_UNIT_S ? 'S' :		\
+				'M')
+
 #endif /* _OPCODE_TIC64X_H_ */
