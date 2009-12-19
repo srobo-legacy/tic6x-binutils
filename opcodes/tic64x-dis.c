@@ -202,3 +202,33 @@ print_insn(struct tic64x_op_template *templ, uint32_t opcode,
 							templ->mnemonic, i);
 	}
 }
+
+void
+print_op_none(struct tic64x_op_template *t, struct disassemble_info *i,
+					enum tic64x_text_operand type)
+{
+}
+
+void
+print_op_memaccess(struct tic64x_op_template *t, struct disassemble_info *i,
+					enum tic64x_text_operand type)
+{
+}
+
+void
+print_op_register(struct tic64x_op_template *t, struct disassemble_info *i,
+					enum tic64x_text_operand type)
+{
+}
+
+void
+print_op_dwreg(struct tic64x_op_template *t, struct disassemble_info *i,
+					enum tic64x_text_operand type)
+{
+}
+
+void
+print_op_constant((struct tic64x_op_template *t, struct disassemble_info *i,
+					enum tic64x_text_operand type);
+{
+}
