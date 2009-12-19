@@ -405,7 +405,8 @@ tic64x_sym_to_reg(char *regname)
 }
 
 int
-find_operand_index(struct tic64x_op_template, enum tic64x_operand_type type)
+find_operand_index(struct tic64x_op_template templ,
+			enum tic64x_operand_type type)
 {
 	int i;
 
