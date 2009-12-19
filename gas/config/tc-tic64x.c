@@ -905,14 +905,20 @@ tic64x_opreader_memaccess(char *line, struct tic64x_insn *insn,
 		/* Set scale bit to resolved - I don't forsee a situation where
 		 * someone's going to both have an unresolved offset, _and_
 		 * have it extremely large. XXX is appropriate I guess */
-		i = find_operand_index(insn->templ, tic64x_operand_scale);
-		if (i < 0)
-			abort_no_operand(insn, "tic64x_operand_scale");
+		/* Don't set if instruction _always_ scales */
+		if (!(insn->templ->flags & TIC64X_OP_MEMACC_SCALE)) {
+			i = find_operand_index(insn->templ,
+					tic64x_operand_scale);
+			if (i < 0)
+				abort_no_operand(insn, "tic64x_operand_scale");
 
-		err = tic64x_set_operand(&insn->opcode, tic64x_operand_scale,0);
-		if (err)
-			abort_setop_fail(insn, "tic64x_operand_scale", err);
-		insn->operand_values[i].resolved = 1;
+			err = tic64x_set_operand(&insn->opcode,
+						tic64x_operand_scale,0);
+			if (err)
+				abort_setop_fail(insn, "tic64x_operand_scale",
+									err);
+			insn->operand_values[i].resolved = 1;
+		}
 
 		goto skip_offset; /* Mwuuhahahaaaha */
 	}
@@ -927,14 +933,17 @@ tic64x_opreader_memaccess(char *line, struct tic64x_insn *insn,
 		abort_setop_fail(insn, "tic64x_operand_rcoffset", err);
 	insn->operand_values[i].resolved = 1;
 
-	i = find_operand_index(insn->templ, tic64x_operand_scale);
-	if (i < 0)
-		abort_no_operand(insn, "tic64x_operand_scale");
+	/* Don't set scale if insn always scales */
+	if (!(insn->templ->flags & TIC64X_OP_MEMACC_SCALE)) {
+		i = find_operand_index(insn->templ, tic64x_operand_scale);
+		if (i < 0)
+			abort_no_operand(insn, "tic64x_operand_scale");
 
-	err = tic64x_set_operand(&insn->opcode, tic64x_operand_scale, sc);
-	if (err)
-		abort_setop_fail(insn, "tic64x_operand_scale", err);
-	insn->operand_values[i].resolved = 1;
+		err = tic64x_set_operand(&insn->opcode,tic64x_operand_scale,sc);
+		if (err)
+			abort_setop_fail(insn, "tic64x_operand_scale", err);
+		insn->operand_values[i].resolved = 1;
+	}
 
 	skip_offset:
 	return;
