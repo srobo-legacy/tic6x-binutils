@@ -44,6 +44,9 @@ struct {
 { tic64x_optxt_sconstant,	print_op_constant	}
 };
 
+bfd_vma prev_dis_addr = -1;
+uint32_t prev_dis_opcode = 0;
+
 int
 print_insn_tic64x(bfd_vma addr, struct disassemble_info *info)
 {
@@ -67,11 +70,15 @@ print_insn_tic64x(bfd_vma addr, struct disassemble_info *info)
 
 	if (templ->mnemonic == NULL) {
 		info->fprintf_func(info->stream, "????");
-		return 0;
+		prev_dis_addr = -1;
+		prev_dis_opcode = 0;
+		return 4;
 	}
 
 	print_insn(templ, opcode, info);
-	return 0;
+	prev_dis_addr = addr;
+	prev_dis_opcode = opcode;
+	return 4;
 }
 
 void
@@ -82,7 +89,9 @@ print_insn(struct tic64x_op_template *templ, uint32_t opcode,
 	char unit, unit_no, tchar, memnum, xpath;
 
 	/* All instructions have 'p' bit AFAIK */
-	if (tic64x_get_operand(opcode, tic64x_operand_p, 0))
+	/* Did the _previous_ insn have it set though? Immense kludge. */
+	if (tic64x_get_operand(prev_dis_opcode, tic64x_operand_p, 0)
+			&& prev_dis_addr != (unsigned int)-1)
 		info->fprintf_func(info->stream, "||");
 	else
 		info->fprintf_func(info->stream, "  ");
