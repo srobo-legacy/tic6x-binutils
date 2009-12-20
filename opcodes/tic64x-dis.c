@@ -88,6 +88,7 @@ print_insn(struct tic64x_op_template *templ, uint32_t opcode,
 	const char *tchar, *memnum, *xpath;
 	int i, j, z, creg;
 	char unit, unit_no;
+	char finalstr[16];
 
 	/* All instructions have 'p' bit AFAIK */
 	/* Did the _previous_ insn have it set though? Immense kludge. */
@@ -209,8 +210,9 @@ print_insn(struct tic64x_op_template *templ, uint32_t opcode,
 	else
 		xpath = "";
 
-	info->fprintf_func(info->stream, ".%C%C%s%s%s  ", unit, unit_no,
-						tchar, memnum, xpath);
+	snprintf(finalstr, 15, ".%C%C%s%s%s", unit, unit_no, tchar,
+							memnum, xpath);
+	info->fprintf_func(info->stream, "%-7s", finalstr);
 
 	/* Now put some operands out - needs some abstraction though */
 	for (i = 0; i < TIC64X_MAX_TXT_OPERANDS; i++) {
