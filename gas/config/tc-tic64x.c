@@ -597,7 +597,8 @@ tic64x_opreader_memaccess(char *line, struct tic64x_insn *insn,
 			enum tic64x_text_operand type ATTRIBUTE_UNUSED)
 {
 	expressionS expr;
-	char *regname, *offs, *err;
+	const char *err;
+	char *regname, *offs;
 	struct tic64x_register *reg, *offsetreg;
 	int off_reg, pos_neg, pre_post, nomod_modify, has_offset, i, tmp, sc;
 	char c;
@@ -953,7 +954,7 @@ void
 tic64x_opreader_register(char *line, struct tic64x_insn *insn,
 				enum tic64x_text_operand type)
 {
-	char *err;
+	const char *err;
 	struct tic64x_register *reg;
 	enum tic64x_operand_type t2;
 	int i, tmp;
@@ -1047,7 +1048,8 @@ void tic64x_opreader_double_register(char *line, struct tic64x_insn *insn,
 			enum tic64x_text_operand optype)
 {
 	struct tic64x_register *reg1, *reg2;
-	char *rtext, *err;
+	const char *err;
+	char *rtext;
 	enum tic64x_operand_type type;
 	int tmp, i;
 	char c;
@@ -1173,7 +1175,7 @@ tic64x_opreader_constant(char *line, struct tic64x_insn *insn,
 			enum tic64x_text_operand type)
 {
 	expressionS expr;
-	char *err;
+	const char *err;
 	enum tic64x_operand_type realtype;
 	int i;
 
