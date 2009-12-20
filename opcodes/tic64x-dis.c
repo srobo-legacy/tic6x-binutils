@@ -546,4 +546,34 @@ void
 print_op_constant(struct tic64x_op_template *t, uint32_t opcode,
 		struct disassemble_info *info, enum tic64x_text_operand type)
 {
+	enum tic64x_operand_type t2;
+	int i, val;
+	char finalstr[16];
+
+	/* There are multiple constant operand forms... */
+	t2 = tic64x_operand_invalid;
+	for (i = 0; i < TIC64X_MAX_OPERANDS; i++) {
+		if (t->operands[i] == tic64x_operand_const5 ||
+		    t->operands[i] == tic64x_operand_const5p2 ||
+		    t->operands[i] == tic64x_operand_const21 ||
+		    t->operands[i] == tic64x_operand_const16) {
+			t2 = t->operands[i];
+			break;
+		}
+	}
+
+	if (i == TIC64X_MAX_OPERANDS) {
+		fprintf(stderr, "tic64x print_op_constant: \"%s\" has no "
+				"matching dword reg operand\n", t->mnemonic);
+		info->fprintf_func(info->stream,"%"OPERAND_LENGTH_FORMAT"s","");
+		return;
+	}
+
+	val = tic64x_get_operand(opcode, t2,
+				(type == tic64x_optxt_sconstant) ? 1 : 0);
+
+	/* Print all operands as hex, limit to 32 bits of FFFF... */
+	snprintf(finalstr, 15, "0x%X", val & 0xFFFFFFFF);
+	info->fprintf_func(info->stream, "%"OPERAND_LENGTH_FORMAT"s", finalstr);
+	return;
 }
