@@ -353,8 +353,8 @@ print_op_register(struct tic64x_op_template *t, uint32_t opcode,
 		struct disassemble_info *info, enum tic64x_text_operand type)
 {
 	enum tic64x_operand_type t2;
-	int regnum, side;
-	char finalstr[16];
+	int regnum, side, x, y;
+	char finalstr[16], unitchar;
 
 	if (type == tic64x_optxt_dstreg) {
 		t2 = tic64x_operand_dstreg;
@@ -378,8 +378,80 @@ print_op_register(struct tic64x_op_template *t, uint32_t opcode,
 
 	regnum = tic64x_get_operand(opcode, t2, 0);
 	side = tic64x_get_operand(opcode, tic64x_operand_s, 0);
+	x = tic64x_get_operand(opcode, tic64x_operand_x, 0);
+	y = tic64x_get_operand(opcode, tic64x_operand_y, 0);
 
-	snprintf(finalstr, 15, "%c%d", (side) ? 'B' : 'A', regnum);
+	/* Delicious curly braces... */
+	unitchar = '?';
+	if (!(t->flags & TIC64X_OP_UNITNO)) {
+		/* insn doesn't have y bit, so ignore that */
+		if (t->flags & TIC64X_OP_FIXED_UNITNO) {
+			/* insn fixes what side it executes on... */
+			if (t->flags & TIC64X_OP_FIXED_UNIT2) {
+				if (TXTOPERAND_CAN_XPATH(t, type) && x) {
+					unitchar = 'A';
+				} else {
+					unitchar = 'B';
+				}
+			} else {
+				if (TXTOPERAND_CAN_XPATH(t, type) && x) {
+					unitchar = 'B';
+				} else {
+					unitchar = 'A';
+				}
+			}
+		} else if (t->flags & TIC64X_OP_SIDE) {
+			if (side) {
+				if (TXTOPERAND_CAN_XPATH(t, type) && x) {
+					unitchar = 'A';
+				} else {
+					unitchar = 'B';
+				}
+			} else {
+				if (TXTOPERAND_CAN_XPATH(t, type) && x) {
+					unitchar = 'B';
+				} else {
+					unitchar = 'A';
+				}
+			}
+		}
+	} else {
+		/* We use a y bit to specify which side we execute on (s says
+		 * where result is stored); so if we're a src, use y, if dst,
+		 * use s */
+		if (type == tic64x_optxt_dwsrc) {
+			if (y) {
+				if (TXTOPERAND_CAN_XPATH(t, type) && x) {
+					unitchar = 'A';
+				} else {
+					unitchar = 'B';
+				}
+			} else {
+				if (TXTOPERAND_CAN_XPATH(t, type) && x) {
+					unitchar = 'B';
+				} else {
+					unitchar = 'A';
+				}
+			}
+		} else {
+			if (side) {
+				if (TXTOPERAND_CAN_XPATH(t, type) && x) {
+					unitchar = 'A';
+				} else {
+					unitchar = 'B';
+				}
+			} else {
+				if (TXTOPERAND_CAN_XPATH(t, type) && x) {
+					unitchar = 'B';
+				} else {
+					unitchar = 'A';
+				}
+			}
+		}
+	}
+	/* If there's a better way, lack of coffee prevents me seeing it */
+
+	snprintf(finalstr, 15, "%c%d", unitchar, regnum);
 	info->fprintf_func(info->stream, "%"OPERAND_LENGTH_FORMAT"s", finalstr);
 	return;
 }
