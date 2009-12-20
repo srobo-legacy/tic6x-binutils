@@ -323,6 +323,8 @@ print_op_memaccess(struct tic64x_op_template *t, uint32_t opcode,
 								t->mnemonic);
 			post = "";
 		}
+	} else {
+		post = "";
 	}
 
 	/* Check whether or not scaling is forced */
