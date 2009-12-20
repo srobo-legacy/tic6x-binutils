@@ -121,15 +121,6 @@ const char *tic64x_set_operand(uint32_t *opcode, enum tic64x_operand_type type,
 								 int value);
 int tic64x_get_operand(uint32_t opcode,  enum tic64x_operand_type t, int signx);
 
-/* Finally, some actual bit definitions */
-#define TIC64X_BIT_PARALLEL		1
-#define TIC64X_BIT_SIDE			2
-#define TIC64X_BIT_UNITNO		0x80
-#define TIC64X_BIT_XPATH		0x1000
-#define TIC64X_BIT_Z			0x10000000
-
-#define TIC64X_SHIFT_CREG		29
-
 /* Utility macros(s) */
 
 #define UNITCHAR_2_FLAG(x) ((x) == 'D' ? TIC64X_OP_UNIT_D :		\
