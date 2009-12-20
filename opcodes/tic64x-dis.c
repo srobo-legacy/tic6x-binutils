@@ -85,8 +85,9 @@ void
 print_insn(struct tic64x_op_template *templ, uint32_t opcode,
 				struct disassemble_info *info)
 {
+	const char *tchar, *memnum, *xpath;
 	int i, j, z, creg;
-	char unit, unit_no, tchar, memnum, xpath;
+	char unit, unit_no;
 
 	/* All instructions have 'p' bit AFAIK */
 	/* Did the _previous_ insn have it set though? Immense kludge. */
@@ -184,31 +185,31 @@ print_insn(struct tic64x_op_template *templ, uint32_t opcode,
 
 	/* T1/T2 specifier? */
 	if (templ->flags & TIC64X_OP_MEMACCESS) {
-		tchar = 'T';
+		tchar = "T";
 		if (!(templ->flags & TIC64X_OP_SIDE)) {
 			fprintf(stderr, "tic64x print_insn: instruction with "
 				"memory access but not dest/side bit?");
-			memnum = '?';
+			memnum = "?";
 		} else {
 			if (tic64x_get_operand(opcode, tic64x_operand_s, 0)) {
-				memnum = '2';
+				memnum = "2";
 			} else {
-				memnum = '1';
+				memnum = "1";
 			}
 		}
 	} else {
-		tchar = ' ';
-		memnum = ' ';
+		tchar = "";
+		memnum = "";
 	}
 
 	/* Cross-path? */
 	if (templ->flags & TIC64X_OP_USE_XPATH &&
 				tic64x_get_operand(opcode, tic64x_operand_x, 0))
-		xpath = 'X';
+		xpath = "X";
 	else
-		xpath = ' ';
+		xpath = "";
 
-	info->fprintf_func(info->stream, ".%C%C%C%C%C  ", unit, unit_no,
+	info->fprintf_func(info->stream, ".%C%C%s%s%s  ", unit, unit_no,
 						tchar, memnum, xpath);
 
 	/* Now put some operands out - needs some abstraction though */
