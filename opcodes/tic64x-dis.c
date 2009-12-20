@@ -218,8 +218,123 @@ print_op_none(struct tic64x_op_template *t, uint32_t opcode,
 
 void
 print_op_memaccess(struct tic64x_op_template *t, uint32_t opcode,
-		struct disassemble_info *info, enum tic64x_text_operand type)
+		struct disassemble_info *info,
+		enum tic64x_text_operand type ATTRIBUTE_UNUSED)
 {
+	const char *pre, *regchar, *post, *offs;
+	int addrmode, basereg, offset, scale, scalenum, y;
+	char finalstr[16];
+	char offsetstr[8];
+	char regno[4];
+
+	pre = NULL;
+	regchar = NULL;
+	post = NULL;
+	offs = NULL;
+	/* Hopefully this won't become the pile of pain the assembler
+	 * version is */
+
+	addrmode = tic64x_get_operand(opcode, tic64x_operand_addrmode, 0);
+	basereg = tic64x_get_operand(opcode, tic64x_operand_basereg, 0);
+
+	/* Offset is always ucst5 or register, no sign extension */
+	offset = tic64x_get_operand(opcode, tic64x_operand_rcoffset, 0);
+
+	/* scale bit? Might not have one, read it anyway */
+	scale = tic64x_get_operand(opcode, tic64x_operand_rcoffset, 0);
+
+	/* Memory accesses set destination side with s bit, source regs with
+	 * y bit, which we'll read here. Confirm later TIX64X_OP_UNITNO is set*/
+	y = tic64x_get_operand(opcode, tic64x_operand_rcoffset, 0);
+
+	/* Pre inc/decrementer, or offset +/- */
+	if (!(addrmode & TIC64X_ADDRMODE_MODIFY)) {
+		if (addrmode & TIC64X_ADDRMODE_POS) {
+			pre =  "+";
+		} else {
+			pre = "-";
+		}
+	} else if (!(addrmode & TIC64X_ADDRMODE_POST)) {
+		if (addrmode & TIC64X_ADDRMODE_POS) {
+			pre = "++";
+		} else  {
+			pre = "--";
+		}
+	} else {
+		pre = "";
+	}
+
+	/* Base register */
+	if (!(t->flags & TIC64X_OP_UNITNO)) {
+		fprintf(stderr, "tic64x_print_memaccess: \"%s\" has no y bit?",
+								t->mnemonic);
+		regchar = "?";
+	} else if (y) {
+		regchar = "B";
+	} else {
+		regchar = "A";
+	}
+
+	/* Register number itself */
+	snprintf(regno, 3, "%d", basereg);
+
+	/* Post modifiers */
+	if (addrmode & TIC64X_ADDRMODE_POST) {
+		if (addrmode & TIC64X_ADDRMODE_MODIFY) {
+			if (addrmode & TIC64X_ADDRMODE_POS) {
+				post = "++";
+			} else {
+				post = "--";
+			}
+		} else {
+			fprintf(stderr, "tic64x_print_memaccess: \"%s\" with "
+					"post-nomodifying address mode?",
+								t->mnemonic);
+			post = "";
+		}
+	}
+
+	/* Check whether or not scaling is forced */
+	if (t->flags & TIC64X_OP_MEMACC_SCALE)
+		scale = 1;
+
+	/* If we scale, calculate by how much */
+	if (scale) {
+		scalenum = (addrmode & TIC64X_OP_MEMSZ_MASK) >>
+							TIC64X_OP_MEMSZ_SHIFT;
+		scalenum = 1 << scalenum;
+	} else {
+		scalenum = 1;
+	}
+
+	/* What kind of offset? */
+	if (addrmode & TIC64X_ADDRMODE_REGISTER) {
+		if (scale) {
+			snprintf(offsetstr, 7, "%s%d*%d", regchar, offset,
+								scalenum);
+		} else {
+			snprintf(offsetstr, 7, "%s%d", regchar, offset);
+		}
+	} else { /* Constant */
+		if (offset == 0) {
+			snprintf(offsetstr, 7, "%c", 0);
+		} else if (scale) {
+			snprintf(offsetstr, 7, "%d", offset * scalenum);
+		} else {
+			snprintf(offsetstr, 7, "%d", offset);
+		}
+	}
+
+	/* And I think that's it */
+	if (*offsetstr == 0) {
+		snprintf(finalstr, 15, "%s%s%s%s,", pre, regchar, regno, post);
+	} else {
+		snprintf(finalstr, 15, "%s%s%s%s[%s],", pre, regchar, regno,
+							post, offsetstr);
+	}
+
+	info->fprintf_func(info->stream, "%"OPERAND_LENGTH_FORMAT"s", finalstr);
+	return;
 }
 
 void
@@ -235,7 +350,7 @@ print_op_dwreg(struct tic64x_op_template *t, uint32_t opcode,
 }
 
 void
-print_op_constant((struct tic64x_op_template *t, uint32_t opcode,
+print_op_constant(struct tic64x_op_template *t, uint32_t opcode,
 		struct disassemble_info *info, enum tic64x_text_operand type)
 {
 }
