@@ -92,14 +92,28 @@ tic64x_set_operand(uint32_t *op, enum tic64x_operand_type type, int value)
 	return NULL;
 }
 
-char *
-tic64x_get_operand(uint32_t opcode, int *value, enum tic64x_operand_type t)
+int
+tic64x_get_operand(uint32_t opcode,  enum tic64x_operand_type t, int signx)
 {
+	int sign_extended;
 
-	opcode = opcode;
-	value = value;
-	t = t;
-	return "ENOTSUP";
+	opcode >>= operand_positions[t].position;
+	opcode &= ((1 << operand_positions[t].size) - 1);
+
+	if (signx == 0)
+		return (int)opcode;
+
+	/* Sign extend */
+	if (opcode & (1 << (operand_positions[t].size - 1))) {
+		sign_extended = ~opcode;
+		sign_extended &= ((1 << operand_positions[t].size) - 1);
+		sign_extended += 1;
+		sign_extended = -sign_extended;
+	} else {
+		sign_extended = opcode;
+	}
+
+	return sign_extended;
 }
 
 /* NB: When transcribing add instructions, I may have missed some of the ti
