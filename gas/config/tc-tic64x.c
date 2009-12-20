@@ -1577,7 +1577,7 @@ tic64x_output_insn(struct tic64x_insn *insn)
 		tic64x_set_operand(&insn->opcode, tic64x_operand_z,
 					(insn->cond_nz) ? 0 : 1);
 		tic64x_set_operand(&insn->opcode, tic64x_operand_creg,
-					insn->cond_reg << TIC64X_SHIFT_CREG);
+					insn->cond_reg);
 	}
 
 	for (i = 0; i < TIC64X_MAX_OPERANDS; i++) {
