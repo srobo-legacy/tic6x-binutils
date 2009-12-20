@@ -75,7 +75,7 @@ print_insn(struct tic64x_op_template *templ, uint32_t opcode,
 	char unit, unit_no, tchar, memnum, xpath;
 
 	/* All instructions have 'p' bit AFAIK */
-	if (opcode & TIC64X_BIT_PARALLEL)
+	if (tic64x_get_operand(opcode, tic64x_operand_p, 0))
 		info->fprintf_func(info->stream, "||");
 	else
 		info->fprintf_func(info->stream, "  ");
@@ -84,12 +84,12 @@ print_insn(struct tic64x_op_template *templ, uint32_t opcode,
 	if (templ->flags & TIC64X_OP_COND) {
 		info->fprintf_func(info->stream, "[");
 
-		if (opcode & TIC64X_BIT_Z)
+		if (tic64x_get_operand(opcode, tic64x_operand_z, 0))
 			info->fprintf_func(info->stream, "!");
 		else
 			info->fprintf_func(info->stream, " ");
 
-		switch (opcode >> TIC64X_SHIFT_CREG) {
+		switch (tic64x_get_operand(opcode, tic64x_operand_creg, 0)) {
 		case 1:
 			info->fprintf_func(info->stream, "B0");
 			break;
@@ -139,13 +139,17 @@ print_insn(struct tic64x_op_template *templ, uint32_t opcode,
 			 * the side of processor to use regs / execute on
 			 * through 'y' bit */
 
-			if (opcode & TIC64X_BIT_UNITNO) {
+			if (tic64x_get_operand(opcode, tic64x_operand_y, 0)) {
 				unit_no = '2';
 			} else {
 				unit_no = '1';
 			}
 		} else if (templ->flags & TIC64X_OP_SIDE) {
-			unit_no = (opcode & TIC64X_BIT_SIDE) ? '2' : '1';
+			if (tic64x_get_operand(opcode, tic64x_operand_s, 0)) {
+				unit_no = '1';
+			} else {
+				unit_no = '0';
+			}
 		} else {
 			fprintf(stderr, "tic64x print_insn: instruction with "
 				"no fixed unit, but not side bit?\n");
@@ -168,7 +172,7 @@ print_insn(struct tic64x_op_template *templ, uint32_t opcode,
 				"memory access but not dest/side bit?");
 			memnum = '?';
 		} else {
-			if (opcode & TIC64X_BIT_SIDE) {
+			if (tic64x_get_operand(opcode, tic64x_operand_s, 0)) {
 				memnum = '2';
 			} else {
 				memnum = '1';
@@ -180,7 +184,8 @@ print_insn(struct tic64x_op_template *templ, uint32_t opcode,
 	}
 
 	/* Cross-path? */
-	if (templ->flags & TIC64X_OP_USE_XPATH && opcode & TIC64X_BIT_XPATH)
+	if (templ->flags & TIC64X_OP_USE_XPATH &&
+				tic64x_get_operand(opcode, tic64x_operand_x, 0))
 		xpath = 'X';
 	else
 		xpath = ' ';
