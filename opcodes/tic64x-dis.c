@@ -85,7 +85,7 @@ void
 print_insn(struct tic64x_op_template *templ, uint32_t opcode,
 				struct disassemble_info *info)
 {
-	int i, j;
+	int i, j, z, creg;
 	char unit, unit_no, tchar, memnum, xpath;
 
 	/* All instructions have 'p' bit AFAIK */
@@ -97,15 +97,17 @@ print_insn(struct tic64x_op_template *templ, uint32_t opcode,
 		info->fprintf_func(info->stream, "  ");
 
 	/* Conditional? */
-	if (templ->flags & TIC64X_OP_COND) {
+	z = tic64x_get_operand(opcode, tic64x_operand_z, 0);
+	creg = tic64x_get_operand(opcode, tic64x_operand_creg, 0);
+	if (templ->flags & TIC64X_OP_COND && z && creg) {
 		info->fprintf_func(info->stream, "[");
 
-		if (tic64x_get_operand(opcode, tic64x_operand_z, 0))
+		if (z)
 			info->fprintf_func(info->stream, "!");
 		else
 			info->fprintf_func(info->stream, " ");
 
-		switch (tic64x_get_operand(opcode, tic64x_operand_creg, 0)) {
+		switch (creg) {
 		case 1:
 			info->fprintf_func(info->stream, "B0");
 			break;
