@@ -12,7 +12,7 @@
 #define TXTOPERAND_CAN_XPATH(insn, type) 				\
 		((((insn)->templ->flags & TIC64X_OP_XPATH_SRC2) &&	\
 					(type) == tic64x_optxt_srcreg2) ||\
-		(!(insn->templ->flags & TIC64X_OP_XPATH_SRC2) &&	\
+		(!((insn)->templ->flags & TIC64X_OP_XPATH_SRC2) &&	\
 					(type) == tic64x_optxt_srcreg1))
 
 #define abort_no_operand(insn, type)					\
