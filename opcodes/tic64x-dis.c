@@ -164,9 +164,9 @@ print_insn(struct tic64x_op_template *templ, uint32_t opcode,
 			}
 		} else if (templ->flags & TIC64X_OP_SIDE) {
 			if (tic64x_get_operand(opcode, tic64x_operand_s, 0)) {
-				unit_no = '1';
+				unit_no = '2';
 			} else {
-				unit_no = '0';
+				unit_no = '1';
 			}
 		} else {
 			fprintf(stderr, "tic64x print_insn: instruction with "
