@@ -211,9 +211,13 @@ print_insn(struct tic64x_op_template *templ, uint32_t opcode,
 }
 
 void
-print_op_none(struct tic64x_op_template *t, uint32_t opcode,
-		struct disassemble_info *info, enum tic64x_text_operand type)
+print_op_none(struct tic64x_op_template *t ATTRIBUTE_UNUSED,
+		uint32_t opcode ATTRIBUTE_UNUSED,
+		struct disassemble_info *info ATTRIBUTE_UNUSED,
+		enum tic64x_text_operand type ATTRIBUTE_UNUSED)
 {
+
+	return;
 }
 
 void
