@@ -345,6 +345,36 @@ void
 print_op_register(struct tic64x_op_template *t, uint32_t opcode,
 		struct disassemble_info *info, enum tic64x_text_operand type)
 {
+	enum tic64x_operand_type t2;
+	int regnum, side;
+	char finalstr[16];
+
+	if (type == tic64x_optxt_dstreg) {
+		t2 = tic64x_operand_dstreg;
+	} else if (type == tic64x_optxt_srcreg1) {
+		t2 = tic64x_operand_srcreg1;
+	} else if (type == tic64x_optxt_srcreg2) {
+		t2 = tic64x_operand_srcreg2;
+	} else {
+		fprintf(stderr, "tic64x print_op_register called with invalid "
+				"operand type\n");
+		info->fprintf_func(info->stream,"%"OPERAND_LENGTH_FORMAT"s","");
+		return;
+	}
+
+	if (!(t->flags & TIC64X_OP_SIDE)) {
+		fprintf(stderr, "tic64x print_op_register: \"%s\" has no "
+					"side bit?", t->mnemonic);
+		info->fprintf_func(info->stream,"%"OPERAND_LENGTH_FORMAT"s","");
+		return;
+	}
+
+	regnum = tic64x_get_operand(opcode, t2, 0);
+	side = tic64x_get_operand(opcode, tic64x_operand_s, 0);
+
+	snprintf(finalstr, 15, "%c%d", (side) ? 'B' : 'A', regnum);
+	info->fprintf_func(info->stream, "%"OPERAND_LENGTH_FORMAT"s", finalstr);
+	return;
 }
 
 void
