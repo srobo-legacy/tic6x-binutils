@@ -7,8 +7,6 @@
 
 #define UNUSED(x) ((x) = (x))
 
-#define OPERAND_LENGTH_FORMAT "-15"
-
 #define TXTOPERAND_CAN_XPATH(templ, type)				\
 		((((templ)->flags & TIC64X_OP_XPATH_SRC2) &&		\
 					(type) == tic64x_optxt_srcreg2) ||\
@@ -20,8 +18,8 @@ static void print_insn(struct tic64x_op_template *templ, uint32_t opcode,
 					struct disassemble_info *info);
 
 typedef void (op_printer) (struct tic64x_op_template *t,
-				uint32_t opcode, struct disassemble_info *i,
-				enum tic64x_text_operand type);
+				uint32_t opcode, enum tic64x_text_operand type,
+				char *buffer, int len);
 
 op_printer print_op_none;
 op_printer print_op_memaccess;
@@ -218,8 +216,16 @@ print_insn(struct tic64x_op_template *templ, uint32_t opcode,
 	for (i = 0; i < TIC64X_MAX_TXT_OPERANDS; i++) {
 		for (j = 0; operand_printers[j].print != NULL; j++) {
 			if (operand_printers[j].type == templ->textops[i]) {
-				operand_printers[j].print(templ, opcode, info,
-							templ->textops[i]);
+				operand_printers[j].print(templ, opcode,
+							templ->textops[i],
+							finalstr, 15);
+				if (i == TIC64X_MAX_TXT_OPERANDS-1) {
+					info->fprintf_func(info->stream, "%s",
+								finalstr);
+				} else {
+					info->fprintf_func(info->stream,"%-15s",
+								finalstr);
+				}
 				break;
 			}
 		}
@@ -234,21 +240,21 @@ print_insn(struct tic64x_op_template *templ, uint32_t opcode,
 void
 print_op_none(struct tic64x_op_template *t ATTRIBUTE_UNUSED,
 		uint32_t opcode ATTRIBUTE_UNUSED,
-		struct disassemble_info *info ATTRIBUTE_UNUSED,
-		enum tic64x_text_operand type ATTRIBUTE_UNUSED)
+		enum tic64x_text_operand type ATTRIBUTE_UNUSED,
+		char *buffer, int len)
 {
 
+	snprintf(buffer, len, "%C", '\0');
 	return;
 }
 
 void
 print_op_memaccess(struct tic64x_op_template *t, uint32_t opcode,
-		struct disassemble_info *info,
-		enum tic64x_text_operand type ATTRIBUTE_UNUSED)
+		enum tic64x_text_operand type ATTRIBUTE_UNUSED,
+		char *buffer, int len)
 {
 	const char *pre, *regchar, *post, *offs;
 	int addrmode, basereg, offset, scale, scalenum, y;
-	char finalstr[16];
 	char offsetstr[8];
 	char regno[4];
 
@@ -352,23 +358,21 @@ print_op_memaccess(struct tic64x_op_template *t, uint32_t opcode,
 
 	/* And I think that's it */
 	if (*offsetstr == 0) {
-		snprintf(finalstr, 15, "*%s%s%s%s,", pre, regchar, regno, post);
+		snprintf(buffer, len, "*%s%s%s%s,", pre, regchar, regno, post);
 	} else {
-		snprintf(finalstr, 15, "*%s%s%s%s[%s],", pre, regchar, regno,
+		snprintf(buffer, len, "*%s%s%s%s[%s],", pre, regchar, regno,
 							post, offsetstr);
 	}
-
-	info->fprintf_func(info->stream, "%"OPERAND_LENGTH_FORMAT"s", finalstr);
 	return;
 }
 
 void
 print_op_register(struct tic64x_op_template *t, uint32_t opcode,
-		struct disassemble_info *info, enum tic64x_text_operand type)
+		enum tic64x_text_operand type, char *buffer, int len)
 {
 	enum tic64x_operand_type t2;
 	int regnum, side, x, y;
-	char finalstr[16], unitchar;
+	char unitchar;
 
 	if (type == tic64x_optxt_dstreg) {
 		t2 = tic64x_operand_dstreg;
@@ -379,14 +383,14 @@ print_op_register(struct tic64x_op_template *t, uint32_t opcode,
 	} else {
 		fprintf(stderr, "tic64x print_op_register called with invalid "
 				"operand type\n");
-		info->fprintf_func(info->stream,"%"OPERAND_LENGTH_FORMAT"s","");
+		snprintf(buffer, len, "%C", '\0');
 		return;
 	}
 
 	if (!(t->flags & TIC64X_OP_SIDE)) {
 		fprintf(stderr, "tic64x print_op_register: \"%s\" has no "
 					"side bit?", t->mnemonic);
-		info->fprintf_func(info->stream,"%"OPERAND_LENGTH_FORMAT"s","");
+		snprintf(buffer, len, "%C", '\0');
 		return;
 	}
 
@@ -465,18 +469,17 @@ print_op_register(struct tic64x_op_template *t, uint32_t opcode,
 	}
 	/* If there's a better way, lack of coffee prevents me seeing it */
 
-	snprintf(finalstr, 15, "%c%d", unitchar, regnum);
-	info->fprintf_func(info->stream, "%"OPERAND_LENGTH_FORMAT"s", finalstr);
+	snprintf(buffer, len, "%c%d", unitchar, regnum);
 	return;
 }
 
 void
 print_op_dwreg(struct tic64x_op_template *t, uint32_t opcode,
-		struct disassemble_info *info, enum tic64x_text_operand type)
+		enum tic64x_text_operand type, char *buffer, int len)
 {
 	enum tic64x_operand_type t2;
 	int regnum, side, y, i;
-	char unitchar, finalstr[16];
+	char unitchar;
 
 	t2 = tic64x_operand_invalid;
 	unitchar = '?';
@@ -496,14 +499,14 @@ print_op_dwreg(struct tic64x_op_template *t, uint32_t opcode,
 	if (i == TIC64X_MAX_OPERANDS) {
 		fprintf(stderr, "tic64x print_op_dwreg: \"%s\" has no matching "
 				"dword reg operand\n", t->mnemonic);
-		info->fprintf_func(info->stream,"%"OPERAND_LENGTH_FORMAT"s","");
+		snprintf(buffer, len, "%C", '\0');
 		return;
 	}
 
 	if (!(t->flags & TIC64X_OP_SIDE)) {
 		fprintf(stderr, "tic64x print_op_register: \"%s\" has no "
 					"side bit?", t->mnemonic);
-		info->fprintf_func(info->stream,"%"OPERAND_LENGTH_FORMAT"s","");
+		snprintf(buffer, len, "%C", '\0');
 		return;
 	}
 
@@ -550,19 +553,16 @@ print_op_dwreg(struct tic64x_op_template *t, uint32_t opcode,
 		}
 	}
 
-	snprintf(finalstr, 15, "%c%d:%c%d", unitchar, regnum, unitchar,
-								regnum+1);
-	info->fprintf_func(info->stream, "%"OPERAND_LENGTH_FORMAT"s", finalstr);
+	snprintf(buffer, len, "%c%d:%c%d", unitchar, regnum, unitchar,regnum+1);
 	return;
 }
 
 void
 print_op_constant(struct tic64x_op_template *t, uint32_t opcode,
-		struct disassemble_info *info, enum tic64x_text_operand type)
+		enum tic64x_text_operand type, char *buffer, int len)
 {
 	enum tic64x_operand_type t2;
 	int i, val;
-	char finalstr[16];
 
 	/* There are multiple constant operand forms... */
 	t2 = tic64x_operand_invalid;
@@ -579,7 +579,7 @@ print_op_constant(struct tic64x_op_template *t, uint32_t opcode,
 	if (i == TIC64X_MAX_OPERANDS) {
 		fprintf(stderr, "tic64x print_op_constant: \"%s\" has no "
 				"matching dword reg operand\n", t->mnemonic);
-		info->fprintf_func(info->stream,"%"OPERAND_LENGTH_FORMAT"s","");
+		snprintf(buffer, len, "%C", '\0');
 		return;
 	}
 
@@ -587,7 +587,6 @@ print_op_constant(struct tic64x_op_template *t, uint32_t opcode,
 				(type == tic64x_optxt_sconstant) ? 1 : 0);
 
 	/* Print all operands as hex, limit to 32 bits of FFFF... */
-	snprintf(finalstr, 15, "0x%X", val & 0xFFFFFFFF);
-	info->fprintf_func(info->stream, "%"OPERAND_LENGTH_FORMAT"s", finalstr);
+	snprintf(buffer, len, "0x%X", val & 0xFFFFFFFF);
 	return;
 }
