@@ -7,7 +7,7 @@
 
 #define UNUSED(x) ((x) = (x))
 
-#define OPERAND_LENGTH_FORMAT "-10"
+#define OPERAND_LENGTH_FORMAT "-15"
 
 static void print_insn(struct tic64x_op_template *templ, uint32_t opcode,
 					struct disassemble_info *info);
