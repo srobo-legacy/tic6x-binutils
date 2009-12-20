@@ -9,6 +9,13 @@
 
 #define OPERAND_LENGTH_FORMAT "-15"
 
+#define TXTOPERAND_CAN_XPATH(templ, type)				\
+		((((templ)->flags & TIC64X_OP_XPATH_SRC2) &&		\
+					(type) == tic64x_optxt_srcreg2) ||\
+		(!((templ)->flags & TIC64X_OP_XPATH_SRC2) &&	\
+					(type) == tic64x_optxt_srcreg1))
+
+
 static void print_insn(struct tic64x_op_template *templ, uint32_t opcode,
 					struct disassemble_info *info);
 
