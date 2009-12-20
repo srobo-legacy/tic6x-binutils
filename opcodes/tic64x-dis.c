@@ -342,7 +342,7 @@ print_op_memaccess(struct tic64x_op_template *t, uint32_t opcode,
 
 	/* What kind of offset? */
 	if (addrmode & TIC64X_ADDRMODE_REGISTER) {
-		if (scale) {
+		if (scale && scalenum != 1) {
 			snprintf(offsetstr, 7, "%s%d*%d", regchar, offset,
 								scalenum);
 		} else {
