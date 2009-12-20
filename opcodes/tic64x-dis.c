@@ -460,6 +460,86 @@ void
 print_op_dwreg(struct tic64x_op_template *t, uint32_t opcode,
 		struct disassemble_info *info, enum tic64x_text_operand type)
 {
+	enum tic64x_operand_type t2;
+	int regnum, side, y, i;
+	char unitchar, finalstr[16];
+
+	t2 = tic64x_operand_invalid;
+	unitchar = '?';
+
+	for (i = 0; i < TIC64X_MAX_OPERANDS; i++) {
+		if ((t->operands[i] == tic64x_operand_dwdst4 &&
+						type == tic64x_optxt_dwdst) ||
+		    (t->operands[i] == tic64x_operand_dwdst5 &&
+						type == tic64x_optxt_dwdst) ||
+		    (t->operands[i] == tic64x_operand_dwsrc &&
+						type == tic64x_optxt_dwsrc)) {
+			t2 = t->operands[i];
+			break;
+		}
+	}
+
+	if (i == TIC64X_MAX_OPERANDS) {
+		fprintf(stderr, "tic64x print_op_dwreg: \"%s\" has no matching "
+				"dword reg operand\n", t->mnemonic);
+		info->fprintf_func(info->stream,"%"OPERAND_LENGTH_FORMAT"s","");
+		return;
+	}
+
+	if (!(t->flags & TIC64X_OP_SIDE)) {
+		fprintf(stderr, "tic64x print_op_register: \"%s\" has no "
+					"side bit?", t->mnemonic);
+		info->fprintf_func(info->stream,"%"OPERAND_LENGTH_FORMAT"s","");
+		return;
+	}
+
+	regnum = tic64x_get_operand(opcode, t2, 0);
+	side = tic64x_get_operand(opcode, tic64x_operand_s, 0);
+	y = tic64x_get_operand(opcode, tic64x_operand_y, 0);
+
+	/* Delicious curly braces... */
+	if (!(t->flags & TIC64X_OP_UNITNO)) {
+		/* insn doesn't have y bit, so ignore that */
+		if (t->flags & TIC64X_OP_FIXED_UNITNO) {
+			/* insn fixes what side it executes on... */
+			if (t->flags & TIC64X_OP_FIXED_UNIT2) {
+				unitchar = 'B';
+			} else {
+				unitchar = 'A';
+			}
+		} else if (t->flags & TIC64X_OP_SIDE) {
+			/* We can use side bit to determine where this is read
+			 * from. AFAIK you can't read dw reg's over xpath,
+			 * so we can ignore that situation */
+			if (side) {
+				unitchar = 'B';
+			} else {
+				unitchar = 'A';
+			}
+		}
+	} else {
+		/* We use a y bit to specify which side we execute on (s says
+		 * where result is stored); so if we're a src, use y, if dst,
+		 * use s */
+		if (type == tic64x_optxt_dwsrc) {
+			if (y) {
+				unitchar = 'B';
+			} else {
+				unitchar = 'A';
+			}
+		} else {
+			if (side) {
+				unitchar = 'B';
+			} else {
+				unitchar = 'A';
+			}
+		}
+	}
+
+	snprintf(finalstr, 15, "%c%d:%c%d", unitchar, regnum, unitchar,
+								regnum+1);
+	info->fprintf_func(info->stream, "%"OPERAND_LENGTH_FORMAT"s", finalstr);
+	return;
 }
 
 void
