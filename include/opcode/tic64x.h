@@ -117,7 +117,7 @@ extern struct tic64x_op_template tic64x_opcodes[];
 extern struct tic64x_register tic64x_regs[];
 
 /* get/set calls for actual operands. Return null on success, or error string */
-char *tic64x_set_operand(uint32_t *opcode, enum tic64x_operand_type type,
+const char *tic64x_set_operand(uint32_t *opcode, enum tic64x_operand_type type,
 								 int value);
 int tic64x_get_operand(uint32_t opcode,  enum tic64x_operand_type t, int signx);
 

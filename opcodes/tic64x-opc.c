@@ -61,7 +61,7 @@ static struct {
 {	29,	3	}	/* creg */
 };
 
-char *
+const char *
 tic64x_set_operand(uint32_t *op, enum tic64x_operand_type type, int value)
 {
 	uint32_t opcode;
