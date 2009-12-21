@@ -62,8 +62,9 @@ print_insn_tic64x(bfd_vma addr, struct disassemble_info *info)
 	opcode = bfd_getl32(opbuf);
 
 	for (templ = tic64x_opcodes; templ->mnemonic; templ++) {
-		if ((opcode & templ->opcode_mask) == templ->opcode)
+		if ((opcode & templ->opcode_mask) == templ->opcode) {
 			break;
+		}
 	}
 
 	if (templ->mnemonic == NULL) {
