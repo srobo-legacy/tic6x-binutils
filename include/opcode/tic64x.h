@@ -2,6 +2,7 @@
 
 #ifndef _OPCODE_TIC64X_H_
 #define _OPCODE_TIC64X_H_
+#include <stdint.h>
 
 struct tic64x_register {
 	char *name;
