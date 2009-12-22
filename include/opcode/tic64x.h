@@ -135,4 +135,66 @@ int tic64x_get_operand(uint32_t opcode,  enum tic64x_operand_type t, int signx);
 				(o) & TIC64X_OP_UNIT_S ? 'S' :		\
 				'M')
 
+
+
+/* 16 bit opcode handlers - Opcode and mask for identifying when disassembling,
+ * and scale-up / scale-down routines for munging between 16/32 bit opcode
+ * formats. There's no good way to match a 32 bit instruction against a 16 bit
+ * format, XXX so opcode table will need to store an index corresponding to
+ * the compact form */
+
+/* Names taken from ti spec */
+enum tic64x_compact_fmt {
+	tic64x_cfmt_invalid = 0,
+	tic64x_cfmt_doff4,
+	tic64x_cfmt_doff4dw,
+	tic64x_cfmt_dind,
+	tic64x_cfmt_dinddw,
+	tic64x_cfmt_dinc,
+	tic64x_cfmt_dincdw,
+	tic64x_cfmt_ddec,
+	tic64x_cfmt_ddecdw,
+	tic64x_cfmt_dstk,
+	tic64x_cfmt_dx2op,
+	tic64x_cfmt_dx5,
+	tic64x_cfmt_dx5p,
+	tic64x_cfmt_dx1,
+	tic64x_cfmt_dpp,
+	tic64x_cfmt_l3,
+	tic64x_cfmt_l3i,
+	tic64x_cfmt_ltbd, /* Looks like that's "To be decided..." */
+	tic64x_cfmt_l2c,
+	tic64x_cfmt_lx5,
+	tic64x_cfmt_lx3c,
+	tic64x_cfmt_lx1c,
+	tic64x_cfmt_lx1,
+	tic64x_cfmt_m3,
+	tic64x_cfmt_sbs7,
+	tic64x_cfmt_sbu8,
+	tic64x_cfmt_scs10,
+	tic64x_cfmt_sbs7c,
+	tic64x_cfmt_sbu8c,
+	tic64x_cfmt_s3,
+	tic64x_cfmt_s3i,
+	tic64x_cfmt_smvk8,
+	tic64x_cfmt_ssh5,
+	tic64x_cfmt_s2sh,
+	tic64x_cfmt_sc5,
+	tic64x_cfmt_s2ext,
+	tic64x_cfmt_sx2op,
+	tic64x_cfmt_sx5,
+	tic64x_cfmt_sx1,
+	tic64x_cfmt_lsd_mvto,
+	tic64x_cfmt_lsd_mvfr,
+	tic64x_cfmt_lsd_x1c,
+	tic64x_cfmt_lsd_x1,
+	tic64x_cfmt_uspl,
+	tic64x_cfmt_uspldr,
+	tic64x_cfmt_uspk,
+	tic64x_cfmt_uspm,
+	tic64x_cfmt_unop
+};
+
+
+
 #endif /* _OPCODE_TIC64X_H_ */
