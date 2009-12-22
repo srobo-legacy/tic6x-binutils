@@ -1,5 +1,6 @@
 /* Copyright blah */
 
+#include <errno.h>
 #include "sysdep.h"
 #include "dis-asm.h"
 #include "opcode/tic64x.h"
@@ -15,7 +16,8 @@
 
 
 static void print_insn(struct tic64x_op_template *templ, uint32_t opcode,
-					struct disassemble_info *info);
+					struct disassemble_info *info,
+					int double_bar);
 
 typedef void (op_printer) (struct tic64x_op_template *t,
 				uint32_t opcode, enum tic64x_text_operand type,
@@ -42,60 +44,125 @@ struct {
 { tic64x_optxt_sconstant,	print_op_constant	}
 };
 
-bfd_vma prev_dis_addr = -1;
-uint32_t prev_dis_opcode = 0;
+struct tic64x_disasm_priv {
+	bfd_vma packet_start;
+	bfd_vma next_packet;
+	uint32_t compact_header; /* Zero on not-compact, nz otherwise */
+};
 
 int
 print_insn_tic64x(bfd_vma addr, struct disassemble_info *info)
 {
 	struct tic64x_op_template *templ;
+	struct tic64x_disasm_priv *priv;
 	bfd_byte opbuf[4];
 	uint32_t opcode;
-	int ret;
+	int ret, i;
 
-	ret = info->read_memory_func(addr, opbuf, 4, info);
-	if (ret) {
-		info->memory_error_func(ret, addr, info);
-		return -1;
+	opcode = 0;
+
+	if (!info->private_data) {
+		priv = malloc(sizeof(struct tic64x_disasm_priv));
+		info->private_data = priv;
+		if (!info->private_data) {
+			info->memory_error_func(ENOMEM, addr, info);
+			return -1;
+		}
+
+		priv->packet_start = -1;
+		priv->next_packet = 0;
+		priv->compact_header = 0;
+	} else {
+		priv = info->private_data;
 	}
 
-	opcode = bfd_getl32(opbuf);
+	if (addr >= priv->next_packet) {
+		priv->packet_start = addr;
+		priv->compact_header = 0;
 
-	for (templ = tic64x_opcodes; templ->mnemonic; templ++) {
-		if ((opcode & templ->opcode_mask) == templ->opcode) {
-			break;
+		/* Firstly, are we compact? */
+		ret = info->read_memory_func(addr + 28, opbuf, 4, info);
+		if (!ret) {
+			opcode = bfd_getl32(opbuf);
+
+			if ((opcode & 0xE0000000) == 0xE0000000) {
+				priv->next_packet = addr + 32;
+				priv->compact_header = opcode;
+			}
+		}
+
+		/* If not compact search for end of p bits */
+		if (priv->compact_header == 0) {
+			/* We need to search for end of p bits */
+			for (i = 0; i < 8; i++) {
+				ret = info->read_memory_func(addr + (i * 4),
+								opbuf, 4, info);
+
+				if (ret && i == 0) {
+					info->memory_error_func(ret, addr,info);
+					return -1;
+				} else if (ret) {
+					i--;	/* Last insn in packet is
+						 * wherever the last valid
+						 * opcode we read was */
+					break;
+				}
+
+				opcode = bfd_getl32(opbuf);
+				if (!tic64x_get_operand(opcode,
+							tic64x_operand_p, 0)) {
+					priv->next_packet = addr + (i * 4) + 4;
+					break;
+				}
+			}
+
+			priv->next_packet = addr + (i * 4) + 4;
 		}
 	}
 
-	if (templ->mnemonic == NULL) {
-		info->fprintf_func(info->stream, "????");
-		prev_dis_addr = -1;
-		prev_dis_opcode = 0;
-		return 4;
+	/* Actually disassemble something */
+	ret = info->read_memory_func(addr, opbuf, 4, info);
+	if (ret) {
+		info->memory_error_func(ret, addr,info);
+		return -1;
+	}
+	opcode = bfd_getl32(opbuf);
+
+	if (priv->compact_header) {
+		info->fprintf_func(info->stream, "Bee attack!");
+	} else {
+		/* Find a template that matches and print */
+		for (templ = tic64x_opcodes; templ->mnemonic; templ++) {
+			if ((opcode & templ->opcode_mask) == templ->opcode) {
+				break;
+			}
+		}
+
+		if (templ->mnemonic == NULL) {
+			info->fprintf_func(info->stream, "????");
+		} else {
+			print_insn(templ, opcode, info,
+						(addr != priv->packet_start));
+		}
 	}
 
-	print_insn(templ, opcode, info);
-	prev_dis_addr = addr;
-	prev_dis_opcode = opcode;
-	return 4;
+	return 4; /* XXX - implement with compact header cruft */
 }
 
 void
 print_insn(struct tic64x_op_template *templ, uint32_t opcode,
-				struct disassemble_info *info)
+		struct disassemble_info *info, int double_bar)
 {
 	const char *tchar, *memnum, *xpath;
 	int i, j, z, creg;
 	char unit, unit_no;
 	char finalstr[16];
 
-	/* All instructions have 'p' bit AFAIK */
-	/* Did the _previous_ insn have it set though? Immense kludge. */
-	if (tic64x_get_operand(prev_dis_opcode, tic64x_operand_p, 0)
-			&& prev_dis_addr != (unsigned int)-1)
+	if (double_bar) {
 		info->fprintf_func(info->stream, "||");
-	else
+	} else {
 		info->fprintf_func(info->stream, "  ");
+	}
 
 	/* Conditional? */
 	z = tic64x_get_operand(opcode, tic64x_operand_z, 0);
