@@ -10,6 +10,9 @@ struct tic64x_register {
 	int num;
 };
 
+/* Caution - this enum is used as an index to a table in tic64x-opc.c, if
+ * adding a new operand type or changing ordering, also modify operand
+ * position/size table to reflect changes. */
 enum tic64x_operand_type {
 	tic64x_operand_invalid = 0,
 	tic64x_operand_addrmode,		/* Addressing mode field */
@@ -143,7 +146,9 @@ int tic64x_get_operand(uint32_t opcode,  enum tic64x_operand_type t, int signx);
  * format, XXX so opcode table will need to store an index corresponding to
  * the compact form */
 
-/* Names taken from ti spec */
+/* Names taken from ti spec. Caution - this enum is used to index a table
+ * in tic64x-opc.c, if making a change here in ordering or adding a new fmt,
+ * make sure these changes reflect in compact opcode table. */
 enum tic64x_compact_fmt {
 	tic64x_cfmt_invalid = 0,
 	tic64x_cfmt_doff4,
