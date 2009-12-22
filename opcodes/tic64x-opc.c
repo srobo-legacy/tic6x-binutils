@@ -598,4 +598,11 @@ struct tic64x_op_template tic64x_opcodes[] = {
 		tic64x_operand_invalid
 	}
 }
-};
+}; /* End of main opcode table */
+
+/* Compact instructions are made up of twisty turny formats, none quite alike.
+ * Rather than beating faces against keyboards and trying to have some generic
+ * way of converting a compact back to a large instruction, which would no doubt
+ * lead to a million and one flags, instead grow a table of compact opcodes and
+ * their masks, and a set of conversion routines for each different format.
+ * Unpleasent, but then again, so are these instruction formats. */
