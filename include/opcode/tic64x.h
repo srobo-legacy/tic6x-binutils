@@ -152,13 +152,9 @@ int tic64x_get_operand(uint32_t opcode,  enum tic64x_operand_type t, int signx);
 enum tic64x_compact_fmt {
 	tic64x_cfmt_invalid = 0,
 	tic64x_cfmt_doff4,
-	tic64x_cfmt_doff4dw,
 	tic64x_cfmt_dind,
-	tic64x_cfmt_dinddw,
 	tic64x_cfmt_dinc,
-	tic64x_cfmt_dincdw,
 	tic64x_cfmt_ddec,
-	tic64x_cfmt_ddecdw,
 	tic64x_cfmt_dstk,
 	tic64x_cfmt_dx2op,
 	tic64x_cfmt_dx5,
