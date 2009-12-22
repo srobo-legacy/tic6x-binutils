@@ -196,6 +196,11 @@ enum tic64x_compact_fmt {
 	tic64x_cfmt_unop
 };
 
-
+struct tic64x_compact_fmt {
+	uint16_t opcode;
+	uint16_t opcode_mask;
+	int (scale_down) (uint32_t opcode, uint16_t *out);
+	int (scale_up) (uint16_t opcode, uint32_t *hdr, uint32_t *out_opcode);
+};
 
 #endif /* _OPCODE_TIC64X_H_ */
