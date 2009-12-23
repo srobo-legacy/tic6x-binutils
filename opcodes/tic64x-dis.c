@@ -54,12 +54,14 @@ int
 print_insn_tic64x(bfd_vma addr, struct disassemble_info *info)
 {
 	struct tic64x_op_template *templ;
+	struct tic64x_compact_table *ctable;
 	struct tic64x_disasm_priv *priv;
 	bfd_byte opbuf[4];
 	uint32_t opcode;
-	int ret, i;
+	int ret, i, sz;
 
 	opcode = 0;
+	sz = 4;
 
 	if (!info->private_data) {
 		priv = malloc(sizeof(struct tic64x_disasm_priv));
@@ -129,24 +131,59 @@ print_insn_tic64x(bfd_vma addr, struct disassemble_info *info)
 	opcode = bfd_getl32(opbuf);
 
 	if (priv->compact_header) {
-		info->fprintf_func(info->stream, "Bee attack!");
-	} else {
-		/* Find a template that matches and print */
-		for (templ = tic64x_opcodes; templ->mnemonic; templ++) {
-			if ((opcode & templ->opcode_mask) == templ->opcode) {
-				break;
-			}
-		}
+		/* Compact packet; are we a compact instruction? */
 
-		if (templ->mnemonic == NULL) {
-			info->fprintf_func(info->stream, "????");
-		} else {
-			print_insn(templ, opcode, info,
-						(addr != priv->packet_start));
+		i = priv->packet_start - addr;
+		i /= 4;
+		i = 1 << (i + 21);	/* Layout field bit for this word */
+
+		if (priv->compact_header & i) {
+			/* Compact; try and scale up */
+			opcode = bfd_getl16(opbuf);
+			for (ctable = tic64x_compact_formats; ctable->scale_up;
+								ctable++) {
+				if ((opcode & ctable->opcode_mask)
+						== ctable->opcode) {
+					/* We win; joy  */
+					ret = ctable->scale_up(opcode,
+							&priv->compact_header,
+							&opcode);
+					if (ret) {
+						fprintf(stderr, "Error scaling "
+							"16 bit instruction: %s"
+							, strerror(ret));
+						return -1;
+					}
+
+					break;
+				}
+			}
+
+			if (!ctable->scale_up) {
+				/* We went through compact opcode table, but
+				 * didn't find the opcode to match this one */
+				info->fprintf_func(info->stream, "????");
+				return 2;
+			}
+
+			sz = 2;
 		}
 	}
 
-	return 4; /* XXX - implement with compact header cruft */
+	/* Find a template that matches and print */
+	for (templ = tic64x_opcodes; templ->mnemonic; templ++) {
+		if ((opcode & templ->opcode_mask) == templ->opcode) {
+			break;
+		}
+	}
+
+	if (templ->mnemonic == NULL) {
+		info->fprintf_func(info->stream, "????");
+	} else {
+		print_insn(templ, opcode, info, (addr != priv->packet_start));
+	}
+
+	return sz;
 }
 
 void
