@@ -457,6 +457,8 @@ print_op_memaccess(struct tic64x_op_template *t, uint32_t opcode,
 	} else { /* Constant */
 		if (offset == 0) {
 			snprintf(offsetstr, 7, "%c", 0);
+			/* Also, don't print '+' at the front */
+			pre = "";
 		} else if (scale) {
 			snprintf(offsetstr, 7, "%d", offset * scalenum);
 		} else {
