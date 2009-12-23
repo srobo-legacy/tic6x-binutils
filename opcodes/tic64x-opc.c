@@ -67,13 +67,6 @@ tic64x_set_operand(uint32_t *op, enum tic64x_operand_type type, int value)
 {
 	uint32_t opcode;
 
-	/* Is it already set? */
-	opcode = *op;
-	opcode >>= operand_positions[type].position;
-	opcode &= ((1 << operand_positions[type].size) - 1);
-	if (opcode)
-		return "Operand already nonzero";
-
 	if (value < 0) {
 		if (-value >= (1 << operand_positions[type].size)) {
 			return "Operand too large for position";
