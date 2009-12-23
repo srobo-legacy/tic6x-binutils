@@ -146,7 +146,7 @@ print_insn_tic64x(bfd_vma addr, struct disassemble_info *info)
 						== ctable->opcode) {
 					/* We win; joy  */
 					ret = ctable->scale_up(opcode,
-							&priv->compact_header,
+							priv->compact_header,
 							&opcode);
 					if (ret) {
 						fprintf(stderr, "Error scaling "
