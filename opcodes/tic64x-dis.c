@@ -58,7 +58,7 @@ print_insn_tic64x(bfd_vma addr, struct disassemble_info *info)
 	struct tic64x_disasm_priv *priv;
 	bfd_byte opbuf[4];
 	uint32_t opcode;
-	int ret, i, sz;
+	int ret, i, sz, p;
 
 	opcode = 0;
 	sz = 4;
@@ -138,6 +138,10 @@ print_insn_tic64x(bfd_vma addr, struct disassemble_info *info)
 		i = 1 << (i + 21);	/* Layout field bit for this word */
 
 		if (priv->compact_header & i) {
+			i = addr / 2;
+			i = 1 << i;
+			p = (priv->compact_header & i) ? 1 : 0;
+
 			/* Compact; try and scale up */
 			opcode = bfd_getl16(opbuf);
 			for (ctable = tic64x_compact_formats; ctable->scale_up;
@@ -167,7 +171,16 @@ print_insn_tic64x(bfd_vma addr, struct disassemble_info *info)
 			}
 
 			sz = 2;
+			if (p)
+				tic64x_set_operand(&opcode, tic64x_operand_p,1);
 		}
+	}
+
+	/* XXX - doesn't handle parallel breaks in compact insns */
+	if (addr != priv->packet_start) {
+		p = 1;
+	} else {
+		p = 0;
 	}
 
 	/* Find a template that matches and print */
@@ -180,7 +193,7 @@ print_insn_tic64x(bfd_vma addr, struct disassemble_info *info)
 	if (templ->mnemonic == NULL) {
 		info->fprintf_func(info->stream, "????");
 	} else {
-		print_insn(templ, opcode, info, (addr != priv->packet_start));
+		print_insn(templ, opcode, info, p);
 	}
 
 	return sz;
