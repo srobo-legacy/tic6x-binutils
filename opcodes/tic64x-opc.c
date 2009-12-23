@@ -606,3 +606,55 @@ struct tic64x_op_template tic64x_opcodes[] = {
  * lead to a million and one flags, instead grow a table of compact opcodes and
  * their masks, and a set of conversion routines for each different format.
  * Unpleasent, but then again, so are these instruction formats. */
+
+static int bad_scaledown(uint32_t opcode, uint16_t *out);
+static int bad_scaleup(uint16_t opcode, uint32_t *hdr, uint32_t *out_opcode);
+
+struct tic64x_compact_table tic64x_compact_formats[] = {
+{0,		0xFFFF,	bad_scaledown, bad_scaleup},	/* invalid */
+{0x4,		0x406,	bad_scaledown, bad_scaleup},	/* doff4 */
+{0x404,		0xC06,	bad_scaledown, bad_scaleup},	/* dind */
+{0xC04,		0xCC06,	bad_scaledown, bad_scaleup},	/* dinc */
+{0x4C04,	0x4C06,	bad_scaledown, bad_scaleup},	/* ddec */
+{0x8C04,	0x8C06,	bad_scaledown, bad_scaleup},	/* dstk */
+{0x36,		0x47E,	bad_scaledown, bad_scaleup},	/* dx2op */
+{0x436,		0x47E,	bad_scaledown, bad_scaleup},	/* dx5 */
+{0xC77,		0x1C7F,	bad_scaledown, bad_scaleup},	/* dx5p */
+{0x1876,	0x1C7E,	bad_scaledown, bad_scaleup},	/* dx1 */
+{0x77,		0x87F,	bad_scaledown, bad_scaleup},	/* dpp */
+{0,		0x40E,	bad_scaledown, bad_scaleup},	/* l3 */
+{0x400,		0x40E,	bad_scaledown, bad_scaleup},	/* l3i */
+{8,		0x40E,	bad_scaledown, bad_scaleup},	/* ltbd */
+{0x408,		0x40E,	bad_scaledown, bad_scaleup},	/* l2c */
+{0x426,		0x47E,	bad_scaledown, bad_scaleup},	/* lx5 */
+{0x26,		0x147E,	bad_scaledown, bad_scaleup},	/* lx3c */
+{0x1026,	0x147E,	bad_scaledown, bad_scaleup},	/* lx1c */
+{0x1866,	0x1C7E,	bad_scaledown, bad_scaleup},	/* lx1 */
+{0x1E,		0x1E,	bad_scaledown, bad_scaleup},	/* m3 */
+{0xA,		0x3E,	bad_scaledown, bad_scaleup},	/* sbs7 */
+{0xC00A,	0xC03E,	bad_scaledown, bad_scaleup},	/* sbu8 */
+{0x1A,		0x3E,	bad_scaledown, bad_scaleup},	/* scs10 */
+{0x2A,		0x2E,	bad_scaledown, bad_scaleup},	/* sbs7c */
+{0xC02A,	0xC02E,	bad_scaledown, bad_scaleup},	/* sbu8c */
+{0xA,		0x40E,	bad_scaledown, bad_scaleup},	/* s3 */
+{0x40A,		0x40E,	bad_scaledown, bad_scaleup},	/* s3i */
+{0x12,		0x1E,	bad_scaledown, bad_scaleup},	/* smvk8 */
+{0x402,		0x41E,	bad_scaledown, bad_scaleup},	/* ssh5 */
+{0x462,		0x47E,	bad_scaledown, bad_scaleup},	/* s2sh */
+{2,		0x41E,	bad_scaledown, bad_scaleup},	/* sc5 */
+{0x62,		0x47E,	bad_scaledown, bad_scaleup},	/* s2ext */
+{0x2E,		0x47E,	bad_scaledown, bad_scaleup},	/* sx2op */
+{0x42E,		0x47E,	bad_scaledown, bad_scaleup},	/* sx5 */
+{0x186E,	0x1C7E,	bad_scaledown, bad_scaleup},	/* sx1 */
+{0x6E,		0x187E,	bad_scaledown, bad_scaleup},	/* sx1b */
+{6,		0x66,	bad_scaledown, bad_scaleup},	/* lsd_mvto */
+{0x46,		0x66,	bad_scaledown, bad_scaleup},	/* lsd_mvfr */
+{0x866,		0x1C66,	bad_scaledown, bad_scaleup},	/* lsd_x1c */
+{0x1866,	0x1C66,	bad_scaledown, bad_scaleup},	/* lsd_x1 */
+{0xC66,		0xBC7E,	bad_scaledown, bad_scaleup},	/* uspl */
+{0x8C66,	0xBC7E,	bad_scaledown, bad_scaleup},	/* uspldr */
+{0x1C66,	0x3C7E,	bad_scaledown, bad_scaleup},	/* uspk */
+{0x2C66,	0x2C7E,	bad_scaledown, bad_scaleup},	/* uspm */
+/* This should cover spmask and spmaskr, see p670 */
+{0xC6E,		0x1FFF,	bad_scaledown, bad_scaleup}	/* unop */
+};
