@@ -693,6 +693,8 @@ scaleup_doff4(uint16_t opcode, uint32_t hdr, uint32_t *out_opcode)
 	};
 	int dsz, i, reg, base, offs, s, t, sz, ls;
 
+	*out_opcode = 0;
+
 	/* Decompose opcode */
 	dsz = hdr >> 16;
 	dsz &= 7;
