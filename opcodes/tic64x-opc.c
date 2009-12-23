@@ -1,5 +1,6 @@
 /* Copyright blah */
 
+#include <errno.h>
 #include "sysdep.h"
 #include "dis-asm.h"
 #include "opcode/tic64x.h"
@@ -658,3 +659,18 @@ struct tic64x_compact_table tic64x_compact_formats[] = {
 /* This should cover spmask and spmaskr, see p670 */
 {0xC6E,		0x1FFF,	bad_scaledown, bad_scaleup}	/* unop */
 };
+
+int
+bad_scaledown(uint32_t opcode ATTRIBUTE_UNUSED, uint16_t *out ATTRIBUTE_UNUSED)
+{
+
+	return ENODEV;	/*Operation not supported by device; suprisingly right*/
+}
+
+int
+bad_scaleup(uint16_t opcode ATTRIBUTE_UNUSED, uint32_t *hdr ATTRIBUTE_UNUSED,
+		uint32_t *out_opcode ATTRIBUTE_UNUSED)
+{
+
+	return ENODEV;
+}
