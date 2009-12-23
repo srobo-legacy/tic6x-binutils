@@ -716,6 +716,13 @@ scaleup_doff4(uint16_t opcode, uint32_t hdr, uint32_t *out_opcode)
 		base += 16;
 	}
 
+	/* XXX XXX XXX: TI spec says nothing about how to munge the ptr field
+	 * into a base register - however, disassembling an example of theirs
+	 * shows that the ptr field is zero for an instruction that uses reg B4,
+	 * which suggests to me that we just need to offset base by 4. This
+	 * may explode in the future, but the best we have for the moment */
+	base += 4;
+
 	tic64x_set_operand(out_opcode, tic64x_operand_addrmode,
 				TIC64X_ADDRMODE_NOMODIFY |
 				TIC64X_ADDRMODE_OFFSET |
