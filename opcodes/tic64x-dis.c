@@ -624,6 +624,9 @@ print_op_dwreg(struct tic64x_op_template *t, uint32_t opcode,
 	side = tic64x_get_operand(opcode, tic64x_operand_s, 0);
 	y = tic64x_get_operand(opcode, tic64x_operand_y, 0);
 
+	if (t2 == tic64x_operand_dwdst4)
+		regnum <<= 1;
+
 	/* Delicious curly braces... */
 	if (!(t->flags & TIC64X_OP_UNITNO)) {
 		/* insn doesn't have y bit, so ignore that */
