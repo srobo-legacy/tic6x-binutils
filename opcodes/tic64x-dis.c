@@ -359,7 +359,7 @@ print_op_memaccess(struct tic64x_op_template *t, uint32_t opcode,
 		char *buffer, int len)
 {
 	const char *pre, *regchar, *post, *offs;
-	int addrmode, basereg, offset, scale, scalenum, y;
+	int addrmode, basereg, offset, scale, scalenum, y, s;
 	char offsetstr[8];
 	char regno[4];
 
@@ -380,7 +380,8 @@ print_op_memaccess(struct tic64x_op_template *t, uint32_t opcode,
 	scale = tic64x_get_operand(opcode, tic64x_operand_rcoffset, 0);
 
 	/* Memory accesses set destination side with s bit, source regs with
-	 * y bit, which we'll read here. Confirm later TIX64X_OP_UNITNO is set*/
+	 * y bit. Confirm later TIX64X_OP_UNITNO is set*/
+	s = tic64x_get_operand(opcode, tic64x_operand_s, 0);
 	y = tic64x_get_operand(opcode, tic64x_operand_rcoffset, 0);
 
 	/* Pre inc/decrementer, or offset +/- */
@@ -405,7 +406,7 @@ print_op_memaccess(struct tic64x_op_template *t, uint32_t opcode,
 		fprintf(stderr, "tic64x_print_memaccess: \"%s\" has no y bit?",
 								t->mnemonic);
 		regchar = "?";
-	} else if (y) {
+	} else if (s) {
 		regchar = "B";
 	} else {
 		regchar = "A";
