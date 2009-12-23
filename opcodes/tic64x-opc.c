@@ -600,7 +600,7 @@ struct tic64x_op_template tic64x_opcodes[] = {
 }
 }; /* End of main opcode table */
 
-/* Compact instructions are made up of twisty turny formats, none quite alike.
+/* Compact instructions are made up of twisty turny formats, all different.
  * Rather than beating faces against keyboards and trying to have some generic
  * way of converting a compact back to a large instruction, which would no doubt
  * lead to a million and one flags, instead grow a table of compact opcodes and
