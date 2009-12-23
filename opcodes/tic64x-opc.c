@@ -625,6 +625,7 @@ static int bad_scaledown(uint32_t opcode, uint16_t *out);
 static int bad_scaleup(uint16_t opcode, uint32_t hdr, uint32_t *out_opcode);
 
 static int scaleup_doff4(uint16_t opcode, uint32_t hdr, uint32_t *out_opcode);
+static int scaleup_sbs7(uint16_t opcode, uint32_t hdr, uint32_t *out_opcode);
 
 struct tic64x_compact_table tic64x_compact_formats[] = {
 {0,		0xFFFF,	bad_scaledown, bad_scaleup},	/* invalid */
@@ -647,7 +648,7 @@ struct tic64x_compact_table tic64x_compact_formats[] = {
 {0x1026,	0x147E,	bad_scaledown, bad_scaleup},	/* lx1c */
 {0x1866,	0x1C7E,	bad_scaledown, bad_scaleup},	/* lx1 */
 {0x1E,		0x1E,	bad_scaledown, bad_scaleup},	/* m3 */
-{0xA,		0x3E,	bad_scaledown, bad_scaleup},	/* sbs7 */
+{0xA,		0x3E,	bad_scaledown, scaleup_sbs7},	/* sbs7 */
 {0xC00A,	0xC03E,	bad_scaledown, bad_scaleup},	/* sbu8 */
 {0x1A,		0x3E,	bad_scaledown, bad_scaleup},	/* scs10 */
 {0x2A,		0x2E,	bad_scaledown, bad_scaleup},	/* sbs7c */
@@ -797,6 +798,29 @@ scaleup_doff4(uint16_t opcode, uint32_t hdr, uint32_t *out_opcode)
 			break;
 		}
 	}
+
+	return 0;
+}
+
+int
+scaleup_sbs7(uint16_t opcode, uint32_t hdr ATTRIBUTE_UNUSED,
+					uint32_t *out_opcode)
+{
+	int offs, nops, s;
+
+	/* Thankfully only single instruction... */
+
+	*out_opcode = 0;
+	*out_opcode |= 0x120;
+
+	offs = get_operand(opcode, 6, 7, 1); /* Read const field, sign extend */
+	tic64x_set_operand(out_opcode, tic64x_operand_const12, offs);
+	nops = get_operand(opcode, 13, 3, 0);
+	tic64x_set_operand(out_opcode, tic64x_operand_nops, nops);
+	tic64x_set_operand(out_opcode, tic64x_operand_z, 0);
+	tic64x_set_operand(out_opcode, tic64x_operand_creg, 0);
+	s = get_operand(opcode, 0, 1, 0);
+	tic64x_set_operand(out_opcode, tic64x_operand_s, s);
 
 	return 0;
 }
