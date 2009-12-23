@@ -744,7 +744,7 @@ scaleup_doff4(uint16_t opcode, uint32_t hdr, uint32_t *out_opcode)
 		i |= ls;
 		*out_opcode |= sz_codes[i];
 	} else {
-		i = sz;
+		i = ls;
 		i |= (opcode & 0x10) ? 2 : 0; /* non-aligned bit */
 		if (opcode & 0x10) {
 
