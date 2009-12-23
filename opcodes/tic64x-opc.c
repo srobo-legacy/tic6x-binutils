@@ -603,9 +603,11 @@ struct tic64x_op_template tic64x_opcodes[] = {
 static int bad_scaledown(uint32_t opcode, uint16_t *out);
 static int bad_scaleup(uint16_t opcode, uint32_t hdr, uint32_t *out_opcode);
 
+static int scaleup_doff4(uint16_t opcode, uint32_t hdr, uint32_t *out_opcode);
+
 struct tic64x_compact_table tic64x_compact_formats[] = {
 {0,		0xFFFF,	bad_scaledown, bad_scaleup},	/* invalid */
-{0x4,		0x406,	bad_scaledown, bad_scaleup},	/* doff4 */
+{0x4,		0x406,	bad_scaledown, scaleup_doff4},	/* doff4 */
 {0x404,		0xC06,	bad_scaledown, bad_scaleup},	/* dind */
 {0xC04,		0xCC06,	bad_scaledown, bad_scaleup},	/* dinc */
 {0x4C04,	0x4C06,	bad_scaledown, bad_scaleup},	/* ddec */
@@ -666,4 +668,105 @@ bad_scaleup(uint16_t opcode ATTRIBUTE_UNUSED, uint32_t hdr ATTRIBUTE_UNUSED,
 {
 
 	return ENODEV;
+}
+
+int
+scaleup_doff4(uint16_t opcode, uint32_t hdr, uint32_t *out_opcode)
+{
+	uint32_t sz_codes[] = {
+		0x34,		/* stb */
+		0x14,		/* ldbu */
+		0x34,		/* stb */
+		0x24,		/* ldb */
+		0x54,		/* sth */
+		4,		/* ldhu */
+		0x54,		/* sth */
+		0x44,		/* ldh */
+		0x74,		/* stw */
+		0x64,		/* lwd */
+		0x34,		/* stb again */
+		0x24,		/* ldb again */
+		0x154,		/* stnw */
+		0x134,		/* ldnw */
+		0x54,		/* sth again */
+		0x44,		/* ldh again */
+	};
+	int dsz, i, reg, base, offs, s, t, sz, ls;
+
+	/* Decompose opcode */
+	dsz = hdr >> 16;
+	dsz &= 7;
+	s = opcode & 1;
+	ls = (opcode & 8) ? 1 : 0;
+	t = (opcode & 0x1000) ? 1 : 0;
+	sz = (opcode & 0x200) ? 1 : 0;
+	reg = (opcode >> 4) & 7;
+	base = (opcode >> 7) & 3;
+	offs = (opcode >> 13) & 7;
+	offs |= (opcode & 0x800) ? 8 : 0;
+
+	/* Put these operands into 32 bit opcode, which thankfully appears to
+	 * all be the same form, aside from dw access */
+
+	/* If RS bit is set, use high registers */
+	if (hdr & 0x80000) { /* XXX - #define please */
+		reg += 16;
+		base += 16;
+	}
+
+	tic64x_set_operand(out_opcode, tic64x_operand_addrmode,
+				TIC64X_ADDRMODE_NOMODIFY |
+				TIC64X_ADDRMODE_OFFSET |
+				TIC64X_ADDRMODE_PRE |
+				TIC64X_ADDRMODE_POS);
+	tic64x_set_operand(out_opcode, tic64x_operand_const5, offs);
+	tic64x_set_operand(out_opcode, tic64x_operand_dstreg, reg);
+	tic64x_set_operand(out_opcode, tic64x_operand_basereg, base);
+	tic64x_set_operand(out_opcode, tic64x_operand_z, 0);
+	tic64x_set_operand(out_opcode, tic64x_operand_creg, 0);
+
+	/* Need to set y and s bit - in compact insns, s is side of base ptr,
+	 * and t is the side of the "src/dst", for us the destination ptr.
+	 * normal l/s's use y to select the basereg, s to select the dest, so
+	 * we set 16 -> 32 as s -> y, t -> s */
+	tic64x_set_operand(out_opcode, tic64x_operand_y, s);
+	tic64x_set_operand(out_opcode, tic64x_operand_s, t);
+
+	if (sz) {
+		i = dsz << 1;
+		i |= ls;
+		*out_opcode |= sz_codes[i];
+	} else if (!(dsz & 4)) {
+		/* Either stw or ldw */
+		i = 8;
+		i |= ls;
+		*out_opcode |= sz_codes[i];
+	} else {
+		i = sz;
+		i |= (opcode & 0x10) ? 2 : 0; /* non-aligned bit */
+		if (opcode & 0x10) {
+
+			/* ??NDW insns only have 4 bit field for dest reg */
+			tic64x_set_operand(out_opcode, tic64x_operand_dwdst4,
+								reg >> 1);
+			tic64x_set_operand(out_opcode, tic64x_operand_scale, 0);
+		}
+
+		switch (i) {
+		case 0:
+			*out_opcode |= 0x144;	/* stdw */
+			break;
+		case 1:
+			*out_opcode |= 0x164;	/* lddw */
+			break;
+		case 2:
+			*out_opcode |= 0x174;	/* stndw */
+			break;
+		case 3:
+			*out_opcode |= 0x124;	/* ldndw */
+			break;
+		}
+	}
+
+	return 0;
 }
