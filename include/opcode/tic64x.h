@@ -201,7 +201,7 @@ struct tic64x_compact_table {
 	uint16_t opcode;
 	uint16_t opcode_mask;
 	int (*scale_down) (uint32_t opcode, uint16_t *out);
-	int (*scale_up) (uint16_t opcode, uint32_t *hdr, uint32_t *out_opcode);
+	int (*scale_up) (uint16_t opcode, uint32_t hdr, uint32_t *out_opcode);
 };
 
 extern struct tic64x_compact_table tic64x_compact_formats[];

@@ -601,7 +601,7 @@ struct tic64x_op_template tic64x_opcodes[] = {
  * Unpleasent, but then again, so are these instruction formats. */
 
 static int bad_scaledown(uint32_t opcode, uint16_t *out);
-static int bad_scaleup(uint16_t opcode, uint32_t *hdr, uint32_t *out_opcode);
+static int bad_scaleup(uint16_t opcode, uint32_t hdr, uint32_t *out_opcode);
 
 struct tic64x_compact_table tic64x_compact_formats[] = {
 {0,		0xFFFF,	bad_scaledown, bad_scaleup},	/* invalid */
@@ -661,7 +661,7 @@ bad_scaledown(uint32_t opcode ATTRIBUTE_UNUSED, uint16_t *out ATTRIBUTE_UNUSED)
 }
 
 int
-bad_scaleup(uint16_t opcode ATTRIBUTE_UNUSED, uint32_t *hdr ATTRIBUTE_UNUSED,
+bad_scaleup(uint16_t opcode ATTRIBUTE_UNUSED, uint32_t hdr ATTRIBUTE_UNUSED,
 		uint32_t *out_opcode ATTRIBUTE_UNUSED)
 {
 
