@@ -185,6 +185,7 @@ enum tic64x_compact_fmt {
 	tic64x_cfmt_sx2op,
 	tic64x_cfmt_sx5,
 	tic64x_cfmt_sx1,
+	tic64x_cfmt_sx1b,
 	tic64x_cfmt_lsd_mvto,
 	tic64x_cfmt_lsd_mvfr,
 	tic64x_cfmt_lsd_x1c,
