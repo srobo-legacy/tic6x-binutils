@@ -149,6 +149,7 @@ struct {
 {tic64x_optxt_dwsrc,	tic64x_opreader_double_register,tic64x_optest_double_register},
 {tic64x_optxt_uconstant,tic64x_opreader_constant,tic64x_optest_constant},
 {tic64x_optxt_sconstant,tic64x_opreader_constant,tic64x_optest_constant},
+{tic64x_optxt_nops,	tic64x_opreader_constant,tic64x_optest_constant},
 {tic64x_optxt_none,	NULL, NULL}
 };
 
@@ -1180,7 +1181,14 @@ tic64x_opreader_constant(char *line, struct tic64x_insn *insn,
 	int i;
 
 	/* Pre-lookup the operand index we expect... */
-	if ((i = find_operand_index(insn->templ, tic64x_operand_const5)) >= 0) {
+	if (type == tic64x_optxt_nops) {
+		realtype = tic64x_operand_nops;
+		i = find_operand_index(insn->templ, realtype);
+		if (i < 0)
+			abort_no_operand(insn, "tic64x_operand_nops");
+
+	} else if ((i = find_operand_index(insn->templ, tic64x_operand_const5))
+									>= 0) {
 		realtype = tic64x_operand_const5;
 	} else if ((i = find_operand_index(insn->templ,
 					tic64x_operand_const5p2)) >= 0) {
@@ -1191,6 +1199,9 @@ tic64x_opreader_constant(char *line, struct tic64x_insn *insn,
 	} else if ((i = find_operand_index(insn->templ,
 					tic64x_operand_const16)) >= 0) {
 		realtype = tic64x_operand_const16;
+	} else if ((i = find_operand_index(insn->templ,
+					tic64x_operand_const12)) >= 0) {
+		realtype = tic64x_operand_const12;
 	} else {
 		abort_no_operand(insn, "tic64x_operand_const*");
 	}

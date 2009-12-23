@@ -27,6 +27,8 @@ enum tic64x_operand_type {
 	tic64x_operand_const5p2,		/* 5 bit, in position 2 (<<18)*/
 	tic64x_operand_const21,
 	tic64x_operand_const16,
+	tic64x_operand_const12,
+	tic64x_operand_nops,			/* Number of nops to execute */
 	tic64x_operand_srcreg1,			/* Generic source registers */
 	tic64x_operand_srcreg2,			/* one and two, any use */
 	tic64x_operand_dwsrc,			/* Doubleword source regs */
@@ -48,7 +50,8 @@ enum tic64x_text_operand {
 	tic64x_optxt_dwdst,
 	tic64x_optxt_dwsrc,
 	tic64x_optxt_uconstant,
-	tic64x_optxt_sconstant
+	tic64x_optxt_sconstant,
+	tic64x_optxt_nops
 };
 
 #define TIC64X_ADDRMODE_NEG		0
