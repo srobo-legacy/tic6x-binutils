@@ -657,7 +657,8 @@ struct tic64x_compact_table tic64x_compact_formats[] = {
 {0x1C66,	0x3C7E,	bad_scaledown, bad_scaleup},	/* uspk */
 {0x2C66,	0x2C7E,	bad_scaledown, bad_scaleup},	/* uspm */
 /* This should cover spmask and spmaskr, see p670 */
-{0xC6E,		0x1FFF,	bad_scaledown, bad_scaleup}	/* unop */
+{0xC6E,		0x1FFF,	bad_scaledown, bad_scaleup},	/* unop */
+{0,		0,	NULL,		NULL	}
 };
 
 int
