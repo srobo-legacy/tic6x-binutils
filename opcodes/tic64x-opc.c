@@ -273,6 +273,17 @@ struct tic64x_op_template tic64x_opcodes[] = {
 		tic64x_operand_invalid
 	}
 },
+{"bnop",	0x120,		0x1FFC,
+	TIC64X_OP_COND | TIC64X_OP_UNIT_S | TIC64X_OP_SIDE,
+	{ tic64x_optxt_sconstant, tic64x_optxt_nops, tic64x_optxt_none},
+	{
+		tic64x_operand_const12,
+		tic64x_operand_nops,
+		tic64x_operand_invalid,
+		tic64x_operand_invalid,
+		tic64x_operand_invalid
+	}
+},
 {"dotpu4",	0x1B0,		0xFFC,
 	TIC64X_OP_COND | TIC64X_OP_UNIT_M | TIC64X_OP_SIDE |
 	TIC64X_OP_USE_XPATH | TIC64X_OP_XPATH_SRC2,
