@@ -41,7 +41,8 @@ struct {
 { tic64x_optxt_dwdst,		print_op_dwreg		},
 { tic64x_optxt_dwsrc,		print_op_dwreg		},
 { tic64x_optxt_uconstant,	print_op_constant	},
-{ tic64x_optxt_sconstant,	print_op_constant	}
+{ tic64x_optxt_sconstant,	print_op_constant	},
+{ tic64x_optxt_nops,		print_op_constant	}
 };
 
 struct tic64x_disasm_priv {
@@ -696,7 +697,13 @@ print_op_constant(struct tic64x_op_template *t, uint32_t opcode,
 		if (t->operands[i] == tic64x_operand_const5 ||
 		    t->operands[i] == tic64x_operand_const5p2 ||
 		    t->operands[i] == tic64x_operand_const21 ||
-		    t->operands[i] == tic64x_operand_const16) {
+		    t->operands[i] == tic64x_operand_const16 ||
+		    t->operands[i] == tic64x_operand_const12 ||
+		    t->operands[i] == tic64x_operand_nops) {
+			if (type == tic64x_optxt_nops &&
+					t->operands[i] != tic64x_operand_nops)
+				continue;
+
 			t2 = t->operands[i];
 			break;
 		}
