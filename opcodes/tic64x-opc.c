@@ -52,6 +52,7 @@ static struct {
 {	18,	5	},	/* const5p2 */
 {	7,	21	},	/* const21 */
 {	7,	16	},	/* const16 */
+{	8,	15	},	/* const15 */
 {	16,	12	},	/* const12 */
 {	13,	3	},	/* nops */
 {	13,	5	},	/* srcreg1 */

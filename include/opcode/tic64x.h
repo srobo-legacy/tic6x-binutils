@@ -27,6 +27,7 @@ enum tic64x_operand_type {
 	tic64x_operand_const5p2,		/* 5 bit, in position 2 (<<18)*/
 	tic64x_operand_const21,
 	tic64x_operand_const16,
+	tic64x_operand_const15,
 	tic64x_operand_const12,
 	tic64x_operand_nops,			/* Number of nops to execute */
 	tic64x_operand_srcreg1,			/* Generic source registers */
