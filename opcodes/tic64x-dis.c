@@ -134,7 +134,7 @@ print_insn_tic64x(bfd_vma addr, struct disassemble_info *info)
 	if (priv->compact_header) {
 		/* Compact packet; are we a compact instruction? */
 
-		i = priv->packet_start - addr;
+		i = addr - priv->packet_start;
 		i /= 4;
 		i = 1 << (i + 21);	/* Layout field bit for this word */
 
@@ -174,14 +174,6 @@ print_insn_tic64x(bfd_vma addr, struct disassemble_info *info)
 			sz = 2;
 			if (p)
 				tic64x_set_operand(&opcode, tic64x_operand_p,1);
-
-/* XXX - one of the example pieces of code that's being disassembled is
- * spitting out "stw" where it should be "ldw": opcode ix 0x57E5, has ld bit
- * set to 0, making it a store. Where it should be a load. Ho hum.
- * Until more light is shed on that, print "BEES" whenever this particular
- * fail occurs */
-if ((opcode & 0x17C) == 0x74)
-	info->fprintf_func(info->stream, "BEES");
 		}
 	}
 
