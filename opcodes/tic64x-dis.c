@@ -135,6 +135,11 @@ print_insn_tic64x(bfd_vma addr, struct disassemble_info *info)
 		/* Compact packet; are we a compact instruction? */
 
 		i = addr - priv->packet_start;
+		if (i == 28)  {
+			/* We're disassembling the packet header, skip */
+			return 4;
+		}
+
 		i /= 4;
 		i = 1 << (i + 21);	/* Layout field bit for this word */
 
