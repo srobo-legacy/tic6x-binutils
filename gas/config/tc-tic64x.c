@@ -1200,6 +1200,9 @@ tic64x_opreader_constant(char *line, struct tic64x_insn *insn,
 					tic64x_operand_const16)) >= 0) {
 		realtype = tic64x_operand_const16;
 	} else if ((i = find_operand_index(insn->templ,
+					tic64x_operand_const15)) >= 0) {
+		realtype = tic64x_operand_const15;
+	} else if ((i = find_operand_index(insn->templ,
 					tic64x_operand_const12)) >= 0) {
 		realtype = tic64x_operand_const12;
 	} else {
