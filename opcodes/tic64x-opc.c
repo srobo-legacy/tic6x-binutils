@@ -394,6 +394,35 @@ struct tic64x_op_template tic64x_opcodes[] = {
 		tic64x_operand_invalid
 	}
 },
+{"stw",		0x74,		0x17C,
+	TIC64X_OP_UNIT_D | TIC64X_OP_COND | TIC64X_OP_SIDE |
+	TIC64X_OP_UNITNO | TIC64X_OP_MEMACCESS | TIC64X_OP_MEMSZ_WORD |
+	TIC64X_OP_MULTI_MNEMONIC,
+	{ tic64x_optxt_dstreg, tic64x_optxt_memaccess, tic64x_optxt_none },
+	{
+		tic64x_operand_dstreg,
+		tic64x_operand_addrmode,
+		tic64x_operand_basereg,
+		tic64x_operand_rcoffset,
+		tic64x_operand_invalid
+	}
+},
+/* XXX - slightly confusing is that this opcode can only be executed on unit
+ * no 2, but the side bit being present means that it can use src/dst registers
+ * on side 1 for everything? That might violate something: needs checking */
+{"stw",		0x7C,		0x7C,
+	TIC64X_OP_UNIT_D | TIC64X_OP_COND | TIC64X_OP_SIDE |
+	TIC64X_OP_FIXED_UNITNO | TIC64X_OP_FIXED_UNIT2 |
+	TIC64X_OP_UNITNO | TIC64X_OP_MEMACCESS | TIC64X_OP_MEMSZ_WORD,
+	{ tic64x_optxt_dstreg, tic64x_optxt_uconstant, tic64x_optxt_none },
+	{
+		tic64x_operand_dstreg,
+		tic64x_operand_const15,
+		tic64x_operand_invalid,
+		tic64x_operand_invalid,
+		tic64x_operand_invalid
+	}
+},
 {"sub",		0xF8,		0xFFC,
 	TIC64X_OP_UNIT_L | TIC64X_OP_COND | TIC64X_OP_SIDE |
 	TIC64X_OP_USE_XPATH | TIC64X_OP_XPATH_SRC2 | TIC64X_OP_MULTI_MNEMONIC,
