@@ -491,7 +491,7 @@ print_op_memaccess(struct tic64x_op_template *t, uint32_t opcode,
 
 	/* And I think that's it */
 	if (*offsetstr == 0) {
-		snprintf(buffer, len, "*%s%s%s%s,", pre, regchar, regno, post);
+		snprintf(buffer, len, "*%s%s%s%s", pre, regchar, regno, post);
 	} else {
 		snprintf(buffer, len, "*%s%s%s%s[%s]", pre, regchar, regno,
 							post, offsetstr);
