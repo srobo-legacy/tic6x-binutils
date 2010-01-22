@@ -212,7 +212,7 @@ print_insn(struct tic64x_op_template *templ, uint32_t opcode,
 	const char *tchar, *memnum, *xpath;
 	int i, j, z, creg;
 	char unit, unit_no;
-	char finalstr[16];
+	char finalstr[16], finalstr2[17];
 
 	if (double_bar) {
 		info->fprintf_func(info->stream, "||");
@@ -347,8 +347,12 @@ print_insn(struct tic64x_op_template *templ, uint32_t opcode,
 					info->fprintf_func(info->stream, "%s",
 								finalstr);
 				} else {
-					info->fprintf_func(info->stream,"%-15s",
+					snprintf(finalstr2, 16,
+								"%s,",
 								finalstr);
+					info->fprintf_func(info->stream,
+								"%-15s",
+								finalstr2);
 				}
 				break;
 			}
@@ -489,7 +493,7 @@ print_op_memaccess(struct tic64x_op_template *t, uint32_t opcode,
 	if (*offsetstr == 0) {
 		snprintf(buffer, len, "*%s%s%s%s,", pre, regchar, regno, post);
 	} else {
-		snprintf(buffer, len, "*%s%s%s%s[%s],", pre, regchar, regno,
+		snprintf(buffer, len, "*%s%s%s%s[%s]", pre, regchar, regno,
 							post, offsetstr);
 	}
 	return;
