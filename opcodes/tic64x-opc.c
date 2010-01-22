@@ -370,6 +370,78 @@ struct tic64x_op_template tic64x_opcodes[] = {
 		tic64x_operand_invalid
 	}
 },
+{"or",		0x8B0,		0xFFC,
+	TIC64X_OP_UNIT_D | TIC64X_OP_COND | TIC64X_OP_SIDE |
+	TIC64X_OP_USE_XPATH | TIC64X_OP_XPATH_SRC2 | TIC64X_OP_MULTI_MNEMONIC,
+	{ tic64x_optxt_srcreg1, tic64x_optxt_srcreg2, tic64x_optxt_dstreg },
+	{
+		tic64x_operand_dstreg,
+		tic64x_operand_srcreg1,
+		tic64x_operand_srcreg2,
+		tic64x_operand_x,
+		tic64x_operand_invalid
+	}
+},
+{"or",		0x8F0,		0xFFC,
+	TIC64X_OP_UNIT_D | TIC64X_OP_COND | TIC64X_OP_SIDE |
+	TIC64X_OP_USE_XPATH | TIC64X_OP_XPATH_SRC2,
+	{ tic64x_optxt_sconstant, tic64x_optxt_srcreg2, tic64x_optxt_dstreg },
+	{
+		tic64x_operand_dstreg,
+		tic64x_operand_const5,
+		tic64x_operand_srcreg2,
+		tic64x_operand_x,
+		tic64x_operand_invalid
+	}
+},
+{"or",		0xFF8,		0xFFC,
+	TIC64X_OP_UNIT_L | TIC64X_OP_COND | TIC64X_OP_SIDE |
+	TIC64X_OP_USE_XPATH | TIC64X_OP_XPATH_SRC2,
+	{ tic64x_optxt_srcreg1, tic64x_optxt_srcreg2, tic64x_optxt_dstreg },
+	{
+		tic64x_operand_dstreg,
+		tic64x_operand_srcreg1,
+		tic64x_operand_srcreg2,
+		tic64x_operand_x,
+		tic64x_operand_invalid
+	}
+},
+{"or",		0xFD8,		0xFFC,
+	TIC64X_OP_UNIT_L | TIC64X_OP_COND | TIC64X_OP_SIDE |
+	TIC64X_OP_USE_XPATH | TIC64X_OP_XPATH_SRC2,
+	{ tic64x_optxt_sconstant, tic64x_optxt_srcreg2, tic64x_optxt_dstreg },
+	{
+		tic64x_operand_dstreg,
+		tic64x_operand_const5,
+		tic64x_operand_srcreg2,
+		tic64x_operand_x,
+		tic64x_operand_invalid
+	}
+},
+{"or",		0x6E0,		0xFFC,
+	TIC64X_OP_UNIT_S | TIC64X_OP_COND | TIC64X_OP_SIDE |
+	TIC64X_OP_USE_XPATH | TIC64X_OP_XPATH_SRC2,
+	{ tic64x_optxt_srcreg1, tic64x_optxt_srcreg2, tic64x_optxt_dstreg },
+	{
+		tic64x_operand_dstreg,
+		tic64x_operand_srcreg1,
+		tic64x_operand_srcreg2,
+		tic64x_operand_x,
+		tic64x_operand_invalid
+	}
+},
+{"or",		0x6A0,		0xFFC,
+	TIC64X_OP_UNIT_S | TIC64X_OP_COND | TIC64X_OP_SIDE |
+	TIC64X_OP_USE_XPATH | TIC64X_OP_XPATH_SRC2,
+	{ tic64x_optxt_sconstant, tic64x_optxt_srcreg2, tic64x_optxt_dstreg },
+	{
+		tic64x_operand_dstreg,
+		tic64x_operand_const5,
+		tic64x_operand_srcreg2,
+		tic64x_operand_x,
+		tic64x_operand_invalid
+	}
+},
 {"pack2",	0x18,		0xFFC,
 	TIC64X_OP_UNIT_L | TIC64X_OP_COND | TIC64X_OP_SIDE |
 	TIC64X_OP_USE_XPATH | TIC64X_OP_XPATH_SRC2 | TIC64X_OP_MULTI_MNEMONIC,
