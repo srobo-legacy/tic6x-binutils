@@ -405,7 +405,7 @@ print_op_memaccess(struct tic64x_op_template *t, uint32_t opcode,
 	/* Memory accesses set destination side with s bit, source regs with
 	 * y bit. Confirm later TIX64X_OP_UNITNO is set*/
 	s = tic64x_get_operand(opcode, tic64x_operand_s, 0);
-	y = tic64x_get_operand(opcode, tic64x_operand_rcoffset, 0);
+	y = tic64x_get_operand(opcode, tic64x_operand_y, 0);
 
 	/* Pre inc/decrementer, or offset +/- */
 	if (!(addrmode & TIC64X_ADDRMODE_MODIFY)) {
@@ -429,7 +429,7 @@ print_op_memaccess(struct tic64x_op_template *t, uint32_t opcode,
 		fprintf(stderr, "tic64x_print_memaccess: \"%s\" has no y bit?",
 								t->mnemonic);
 		regchar = "?";
-	} else if (s) {
+	} else if (y) {
 		regchar = "B";
 	} else {
 		regchar = "A";
