@@ -96,8 +96,8 @@ get_operand(uint32_t opcode, int position, int size, int sx)
 	opcode >>= position;
 	opcode &= ((1 << size) - 1);
 
-	if (sx)
-		return (int)opcode;
+	if (!sx)
+		return opcode;
 
 	/* Sign extend */
 	if (opcode & (1 << (size - 1))) {
