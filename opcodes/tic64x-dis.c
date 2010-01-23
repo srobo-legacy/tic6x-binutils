@@ -462,7 +462,7 @@ print_op_memaccess(struct tic64x_op_template *t, uint32_t opcode,
 
 	/* If we scale, calculate by how much */
 	if (scale) {
-		scalenum = (addrmode & TIC64X_OP_MEMSZ_MASK) >>
+		scalenum = (t->flags & TIC64X_OP_MEMSZ_MASK) >>
 							TIC64X_OP_MEMSZ_SHIFT;
 		scalenum = 1 << scalenum;
 	} else {
