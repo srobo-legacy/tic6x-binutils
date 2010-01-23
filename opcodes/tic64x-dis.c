@@ -49,6 +49,7 @@ struct tic64x_disasm_priv {
 	bfd_vma packet_start;
 	bfd_vma next_packet;
 	uint32_t compact_header; /* Zero on not-compact, nz otherwise */
+	int no_pbar_next;	/* Don't print parallel bar in next insn */
 };
 
 int
@@ -75,11 +76,13 @@ print_insn_tic64x(bfd_vma addr, struct disassemble_info *info)
 		priv->packet_start = -1;
 		priv->next_packet = 0;
 		priv->compact_header = 0;
+		priv->no_pbar_next = 1;
 	} else {
 		priv = info->private_data;
 	}
 
 	if (addr >= priv->next_packet) {
+		priv->no_pbar_next = 1;
 		priv->packet_start = addr;
 		priv->compact_header = 0;
 
@@ -144,7 +147,7 @@ print_insn_tic64x(bfd_vma addr, struct disassemble_info *info)
 		i = 1 << (i + 21);	/* Layout field bit for this word */
 
 		if (priv->compact_header & i) {
-			i = addr / 2;
+			i = (addr - priv->packet_start) / 2;
 			i = 1 << i;
 			p = (priv->compact_header & i) ? 1 : 0;
 
@@ -182,13 +185,6 @@ print_insn_tic64x(bfd_vma addr, struct disassemble_info *info)
 		}
 	}
 
-	/* XXX - doesn't handle parallel breaks in compact insns */
-	if (addr != priv->packet_start) {
-		p = 1;
-	} else {
-		p = 0;
-	}
-
 	/* Find a template that matches and print */
 	for (templ = tic64x_opcodes; templ->mnemonic; templ++) {
 		if ((opcode & templ->opcode_mask) == templ->opcode) {
@@ -196,10 +192,22 @@ print_insn_tic64x(bfd_vma addr, struct disassemble_info *info)
 		}
 	}
 
+	if (priv->no_pbar_next)
+		p = 0;
+	else
+		p = 1;
+
+	priv->no_pbar_next = 0;
+
 	if (templ->mnemonic == NULL) {
 		info->fprintf_func(info->stream, "????");
 	} else {
 		print_insn(templ, opcode, info, p);
+	}
+
+	if (tic64x_get_operand(opcode, tic64x_operand_p, 0) == 0) {
+		/* No p bit -> next insn printed has no bar */
+		priv->no_pbar_next = 1;
 	}
 
 	return sz;
