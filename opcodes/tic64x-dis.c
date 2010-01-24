@@ -95,7 +95,7 @@ print_insn_tic64x(bfd_vma addr, struct disassemble_info *info)
 			if (!ret) {
 				opcode = bfd_getl32(opbuf);
 
-				if ((opcode & 0xE0000000) == 0xE0000000) {
+				if ((opcode & 0xF0000000) == 0xE0000000) {
 					priv->next_packet = addr + (i * 4) + 4;
 					priv->compact_header = opcode;
 				}
