@@ -119,6 +119,8 @@ struct tic64x_op_template {
 					 * certain amount - use memsz flags
 					 * to specify by how much, and this
 					 * flag to indicate const is scaled */
+#define TIC64X_OP_CONST_PCREL	0x20000 /* Constant, whatever it may be,
+					 * is PC relative */
 
 
 #define TIC64X_MAX_TXT_OPERANDS	3
