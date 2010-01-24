@@ -231,7 +231,8 @@ print_insn(struct tic64x_op_template *templ, uint32_t opcode,
 	/* Conditional? */
 	z = tic64x_get_operand(opcode, tic64x_operand_z, 0);
 	creg = tic64x_get_operand(opcode, tic64x_operand_creg, 0);
-	if (templ->flags & TIC64X_OP_COND && z && creg) {
+	/* creg is zero for unconditional */
+	if (templ->flags & TIC64X_OP_COND && creg) {
 		info->fprintf_func(info->stream, "[");
 
 		if (z)
