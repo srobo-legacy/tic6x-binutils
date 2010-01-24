@@ -535,7 +535,8 @@ print_op_register(struct tic64x_op_template *t, uint32_t opcode,
 		return;
 	}
 
-	if (!(t->flags & TIC64X_OP_SIDE)) {
+	if (!(t->flags & TIC64X_OP_SIDE) &&
+					!(t->flags & TIC64X_OP_FIXED_UNITNO)) {
 		fprintf(stderr, "tic64x print_op_register: \"%s\" has no "
 					"side bit?", t->mnemonic);
 		snprintf(buffer, len, "%C", '\0');
@@ -546,6 +547,13 @@ print_op_register(struct tic64x_op_template *t, uint32_t opcode,
 	side = tic64x_get_operand(opcode, tic64x_operand_s, 0);
 	x = tic64x_get_operand(opcode, tic64x_operand_x, 0);
 	y = tic64x_get_operand(opcode, tic64x_operand_y, 0);
+
+	if (t->flags & TIC64X_OP_FIXED_UNITNO) {
+		if (t->flags & TIC64X_OP_FIXED_UNIT2)
+			side = 1;
+		else
+			side = 0;
+	}
 
 	/* Delicious curly braces... */
 	unitchar = '?';
