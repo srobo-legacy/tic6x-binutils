@@ -114,6 +114,11 @@ struct tic64x_op_template {
 					 * scale the operand by the size of
 					 * data access, instead of providing
 					 * a scale bit */
+#define TIC64X_OP_CONST_SCALE 	0x10000 /* branch instructions and the like
+					 * always scale their offsets by a
+					 * certain amount - use memsz flags
+					 * to specify by how much, and this
+					 * flag to indicate const is scaled */
 
 
 #define TIC64X_MAX_TXT_OPERANDS	3
