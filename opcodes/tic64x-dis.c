@@ -697,7 +697,7 @@ print_op_dwreg(struct tic64x_op_template *t, uint32_t opcode,
 		}
 	}
 
-	snprintf(buffer, len, "%c%d:%c%d", unitchar, regnum, unitchar,regnum+1);
+	snprintf(buffer, len, "%c%d:%c%d", unitchar, regnum+1, unitchar,regnum);
 	return;
 }
 
