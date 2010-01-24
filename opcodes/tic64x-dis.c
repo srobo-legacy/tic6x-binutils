@@ -148,6 +148,9 @@ print_insn_tic64x(bfd_vma addr, struct disassemble_info *info)
 		if (i == 4)
 			return 4;	/* Don't disassemble packet header */
 
+		i += 3;
+		i &= ~3;		/* Round up to dword boundry */
+
 		i /= 4;			/* dword offset */
 		i -= 2;			/* We've handled packet header */
 		i = 0x8000000 >> i;	/* Bit in packet header */
