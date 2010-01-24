@@ -295,7 +295,7 @@ tic64x_sect(int x ATTRIBUTE_UNUSED)
 	}
 
 	sect = malloc(strlen(name) + 5);
-	sprintf(sect, "%s,\"w\"\n", name);
+	sprintf(sect, "%s,\"x\"\n", name);
 	free(name);
 
 	/* Knobble subsections. obj_coff doesn't support them, its pretty
