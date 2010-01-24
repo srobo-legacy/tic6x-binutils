@@ -140,16 +140,17 @@ print_insn_tic64x(bfd_vma addr, struct disassemble_info *info)
 	opcode = bfd_getl32(opbuf);
 
 	if (priv->compact_header) {
-		/* Compact packet; are we a compact instruction? */
+		/* Compact packet; are we a compact instruction?
+		 * Calculate offset from next packet: compact header will
+		 * be that - 4. */
 
-		i = addr - priv->packet_start;
-		if (i == 28)  {
-			/* We're disassembling the packet header, skip */
-			return 4;
-		}
+		i = priv->next_packet - addr;
+		if (i == 4)
+			return 4;	/* Don't disassemble packet header */
 
-		i /= 4;
-		i = 1 << (i + 21);	/* Layout field bit for this word */
+		i /= 4;			/* dword offset */
+		i -= 2;			/* We've handled packet header */
+		i = 0x8000000 >> i;	/* Bit in packet header */
 
 		if (priv->compact_header & i) {
 			i = (addr - priv->packet_start) / 2;
