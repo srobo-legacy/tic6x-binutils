@@ -724,7 +724,7 @@ print_op_constant(struct tic64x_op_template *t, uint32_t opcode,
 		enum tic64x_text_operand type, char *buffer, int len)
 {
 	enum tic64x_operand_type t2;
-	int i, val;
+	int i, val, memsz;
 
 	/* There are multiple constant operand forms... */
 	t2 = tic64x_operand_invalid;
@@ -754,6 +754,13 @@ print_op_constant(struct tic64x_op_template *t, uint32_t opcode,
 
 	val = tic64x_get_operand(opcode, t2,
 				(type == tic64x_optxt_sconstant) ? 1 : 0);
+
+	if (t->flags & TIC64X_OP_CONST_SCALE) {
+		/* Opcode wants its constants being scaled by a certain amount*/
+		memsz = (t->flags & TIC64X_OP_MEMSZ_MASK)
+						>> TIC64X_OP_MEMSZ_SHIFT;
+		val <<= memsz;
+	}
 
 	/* Print all operands as hex, limit to 32 bits of FFFF... */
 	snprintf(buffer, len, "0x%X", val & 0xFFFFFFFF);
