@@ -259,7 +259,7 @@ struct tic64x_op_template tic64x_opcodes[] = {
 },
 {"b",		0x10,		0x7C,
 	TIC64X_OP_COND | TIC64X_OP_UNIT_S | TIC64X_OP_SIDE |
-	TIC64X_OP_CONST_SCALE | TIC64X_OP_MEMSZ_WORD |
+	TIC64X_OP_CONST_SCALE | TIC64X_OP_MEMSZ_WORD | TIC64X_OP_CONST_PCREL |
 	TIC64X_OP_MULTI_MNEMONIC,
 	{ tic64x_optxt_sconstant, tic64x_optxt_none, tic64x_optxt_none},
 	{
@@ -285,7 +285,7 @@ struct tic64x_op_template tic64x_opcodes[] = {
 },
 {"bnop",	0x120,		0x1FFC,
 	TIC64X_OP_COND | TIC64X_OP_UNIT_S | TIC64X_OP_SIDE |
-	TIC64X_OP_CONST_SCALE | TIC64X_OP_MEMSZ_WORD |
+	TIC64X_OP_CONST_SCALE | TIC64X_OP_MEMSZ_WORD | TIC64X_OP_CONST_PCREL |
 	TIC64X_OP_MULTI_MNEMONIC,
 	{ tic64x_optxt_sconstant, tic64x_optxt_nops, tic64x_optxt_none},
 	{
