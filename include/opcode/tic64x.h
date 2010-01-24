@@ -176,7 +176,10 @@ enum tic64x_compact_fmt {
 	tic64x_cfmt_m3,
 	tic64x_cfmt_sbs7,
 	tic64x_cfmt_sbu8,
+#if 0
+see comment in tic64x-opc.c for why this is commented out
 	tic64x_cfmt_scs10,
+#endif
 	tic64x_cfmt_sbs7c,
 	tic64x_cfmt_sbu8c,
 	tic64x_cfmt_s3,
