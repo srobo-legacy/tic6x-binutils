@@ -742,6 +742,7 @@ static int bad_scaleup(uint16_t opcode, uint32_t hdr, uint32_t *out_opcode);
 static int scaleup_doff4(uint16_t opcode, uint32_t hdr, uint32_t *out_opcode);
 static int scaleup_dind(uint16_t opcode, uint32_t hdr, uint32_t *out_opcode);
 static int scaleup_sbs7(uint16_t opcode, uint32_t hdr, uint32_t *out_opcode);
+static int scaleup_sx1b(uint16_t opcode, uint32_t hdr, uint32_t *out_opcode);
 
 struct tic64x_compact_table tic64x_compact_formats[] = {
 {0,		0xFFFF,	bad_scaledown, bad_scaleup},	/* invalid */
@@ -779,7 +780,7 @@ struct tic64x_compact_table tic64x_compact_formats[] = {
 {0x2E,		0x47E,	bad_scaledown, bad_scaleup},	/* sx2op */
 {0x42E,		0x47E,	bad_scaledown, bad_scaleup},	/* sx5 */
 {0x186E,	0x1C7E,	bad_scaledown, bad_scaleup},	/* sx1 */
-{0x6E,		0x187E,	bad_scaledown, bad_scaleup},	/* sx1b */
+{0x6E,		0x187E,	bad_scaledown, scaleup_sx1b},	/* sx1b */
 {6,		0x66,	bad_scaledown, bad_scaleup},	/* lsd_mvto */
 {0x46,		0x66,	bad_scaledown, bad_scaleup},	/* lsd_mvfr */
 {0x866,		0x1C66,	bad_scaledown, bad_scaleup},	/* lsd_x1c */
@@ -1031,6 +1032,25 @@ scaleup_sbs7(uint16_t opcode, uint32_t hdr ATTRIBUTE_UNUSED,
 	tic64x_set_operand(out_opcode, tic64x_operand_creg, 0);
 	s = get_operand(opcode, 0, 1, 0);
 	tic64x_set_operand(out_opcode, tic64x_operand_s, s);
+
+	return 0;
+}
+
+int
+scaleup_sx1b(uint16_t opcode, uint32_t hdr ATTRIBUTE_UNUSED,
+					uint32_t *out_opcode)
+{
+
+	/* This only applies to BNOP */
+	/* It's also unconditional */
+	*out_opcode = 0x800362;
+	tic64x_set_operand(out_opcode, tic64x_operand_nops, (opcode >> 13) & 7);
+	/* Comment on p659 says src2 is from B0 -> B15 */
+	tic64x_set_operand(out_opcode, tic64x_operand_srcreg2,
+					(opcode >> 7) & 0xF);
+
+	/* XXX XXX XXX - compact opcode apparently has side bit, but only
+	 * mapped opcode is fixed on unit S2 */
 
 	return 0;
 }
