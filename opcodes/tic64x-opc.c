@@ -791,6 +791,7 @@ static int scaleup_doff4(uint16_t opcode, uint32_t hdr, uint32_t *out_opcode);
 static int scaleup_dind(uint16_t opcode, uint32_t hdr, uint32_t *out_opcode);
 static int scaleup_sbs7(uint16_t opcode, uint32_t hdr, uint32_t *out_opcode);
 static int scaleup_sx1b(uint16_t opcode, uint32_t hdr, uint32_t *out_opcode);
+static int scaleup_s3(uint16_t opcode, uint32_t hdr, uint32_t *out_opcode);
 
 struct tic64x_compact_table tic64x_compact_formats[] = {
 {0,		0xFFFF,	bad_scaledown, bad_scaleup},	/* invalid */
@@ -823,7 +824,7 @@ itself can't tell the difference, I assume a datasheet bug
 #endif
 {0x2A,		0x2E,	bad_scaledown, bad_scaleup},	/* sbs7c */
 {0xC02A,	0xC02E,	bad_scaledown, bad_scaleup},	/* sbu8c */
-{0xA,		0x40E,	bad_scaledown, bad_scaleup},	/* s3 */
+{0xA,		0x40E,	bad_scaledown, scaleup_s3},	/* s3 */
 {0x40A,		0x40E,	bad_scaledown, bad_scaleup},	/* s3i */
 {0x12,		0x1E,	bad_scaledown, bad_scaleup},	/* smvk8 */
 {0x402,		0x41E,	bad_scaledown, bad_scaleup},	/* ssh5 */
@@ -1104,6 +1105,55 @@ scaleup_sx1b(uint16_t opcode, uint32_t hdr ATTRIBUTE_UNUSED,
 
 	/* XXX XXX XXX - compact opcode apparently has side bit, but only
 	 * mapped opcode is fixed on unit S2 */
+
+	return 0;
+}
+
+int
+scaleup_s3(uint16_t opcode, uint32_t hdr, uint32_t *out_opcode)
+{
+	uint32_t src1, src2, dst, op, s, x;
+
+	src1 = (opcode >> 13) & 0x7;
+	src2 = (opcode >> 7) & 0x7;
+	dst = (opcode >> 4) & 0x7;
+	op = (opcode & 0x800) ? 1 : 0;
+	s = (opcode & 1) ? 1 : 0;
+	x = (opcode & 0x1000) ? 1 : 0;
+
+	/* XXX - #defines please */
+	if (hdr & 0x8000) {
+		return ENODEV; /* 'BR' not valid for this */
+	}
+
+	/* Use RS field to determine if we're using the high or low
+	 * register set */
+	if (hdr & 0x80000) {
+		src1 += 16;
+		src2 += 16;
+		dst += 16;
+	}
+
+	if (hdr & 0x4000) {
+		if (op == 1)
+			return ENODEV; /* Undefined behavior, etc */
+
+		*out_opcode = 0x278;
+	} else {
+		/* These are all in this form share all fields, just need to set
+		 * opcode depending on which one we're using */
+		if (op == 0)
+			*out_opcode = 0x1E0;
+		else
+			*out_opcode = 0x5E0;
+	}
+
+	/* Unconditional, etc */
+	tic64x_set_operand(out_opcode, tic64x_operand_s, s);
+	tic64x_set_operand(out_opcode, tic64x_operand_x, x);
+	tic64x_set_operand(out_opcode, tic64x_operand_srcreg1, src1);
+	tic64x_set_operand(out_opcode, tic64x_operand_srcreg2, src2);
+	tic64x_set_operand(out_opcode, tic64x_operand_dstreg, dst);
 
 	return 0;
 }
