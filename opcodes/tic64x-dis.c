@@ -52,6 +52,11 @@ struct tic64x_disasm_priv {
 	int no_pbar_next;	/* Don't print parallel bar in next insn */
 };
 
+/* Hack: nonzero when we're in a compact insn. Because right now the method
+ * of scaling from a 16 bit insn to 32 bit looses some information (see
+ * print_op_constant */
+static int in_compact_insn;
+
 int
 print_insn_tic64x(bfd_vma addr, struct disassemble_info *info)
 {
@@ -138,6 +143,7 @@ print_insn_tic64x(bfd_vma addr, struct disassemble_info *info)
 		return -1;
 	}
 	opcode = bfd_getl32(opbuf);
+	in_compact_insn = 0;
 
 	if (priv->compact_header) {
 		/* Compact packet; are we a compact instruction?
@@ -156,6 +162,7 @@ print_insn_tic64x(bfd_vma addr, struct disassemble_info *info)
 		i = 0x8000000 >> i;	/* Bit in packet header */
 
 		if (priv->compact_header & i) {
+			in_compact_insn = 1;
 			i = (addr - priv->packet_start) / 2;
 			i = 1 << i;
 			p = (priv->compact_header & i) ? 1 : 0;
@@ -759,6 +766,13 @@ print_op_constant(struct tic64x_op_template *t, uint32_t opcode,
 		/* Opcode wants its constants being scaled by a certain amount*/
 		memsz = (t->flags & TIC64X_OP_MEMSZ_MASK)
 						>> TIC64X_OP_MEMSZ_SHIFT;
+
+		/* Fail: if we scaled up from a constant insn, we tend to
+		 * scale the constant slightly less (by 1). Currently there's
+		 * no way of communicating this piece of information. ugh. */
+		if (in_compact_insn)
+			memsz -= 1;
+
 		val <<= memsz;
 	}
 
