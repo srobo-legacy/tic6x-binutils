@@ -87,13 +87,18 @@ print_insn_tic64x(bfd_vma addr, struct disassemble_info *info)
 		priv->compact_header = 0;
 
 		/* Firstly, are we compact? */
-		ret = info->read_memory_func(addr + 28, opbuf, 4, info);
-		if (!ret) {
-			opcode = bfd_getl32(opbuf);
+		for (i = 0; i < 8; i++) {
+			ret = info->read_memory_func(addr + (i * 4),
+							opbuf,
+							4,
+							info);
+			if (!ret) {
+				opcode = bfd_getl32(opbuf);
 
-			if ((opcode & 0xE0000000) == 0xE0000000) {
-				priv->next_packet = addr + 32;
-				priv->compact_header = opcode;
+				if ((opcode & 0xE0000000) == 0xE0000000) {
+					priv->next_packet = addr + (i * 4) + 4;
+					priv->compact_header = opcode;
+				}
 			}
 		}
 
