@@ -148,6 +148,15 @@ struct {
 {tic64x_optxt_none,	NULL, NULL}
 };
 
+/* So, with gas at the moment, we can't detect the end of an instruction
+ * packet until there's been a line without a || at the start. And we can't
+ * make any reasonable decisions about p bits until we have a start and end.
+ * So - read insns in with md_assemble, store them in the following table,
+ * and emit them when we know we're done with a packet. Requires using
+ * md_after_pass_hook probably. */
+static int read_insns_index;
+static struct tic64x_insn read_insns[8];
+
 int
 md_parse_option(int c, char *arg)
 {
