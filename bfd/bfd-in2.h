@@ -3635,6 +3635,36 @@ significant 7 bits of a 23-bit extended address are placed into
 the opcode.  */
   BFD_RELOC_TIC54X_MS7_OF_23,
 
+/* "Data page pointer-based offset"  */
+  BFD_RELOC_TIC64X_BASE,
+
+/* "Load or store long displacement"  */
+  BFD_RELOC_TIC64X_DIR15,
+
+/* "21-bit packet, PC relative"  */
+  BFD_RELOC_TIC64X_PCR21,
+
+/* "10-bit Packet PC relative"  */
+  BFD_RELOC_TIC64X_PCR10,
+
+/* "MVK instruction low half register"  */
+  BFD_RELOC_TIC64X_LO16,
+
+/* "MVKH or MVKLH high half register"  */
+  BFD_RELOC_TIC64X_HI16,
+
+/* "Section-based offset"  */
+  BFD_RELOC_TIC64X_SECT,
+
+/* "Signed 16-bit offset for MVK"  */
+  BFD_RELOC_TIC64X_S16,
+
+/* "7-bit Packet PC relative"  */
+  BFD_RELOC_TIC64X_PCR7,
+
+/* "12-bit Packet PC relative"  */
+  BFD_RELOC_TIC64X_PCR12,
+
 /* This is a 48 bit reloc for the FR30 that stores 32 bits.  */
   BFD_RELOC_FR30_48,
 
