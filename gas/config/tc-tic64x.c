@@ -394,16 +394,57 @@ tc_gen_reloc(asection *section, fixS *fixP)
 }
 
 void
-md_apply_fix(fixS *fixP, valueT *valP, segT seg)
+md_apply_fix(fixS *fixP, valueT *valP, segT seg ATTRIBUTE_UNUSED)
 {
+	const char *err;
+	char *loc;
+	uint32_t opcode;
+	enum tic64x_operand_type type;
 
-	UNUSED(valP);
-	UNUSED(seg);
+	/* This line from tic54 :| */
+	loc = fixP->fx_where + fixP->fx_frag->fr_literal;
+
 	switch(fixP->fx_r_type) {
+	case BFD_RELOC_TIC64X_BASE:
+	case BFD_RELOC_TIC64X_SECT:
+		as_fatal("Base/Section relocation: what are these anyway?");
+	case BFD_RELOC_TIC64X_DIR15:
+		type = tic64x_operand_const15;
+		break;
+	case BFD_RELOC_TIC64X_PCR21:
+		type = tic64x_operand_const21;
+		break;
+	case BFD_RELOC_TIC64X_PCR10:
+		type = tic64x_operand_const10;
+		break;
+	case BFD_RELOC_TIC64X_LO16:
+	case BFD_RELOC_TIC64X_HI16:
+	case BFD_RELOC_TIC64X_S16:
+		type = tic64x_operand_const16;
+		break;
+	case BFD_RELOC_TIC64X_PCR7:
+		type = tic64x_operand_const7;
+		break;
+	case BFD_RELOC_TIC64X_PCR12:
+		type = tic64x_operand_const12;
+		break;
 	default:
 		as_fatal("Bad relocation type %X\n", fixP->fx_r_type);
 		return;
 	}
+
+/* FACE: pcrel calculation required? */
+
+	opcode = bfd_get_32(stdoutput, loc);
+	err = tic64x_set_operand(&opcode, type, *valP);
+	bfd_put_32(stdoutput, opcode, loc);
+
+	if (err)
+		as_bad("Relocation error: %s", err);
+
+	if (fixP->fx_addsy == NULL)
+		fixP->fx_done = 1;
+
 	return;
 }
 
