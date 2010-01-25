@@ -1642,7 +1642,11 @@ tic64x_output_insn_packet()
 			insn->parallel = 1;
 
 		tic64x_output_insn(insn, out, frag);
-		free(insn); /* XXX - sanity check */
+#if 0
+/* Insn can't be freed, it might be being fixed up. Needs more thought
+ * about insn lifetime */
+		free(insn);
+#endif
 	}
 
 	return;
