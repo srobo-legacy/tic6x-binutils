@@ -155,7 +155,8 @@ struct {
  * and emit them when we know we're done with a packet. Requires using
  * md_after_pass_hook probably. */
 static int read_insns_index;
-static struct tic64x_insn read_insns[8];
+static struct tic64x_insn *read_insns[8];
+static void tic64x_output_insn_packet(void);
 
 int
 md_parse_option(int c, char *arg)
@@ -179,6 +180,9 @@ md_begin()
 {
 	struct tic64x_op_template *op;
 	struct tic64x_register *reg;
+
+	read_insns_index = 0;
+	memset(read_insns, 0, sizeof(read_insns));
 
 	tic64x_ops = hash_new();
 	tic64x_reg_names = hash_new();
@@ -1581,7 +1585,33 @@ md_assemble(char *line)
 		}
 	}
 
-	tic64x_output_insn(insn);
+	/* If this is the start of a new insn packet, dump the contents of
+	 * the previous packet and start a new one. Include some sanity
+	 * checks */
+
+	if (tic64x_line_had_parallel_prefix) {
+		/* Append this to the list */
+		if (read_insns_index >= 8) {
+			as_bad("Can't have more than 8 insns in an "
+				"instruction packet");
+			return;
+		}
+
+		read_insns[read_insns_index++] = insn;
+	} else {
+		tic64x_output_insn_packet();
+		memset(read_insns, 0, sizeof(read_insns));
+		read_insns_index = 0;
+
+		read_insns[read_insns_index++] = insn;
+	}
+
+	return;
+}
+
+void
+tic64x_output_insn_packet()
+{
 
 	return;
 }
