@@ -6,6 +6,7 @@
 #include "opcode/tic64x.h"
 #include "obj-coff.h"
 #include "struc-symbol.h"
+#include "libbfd.h"
 
 #define UNUSED(x) ((x) = (x))
 
@@ -423,6 +424,28 @@ tic64x_sym_to_reg(char *regname)
 	}
 
 	return reg;
+}
+
+static enum bfd_reloc_code_real
+type_to_rtype(struct tic64x_insn *insn, enum tic64x_operand_type type)
+{
+
+	switch(type) {
+	case tic64x_operand_const21:
+	case tic64x_operand_const10:
+	case tic64x_operand_const16:
+		/* One operand type, but semantics are different for mvk
+		 * and mvkh/mvklh (according to docs) */
+		/* XXX - there's a "mvk insn low half register" reloc, and
+		 * also a "signed 16 bit offset for mvk". Which afais, are
+		 * the same thing */
+	case tic64x_operand_const12:
+	case tic64x_operand_const7:
+		as_fatal("Badgers on pogo sticks!");
+
+	default:
+		as_fatal("Relocation on operand type that doesn't support it");
+	}
 }
 
 int
@@ -1696,7 +1719,7 @@ tic64x_output_insn(struct tic64x_insn *insn, char *out, fragS *frag)
 
 				int pcrel = insn->templ->flags &
 						TIC64X_OP_CONST_PCREL;
-				int rtype = type_to_rtype(
+				int rtype = type_to_rtype(insn,
 						insn->templ->operands[i]);
 
 				fix_new_exp(frag, out - frag->fr_literal,
