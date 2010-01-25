@@ -742,6 +742,7 @@ print_op_constant(struct tic64x_op_template *t, uint32_t opcode,
 		    t->operands[i] == tic64x_operand_const16 ||
 		    t->operands[i] == tic64x_operand_const15 ||
 		    t->operands[i] == tic64x_operand_const12 ||
+		    t->operands[i] == tic64x_operand_const10 ||
 		    t->operands[i] == tic64x_operand_nops) {
 			if (type == tic64x_optxt_nops &&
 					t->operands[i] != tic64x_operand_nops)
