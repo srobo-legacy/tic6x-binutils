@@ -464,7 +464,7 @@ tic64x_start_line_hook(void)
 	if (*line == '[') {
 		tic64x_line_had_cond = 1;
 		*line++ = ' ';
-		tic64x_line_had_nz_cond = (*line == '!') ? 1 : 0;
+		tic64x_line_had_nz_cond = (*line == '!') ? 0 : 1;
 		*line++ = ' ';
 
 		reg = line;
