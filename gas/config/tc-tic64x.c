@@ -33,11 +33,6 @@ struct tic64x_insn {
 	int8_t unit_num;			/* Unit number, 1 or 2 */
 	int8_t mem_unit_num;			/* Memory data path, 1 or 2 */
 	int8_t uses_xpath;			/* Unit specifier had X suffix*/
-	int8_t side;				/* Side to execute on - judge
-						 * this by the side of the dst
-						 * register, as it's impossible
-						 * to write it to the other
-						 * side */
 	int8_t parallel;			/* || prefix? */
 	int8_t cond_nz;				/* Condition flag, zero or nz?*/
 	int16_t cond_reg;			/* Register for comparison */
@@ -1004,11 +999,30 @@ tic64x_opreader_register(char *line, struct tic64x_insn *insn,
 	/* Now set some more interesting fields - if working on destination reg,
 	 * set the side of processor we're working on. Also set xpath field */
 	if (t2 == tic64x_operand_dstreg) {
-		if (insn->side != 0)
-			as_fatal("tic64x_opreader_register: side field already "
-								"set");
 
-		insn->side = (reg->num & TIC64X_REG_UNIT2) ? 2 : 1;
+		/* Destination must be on same side of processor as we're
+		 * executing, except when it's memory access. Bleaugh */
+
+		if (insn->templ->flags & TIC64X_OP_MEMACCESS) {
+			if ((insn->mem_unit_num == 2 &&
+					!(reg->num & TIC64X_REG_UNIT2))
+				|| (insn->mem_unit_num == 1 &&
+					(reg->num & TIC64X_REG_UNIT2))) {
+				as_bad("Destination register must match data "
+					"path specifier");
+				return;
+			}
+		} else {
+			/* Ensure destination is just on the correct side */
+			if ((insn->unit_num == 2 &&
+					!(reg->num & TIC64X_REG_UNIT2))
+					|| (insn->unit_num == 1 &&
+					reg->num & TIC64X_REG_UNIT2)) {
+				as_bad("Destination register must be on side "
+					"or processor where insn executes");
+				return;
+			}
+		}
 	} else if (TXTOPERAND_CAN_XPATH(insn, type)) {
 		/* This operand can use the xpath, do we? */
 		if (((reg->num & TIC64X_REG_UNIT2) && insn->unit_num == 1) ||
@@ -1571,21 +1585,27 @@ void
 tic64x_output_insn(struct tic64x_insn *insn)
 {
 	char *out;
-	int i;
+	int i, s, y;
 
 	insn->opcode |= insn->templ->opcode;
+
+	if (insn->templ->flags & TIC64X_OP_MEMACCESS) {
+		s = (insn->mem_unit_num == 2) ? 1 : 0;
+		y = (insn->unit_num == 2) ? 1 : 0;
+	} else {
+		s = (insn->unit_num == 2) ? 1 : 0;
+		y = (insn->unit_num == 2) ? 1 : 0;
+	}
 
 	/* From bottom to top, fixed fields, the other operands */
 	if (insn->parallel)
 		tic64x_set_operand(&insn->opcode, tic64x_operand_p, 1);
 
 	if (insn->templ->flags & TIC64X_OP_SIDE)
-		tic64x_set_operand(&insn->opcode, tic64x_operand_s,
-					(insn->side == 2) ? 1 : 0);
+		tic64x_set_operand(&insn->opcode, tic64x_operand_s, s);
 
 	if (insn->templ->flags & TIC64X_OP_UNITNO)
-		tic64x_set_operand(&insn->opcode, tic64x_operand_y,
-					(insn->side == 2) ? 1 : 0);
+		tic64x_set_operand(&insn->opcode, tic64x_operand_y, y);
 
 	if (insn->templ->flags & TIC64X_OP_COND) {
 		tic64x_set_operand(&insn->opcode, tic64x_operand_z,
