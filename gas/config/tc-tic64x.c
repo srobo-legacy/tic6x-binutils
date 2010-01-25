@@ -1200,6 +1200,14 @@ void tic64x_opreader_double_register(char *line, struct tic64x_insn *insn,
 
 	return;
 }
+
+static const enum tic64x_operand_type constant_types[] = {
+	tic64x_operand_const5, tic64x_operand_const5p2,
+	tic64x_operand_const21, tic64x_operand_const16,
+	tic64x_operand_const15, tic64x_operand_const12,
+	tic64x_operand_const10, tic64x_operand_const7,
+	tic64x_operand_invalid };
+
 void
 tic64x_opreader_constant(char *line, struct tic64x_insn *insn,
 			enum tic64x_text_operand type)
@@ -1207,7 +1215,7 @@ tic64x_opreader_constant(char *line, struct tic64x_insn *insn,
 	expressionS expr;
 	const char *err;
 	enum tic64x_operand_type realtype;
-	int i;
+	int i, j;
 
 	/* Pre-lookup the operand index we expect... */
 	if (type == tic64x_optxt_nops) {
@@ -1216,29 +1224,18 @@ tic64x_opreader_constant(char *line, struct tic64x_insn *insn,
 		if (i < 0)
 			abort_no_operand(insn, "tic64x_operand_nops");
 
-	} else if ((i = find_operand_index(insn->templ, tic64x_operand_const5))
-									>= 0) {
-		realtype = tic64x_operand_const5;
-	} else if ((i = find_operand_index(insn->templ,
-					tic64x_operand_const5p2)) >= 0) {
-		realtype = tic64x_operand_const5p2;
-	} else if ((i = find_operand_index(insn->templ,
-					tic64x_operand_const21)) >= 0) {
-		realtype = tic64x_operand_const21;
-	} else if ((i = find_operand_index(insn->templ,
-					tic64x_operand_const16)) >= 0) {
-		realtype = tic64x_operand_const16;
-	} else if ((i = find_operand_index(insn->templ,
-					tic64x_operand_const15)) >= 0) {
-		realtype = tic64x_operand_const15;
-	} else if ((i = find_operand_index(insn->templ,
-					tic64x_operand_const12)) >= 0) {
-		realtype = tic64x_operand_const12;
-	} else if ((i = find_operand_index(insn->templ,
-					tic64x_operand_const10)) >= 0) {
-		realtype = tic64x_operand_const10;
 	} else {
-		abort_no_operand(insn, "tic64x_operand_const*");
+		for (j = 0; constant_types[j] != tic64x_operand_invalid; j++) {
+			if ((i = (find_operand_index(insn->templ,
+						constant_types[j]))) >= 0) {
+				realtype = constant_types[j];
+				break;
+			}
+		}
+
+		if (constant_types[j] == tic64x_operand_invalid) {
+			abort_no_operand(insn, "tic64x_operand_const*");
+		}
 	}
 
 	tic64x_parse_expr(line, &expr);
