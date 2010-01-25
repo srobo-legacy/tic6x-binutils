@@ -432,17 +432,42 @@ type_to_rtype(struct tic64x_insn *insn, enum tic64x_operand_type type)
 
 	switch(type) {
 	case tic64x_operand_const21:
+		if (!(insn->templ->flags & TIC64X_OP_CONST_PCREL))
+			as_fatal("Opcode with 21b reloc, but isn't pcrel");
+
+		return BFD_RELOC_TIC64X_PCR21;
 	case tic64x_operand_const10:
+		if (!(insn->templ->flags & TIC64X_OP_CONST_PCREL))
+			as_fatal("Opcode with 10b reloc, but isn't pcrel");
+
+		return BFD_RELOC_TIC64X_PCR10;
 	case tic64x_operand_const16:
 		/* One operand type, but semantics are different for mvk
 		 * and mvkh/mvklh (according to docs) */
+
 		/* XXX - there's a "mvk insn low half register" reloc, and
 		 * also a "signed 16 bit offset for mvk". Which afais, are
-		 * the same thing */
-	case tic64x_operand_const12:
-	case tic64x_operand_const7:
-		as_fatal("Badgers on pogo sticks!");
+		 * the same thing. For c62x c67x perhaps? Use signed 16
+		 * reloc, as it best describes mvk */
 
+		if (!strcmp("mvk", insn->templ->mnemonic))
+			return BFD_RELOC_TIC64X_S16;
+		else if (!strcmp("mvkh", insn->templ->mnemonic) ||
+			!strcmp("mvklh", insn->templ->mnemonic))
+			return BFD_RELOC_TIC64X_HI16;
+		else
+			as_fatal("Relocation with const16 operand, but isn't "
+				"mvk/mvkh/mvklh");
+	case tic64x_operand_const12:
+		if (!(insn->templ->flags & TIC64X_OP_CONST_PCREL))
+			as_fatal("Opcode with 12b reloc, but isn't pcrel");
+
+		return BFD_RELOC_TIC64X_PCR12;
+	case tic64x_operand_const7:
+		if (!(insn->templ->flags & TIC64X_OP_CONST_PCREL))
+			as_fatal("Opcode with 7b reloc, but isn't pcrel");
+
+		return BFD_RELOC_TIC64X_PCR7;
 	default:
 		as_fatal("Relocation on operand type that doesn't support it");
 	}
