@@ -1610,6 +1610,14 @@ md_assemble(char *line)
 }
 
 void
+md_after_pass_hook()
+{
+
+	tic64x_output_insn_packet();
+	return;
+}
+
+void
 tic64x_output_insn_packet()
 {
 	struct tic64x_insn *insn;
