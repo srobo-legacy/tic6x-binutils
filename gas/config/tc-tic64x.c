@@ -101,7 +101,7 @@ static optester tic64x_optest_constant;
 static int tic64x_compare_operands(struct tic64x_insn *insn,
 					struct tic64x_op_template *templ,
 							char **operands);
-static void tic64x_output_insn(struct tic64x_insn *insn);
+static void tic64x_output_insn(struct tic64x_insn *insn, char *out);
 
 /* A few things we might want to handle - more complete table in tic54x, also
  * see spru186 for a full reference */
@@ -156,6 +156,7 @@ struct {
  * md_after_pass_hook probably. */
 static int read_insns_index;
 static struct tic64x_insn *read_insns[8];
+static char *read_insns_loc[8];
 static void tic64x_output_insn_packet(void);
 
 int
@@ -1596,15 +1597,16 @@ md_assemble(char *line)
 				"instruction packet");
 			return;
 		}
-
-		read_insns[read_insns_index++] = insn;
 	} else {
 		tic64x_output_insn_packet();
 		memset(read_insns, 0, sizeof(read_insns));
+		memset(read_insns_loc, 0, sizeof(read_insns));
 		read_insns_index = 0;
-
-		read_insns[read_insns_index++] = insn;
 	}
+
+	frag_align(2 /* align to 4 */, 0, 0);
+	read_insns_loc[read_insns_index] = frag_more(4);
+	read_insns[read_insns_index++] = insn;
 
 	return;
 }
@@ -1621,11 +1623,13 @@ void
 tic64x_output_insn_packet()
 {
 	struct tic64x_insn *insn;
+	char *out;
 	int i;
 
 	/* Emit insns, with correct p-bits this time */
 	for (i = 0; i < read_insns_index; i++) {
 		insn = read_insns[i];
+		out = read_insns_loc[i];
 
 		if (i == read_insns_index - 1)
 			/* Last insn in packet - no p bit */
@@ -1633,7 +1637,7 @@ tic64x_output_insn_packet()
 		else
 			insn->parallel = 1;
 
-		tic64x_output_insn(insn);
+		tic64x_output_insn(insn, out);
 		free(insn); /* XXX - sanity check */
 	}
 
@@ -1641,9 +1645,8 @@ tic64x_output_insn_packet()
 }
 
 void
-tic64x_output_insn(struct tic64x_insn *insn)
+tic64x_output_insn(struct tic64x_insn *insn, char *out)
 {
-	char *out;
 	int i, s, y;
 
 	insn->opcode |= insn->templ->opcode;
@@ -1690,12 +1693,6 @@ tic64x_output_insn(struct tic64x_insn *insn)
 			}
 		}
 	}
-
-	/* That should have generated our instruction with all the available
-	 * data, now align and write that out */
-
-	frag_align(2 /* align to 4 */, 0, 0);
-	out = frag_more(4);
 
 	/* Assume everything is little endian for now */
 	bfd_putl32(insn->opcode, out);
