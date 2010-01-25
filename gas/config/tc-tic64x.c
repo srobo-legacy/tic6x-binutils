@@ -1612,6 +1612,22 @@ md_assemble(char *line)
 void
 tic64x_output_insn_packet()
 {
+	struct tic64x_insn *insn;
+	int i;
+
+	/* Emit insns, with correct p-bits this time */
+	for (i = 0; i < read_insns_index; i++) {
+		insn = read_insns[i];
+
+		if (i == read_insns_index - 1)
+			/* Last insn in packet - no p bit */
+			insn->parallel = 0;
+		else
+			insn->parallel = 1;
+
+		tic64x_output_insn(insn);
+		free(insn); /* XXX - sanity check */
+	}
 
 	return;
 }
