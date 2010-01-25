@@ -1572,10 +1572,6 @@ md_assemble(char *line)
 		}
 	}
 
-	printf("Got mnemonic %s unit %C num %d memunit %d\n",
-		insn->templ->mnemonic, insn->unit, insn->unit_num,
-					insn->mem_unit_num);
-
 	tic64x_output_insn(insn);
 
 	return;
