@@ -1234,6 +1234,9 @@ tic64x_opreader_constant(char *line, struct tic64x_insn *insn,
 	} else if ((i = find_operand_index(insn->templ,
 					tic64x_operand_const12)) >= 0) {
 		realtype = tic64x_operand_const12;
+	} else if ((i = find_operand_index(insn->templ,
+					tic64x_operand_const10)) >= 0) {
+		realtype = tic64x_operand_const10;
 	} else {
 		abort_no_operand(insn, "tic64x_operand_const*");
 	}
