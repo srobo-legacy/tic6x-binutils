@@ -101,7 +101,7 @@ static optester tic64x_optest_constant;
 static int tic64x_compare_operands(struct tic64x_insn *insn,
 					struct tic64x_op_template *templ,
 							char **operands);
-static void tic64x_output_insn(struct tic64x_insn *insn, char *out);
+static void tic64x_output_insn(struct tic64x_insn *insn, char *out, fragS *f);
 
 /* A few things we might want to handle - more complete table in tic54x, also
  * see spru186 for a full reference */
@@ -157,6 +157,7 @@ struct {
 static int read_insns_index;
 static struct tic64x_insn *read_insns[8];
 static char *read_insns_loc[8];
+static fragS *read_insns_frags[8];
 static void tic64x_output_insn_packet(void);
 
 int
@@ -1606,6 +1607,7 @@ md_assemble(char *line)
 
 	frag_align(2 /* align to 4 */, 0, 0);
 	read_insns_loc[read_insns_index] = frag_more(4);
+	read_insns_frags[read_insns_index] = frag_now;
 	read_insns[read_insns_index++] = insn;
 
 	return;
@@ -1623,6 +1625,7 @@ void
 tic64x_output_insn_packet()
 {
 	struct tic64x_insn *insn;
+	fragS *frag;
 	char *out;
 	int i;
 
@@ -1630,6 +1633,7 @@ tic64x_output_insn_packet()
 	for (i = 0; i < read_insns_index; i++) {
 		insn = read_insns[i];
 		out = read_insns_loc[i];
+		frag = read_insns_frags[i];
 
 		if (i == read_insns_index - 1)
 			/* Last insn in packet - no p bit */
@@ -1637,7 +1641,7 @@ tic64x_output_insn_packet()
 		else
 			insn->parallel = 1;
 
-		tic64x_output_insn(insn, out);
+		tic64x_output_insn(insn, out, frag);
 		free(insn); /* XXX - sanity check */
 	}
 
@@ -1645,7 +1649,7 @@ tic64x_output_insn_packet()
 }
 
 void
-tic64x_output_insn(struct tic64x_insn *insn, char *out)
+tic64x_output_insn(struct tic64x_insn *insn, char *out, fragS *frag)
 {
 	int i, s, y;
 
