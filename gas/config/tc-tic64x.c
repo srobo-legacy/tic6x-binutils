@@ -1689,7 +1689,15 @@ tic64x_output_insn(struct tic64x_insn *insn, char *out, fragS *frag)
 		/* Create fixups for unresolved operands */
 		if (!insn->operand_values[i].resolved) {
 			if (insn->operand_values[i].expr.X_op == O_symbol) {
-				as_warn("Implement fixups please");
+
+				int pcrel = insn->templ->flags &
+						TIC64X_OP_CONST_PCREL;
+				int rtype = type_to_rtype(
+						insn->templ->operands[i]);
+
+				fix_new_exp(frag, out - frag->fr_literal,
+						4, &insn->operand_values[i].expr
+						, pcrel, rtype);
 			} else {
 				as_fatal("Unresolved operand %d for \"%s\" is "
 					"not a symbol (internal error)",
@@ -1700,8 +1708,5 @@ tic64x_output_insn(struct tic64x_insn *insn, char *out, fragS *frag)
 
 	/* Assume everything is little endian for now */
 	bfd_putl32(insn->opcode, out);
-
-	/* Now go back through and look for relocs */
-	/* XXX - do this */
 	return;
 }
