@@ -371,7 +371,7 @@ print_insn(struct tic64x_op_template *templ, uint32_t opcode,
 				if (i == TIC64X_MAX_TXT_OPERANDS-1) {
 					info->fprintf_func(info->stream, "%s",
 								finalstr);
-				} else {
+				} else if (strlen(finalstr) != 0) {
 					snprintf(finalstr2, 16,
 								"%s,",
 								finalstr);
