@@ -3755,6 +3755,56 @@ ENUMDOC
   the opcode.
 
 ENUM
+  BFD_RELOC_TIC64X_BASE
+ENUMDOC
+  "Data page pointer-based offset"
+
+ENUM
+  BFD_RELOC_TIC64X_DIR15
+ENUMDOC
+  "Load or store long displacement"
+
+ENUM
+  BFD_RELOC_TIC64X_PCR21
+ENUMDOC
+  "21-bit packet, PC relative"
+
+ENUM
+  BFD_RELOC_TIC64X_PCR10
+ENUMDOC
+  "10-bit Packet PC relative"
+
+ENUM
+  BFD_RELOC_TIC64X_LO16
+ENUMDOC
+  "MVK instruction low half register"
+
+ENUM
+  BFD_RELOC_TIC64X_HI16
+ENUMDOC
+  "MVKH or MVKLH high half register"
+
+ENUM
+  BFD_RELOC_TIC64X_SECT
+ENUMDOC
+  "Section-based offset"
+
+ENUM
+  BFD_RELOC_TIC64X_S16
+ENUMDOC
+  "Signed 16-bit offset for MVK"
+
+ENUM
+  BFD_RELOC_TIC64X_PCR7
+ENUMDOC
+  "7-bit Packet PC relative"
+
+ENUM
+  BFD_RELOC_TIC64X_PCR12
+ENUMDOC
+  "12-bit Packet PC relative"
+
+ENUM
   BFD_RELOC_FR30_48
 ENUMDOC
   This is a 48 bit reloc for the FR30 that stores 32 bits.
