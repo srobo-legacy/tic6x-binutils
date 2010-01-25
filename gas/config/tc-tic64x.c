@@ -1585,6 +1585,8 @@ tic64x_output_insn(struct tic64x_insn *insn)
 
 	insn->opcode |= insn->templ->opcode;
 
+	/* Side bit specifies execution unit except for memory access, which
+	 * uses 's' for destination side / data path, and y for src/unit no */
 	if (insn->templ->flags & TIC64X_OP_MEMACCESS) {
 		s = (insn->mem_unit_num == 2) ? 1 : 0;
 		y = (insn->unit_num == 2) ? 1 : 0;
