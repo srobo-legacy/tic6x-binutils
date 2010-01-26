@@ -395,11 +395,28 @@ tc_gen_reloc(asection *section ATTRIBUTE_UNUSED, fixS *fixP)
 	arelent *rel;
 	asymbol *sym;
 
+	int pcrel;
+
+	if (fixP->fx_r_type == BFD_RELOC_TIC64X_PCR21 ||
+			fixP->fx_r_type == BFD_RELOC_TIC64X_PCR10 ||
+			fixP->fx_r_type == BFD_RELOC_TIC64X_PCR7 ||
+			fixP->fx_r_type == BFD_RELOC_TIC64X_PCR12) {
+		pcrel = 1;
+	} else {
+		pcrel = 0;
+	}
+
 	sym = symbol_get_bfdsym(fixP->fx_addsy);
 	rel = malloc(sizeof(*rel));
 	rel->sym_ptr_ptr = malloc(sizeof(asymbol *));
 	*rel->sym_ptr_ptr = sym;
 	rel->address = fixP->fx_frag->fr_address + fixP->fx_where;
+
+	/* XXX - I'm shakey on this, but adjust address from which offset is
+	 * calculated by how far we are from pc */
+	if (pcrel == 1)
+		rel->address -= fixP->fx_pcrel_adjust;
+
 	rel->howto = bfd_reloc_type_lookup(stdoutput, fixP->fx_r_type);
 
 	if (!rel->howto)
