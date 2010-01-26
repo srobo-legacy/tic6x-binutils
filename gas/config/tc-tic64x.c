@@ -1196,10 +1196,6 @@ tic64x_opreader_register(char *line, struct tic64x_insn *insn,
 			return;
 		}
 
-		i = find_operand_index(insn->templ, tic64x_operand_x);
-		if (i < 0)
-			abort_no_operand(insn, "tic64x_operand_x");
-
 		err = tic64x_set_operand(&insn->opcode, tic64x_operand_x, tmp);
 		if (err)
 			abort_setop_fail(insn, "tic64x_operand_x", err);
