@@ -98,6 +98,8 @@ static opreader tic64x_opreader_double_register;
 static optester tic64x_optest_double_register;
 static opreader tic64x_opreader_constant;
 static optester tic64x_optest_constant;
+static opreader tic64x_opreader_clr;
+static optester tic64x_optest_clr;
 
 static int tic64x_compare_operands(struct tic64x_insn *insn,
 					struct tic64x_op_template *templ,
@@ -147,6 +149,7 @@ struct {
 {tic64x_optxt_uconstant,tic64x_opreader_constant,tic64x_optest_constant},
 {tic64x_optxt_sconstant,tic64x_opreader_constant,tic64x_optest_constant},
 {tic64x_optxt_nops,	tic64x_opreader_constant,tic64x_optest_constant},
+{tic64x_optxt_clr,	tic64x_opreader_clr,	tic64x_optest_clr },
 {tic64x_optxt_none,	NULL, NULL}
 };
 
@@ -724,6 +727,17 @@ tic64x_optest_constant(char *line, struct tic64x_insn *insn ATTRIBUTE_UNUSED,
 
 	tic64x_parse_expr(line, &expr);
 	return (expr.X_op == O_constant || expr.X_op == O_symbol);
+}
+
+int
+tic64x_optest_clr(char *line, struct tic64x_insn *insn ATTRIBUTE_UNUSED,
+				enum tic64x_text_operand op ATTRIBUTE_UNUSED)
+{
+
+	if (strchr(line, ',') != NULL)
+		return 1;
+	else
+		return 0;
 }
 
 void
@@ -1316,7 +1330,7 @@ static const enum tic64x_operand_type constant_types[] = {
 	tic64x_operand_const21, tic64x_operand_const16,
 	tic64x_operand_const15, tic64x_operand_const12,
 	tic64x_operand_const10, tic64x_operand_const7,
-	tic64x_operand_invalid };
+	tic64x_operand_const4, tic64x_operand_invalid };
 
 void
 tic64x_opreader_constant(char *line, struct tic64x_insn *insn,
@@ -1380,6 +1394,41 @@ tic64x_opreader_constant(char *line, struct tic64x_insn *insn,
 	return;
 }
 
+void
+tic64x_opreader_clr(char *line, struct tic64x_insn *insn,
+			enum tic64x_text_operand type ATTRIBUTE_UNUSED)
+{
+	expressionS expr1, expr2;
+	char *part2;
+	int val1, val2;
+
+	/* This code remains untested until we actually run into a clr insn */
+
+	part2 = strchr(line, ',');
+	*part2++ = 0;
+
+	tic64x_parse_expr(line, &expr1);
+	tic64x_parse_expr(part2, &expr2);
+
+	if (expr1.X_op != O_constant || expr2.X_op != O_constant) {
+		as_bad("bitfield range operands not constants");
+		return;
+	}
+
+	val1 = expr1.X_add_number;
+	val2 = expr2.X_add_number;
+
+	if (val1 >= 32 || val2 >= 32 || val1 < 0 || val2 < 0) {
+		as_bad("bitfield operand out of range: must be 0-31");
+		return;
+	}
+
+	tic64x_set_operand(&insn->opcode, tic64x_operand_const5, val1);
+	tic64x_set_operand(&insn->opcode, tic64x_operand_bitfldb, val2);
+
+	return;
+}
+
 int
 tic64x_compare_operands(struct tic64x_insn *insn,
 			struct tic64x_op_template *templ,
@@ -1433,9 +1482,10 @@ md_assemble(char *line)
 	struct tic64x_op_template *multi;
 	char *mnemonic;
 	enum tic64x_text_operand optype;
-	int i, j, mvfail;
+	int i, j, mvfail, clrfail;
 
 	mvfail = 0;
+	clrfail = 0;
 	insn = malloc(sizeof(*insn));
 	memset(insn, 0, sizeof(*insn));
 
@@ -1464,7 +1514,12 @@ md_assemble(char *line)
 		as_warn("Replacing \"mv\" instruction with add 0; schedule your"
 			" own instructions");
 		mvfail = 1; /* Horror */
+	} else if (!strcmp(mnemonic, "clr")) {
+		clrfail = 1;
 	}
+
+
+
 	/* Is this an instruction we've heard of? */
 	insn->templ = hash_find(tic64x_ops, mnemonic);
 	if (!insn->templ) {
@@ -1535,6 +1590,11 @@ md_assemble(char *line)
 	i = 1;
 	while (!is_end_of_line[(int)*line] && i < TIC64X_MAX_TXT_OPERANDS) {
 		if (*line == ',') {
+			/* Rather than handle 4 operands, hack operand reader
+			 * here for clr operand type */
+			if (clrfail)
+				continue;
+
 			*line = 0;
 			operands[i] = line + 1;
 			i++;
