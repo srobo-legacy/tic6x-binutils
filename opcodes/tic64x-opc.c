@@ -305,6 +305,7 @@ struct tic64x_op_template tic64x_opcodes[] = {
 		tic64x_operand_invalid
 	}
 },
+/* XXX addab form on p 107 is too hacky for us right now */
 {"addad",	0x1E40,		0x1FFC,
 	TIC64X_OP_UNIT_D | TIC64X_OP_MULTI_MNEMONIC,
 	{ tic64x_optxt_srcreg2, tic64x_optxt_srcreg1, tic64x_optxt_dstreg },
@@ -349,6 +350,7 @@ struct tic64x_op_template tic64x_opcodes[] = {
 		tic64x_operand_invalid
 	}
 },
+/* XXX addah form on p 107 is too hacky for us right now */
 {"addaw",	0x1C40,		0x1FFC,
 	TIC64X_OP_UNIT_D | TIC64X_OP_MULTI_MNEMONIC,
 	{ tic64x_optxt_srcreg2, tic64x_optxt_srcreg1, tic64x_optxt_dstreg },
@@ -371,6 +373,7 @@ struct tic64x_op_template tic64x_opcodes[] = {
 		tic64x_operand_invalid
 	}
 },
+/* XXX addaw form on p 107 is too hacky for us right now */
 /* XXX - skipping c64x+ addah instruction on page 104, it'll require some
  * immense hacks to make it work, and is highly unlikely to be used for now */
 {"b",		0x10,		0x7C,
