@@ -435,6 +435,10 @@ md_apply_fix(fixS *fixP, valueT *valP, segT seg ATTRIBUTE_UNUSED)
 
 /* FACE: pcrel calculation required? */
 
+	/* Mask value by size of operand - apparently gas/bfd will detect
+	 * data loss. Possibly */
+	*valP &= ((1 << tic64x_operand_positions[type].size) - 1);
+
 	opcode = bfd_get_32(stdoutput, loc);
 	err = tic64x_set_operand(&opcode, type, *valP);
 	bfd_put_32(stdoutput, opcode, loc);
