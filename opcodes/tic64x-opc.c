@@ -148,6 +148,17 @@ struct tic64x_op_template tic64x_opcodes[] = {
 		tic64x_operand_invalid
 	}
 },
+{"abs2",	0x83580,	0x3EFFC,
+	TIC64X_OP_UNIT_L | TIC64X_OP_USE_XPATH | TIC64X_OP_XPATH_SRC2,
+	{ tic64x_optxt_srcreg2, tic64x_optxt_dstreg, tic64x_optxt_none },
+	{
+		tic64x_operand_srcreg2,
+		tic64x_operand_dstreg,
+		tic64x_operand_invalid,
+		tic64x_operand_invalid,
+		tic64x_operand_invalid
+	}
+},
 {"add",		0x78,		0xFFC,
 	TIC64X_OP_UNIT_L | TIC64X_OP_MULTI_MNEMONIC | TIC64X_OP_USE_XPATH |
 	TIC64X_OP_XPATH_SRC2,
