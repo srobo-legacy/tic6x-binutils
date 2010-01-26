@@ -384,13 +384,23 @@ md_convert_frag(bfd *b, segT seg, fragS *frag)
 }
 
 arelent *
-tc_gen_reloc(asection *section, fixS *fixP)
+tc_gen_reloc(asection *section ATTRIBUTE_UNUSED, fixS *fixP)
 {
+	arelent *rel;
+	asymbol *sym;
 
-	UNUSED(section);
-	UNUSED(fixP);
-	fprintf(stderr, "Unimplemented tc_gen_reloc in tic64x called\n");
-	exit(1);
+	sym = symbol_get_bfdsym(fixP->fx_addsy);
+	rel = malloc(sizeof(*rel));
+	rel->sym_ptr_ptr = malloc(sizeof(asymbol *));
+	*rel->sym_ptr_ptr = sym;
+	rel->address = fixP->fx_frag->fr_address + fixP->fx_where;
+	rel->howto = bfd_reloc_type_lookup(stdoutput, fixP->fx_r_type);
+
+	if (!rel->howto)
+		as_fatal("Couldn't generate a reloc with type %X",
+						fixP->fx_r_type);
+
+	return rel;
 }
 
 void
