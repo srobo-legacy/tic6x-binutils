@@ -1330,7 +1330,7 @@ tic64x_opreader_constant(char *line, struct tic64x_insn *insn,
 	expressionS expr;
 	const char *err;
 	enum tic64x_operand_type realtype;
-	int i, j;
+	int i, j, shift;
 
 	/* Pre-lookup the operand index we expect... */
 	if (type == tic64x_optxt_nops) {
@@ -1353,6 +1353,13 @@ tic64x_opreader_constant(char *line, struct tic64x_insn *insn,
 		}
 	}
 
+	shift = 0;
+	/* Do we need to shift at all? */
+	if (insn->templ->flags & TIC64X_OP_CONST_SCALE) {
+		shift = insn->templ->flags & TIC64X_OP_MEMSZ_MASK;
+		shift >>= TIC64X_OP_MEMSZ_SHIFT;
+	}
+
 	tic64x_parse_expr(line, &expr);
 	if (expr.X_op == O_constant) {
 		if (type == tic64x_optxt_sconstant && expr.X_add_number < 0) {
@@ -1361,7 +1368,7 @@ tic64x_opreader_constant(char *line, struct tic64x_insn *insn,
 		}
 
 		err = tic64x_set_operand(&insn->opcode, realtype,
-						expr.X_add_number);
+						expr.X_add_number << shift);
 		if (err) {
 			/* Don't abort this time - user is allowed to enter
 			 * a constant that's too large, it's not an internal
@@ -1373,6 +1380,7 @@ tic64x_opreader_constant(char *line, struct tic64x_insn *insn,
 		insn->operand_values[i].resolved = 1;
 	} else {
 		/* Not something useful right now, leave unresovled */
+		/*  Shifting will be handled by fixup/reloc code */
 		memcpy(&insn->operand_values[i].expr, &expr, sizeof(expr));
 	}
 
