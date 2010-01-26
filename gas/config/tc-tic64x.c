@@ -410,9 +410,11 @@ md_apply_fix(fixS *fixP, valueT *valP, segT seg ATTRIBUTE_UNUSED)
 	char *loc;
 	uint32_t opcode;
 	enum tic64x_operand_type type;
+	int size, shift;
 
 	/* This line from tic54 :| */
 	loc = fixP->fx_where + fixP->fx_frag->fr_literal;
+	shift = 0;
 
 	switch(fixP->fx_r_type) {
 	case BFD_RELOC_TIC64X_BASE:
@@ -423,9 +425,11 @@ md_apply_fix(fixS *fixP, valueT *valP, segT seg ATTRIBUTE_UNUSED)
 		break;
 	case BFD_RELOC_TIC64X_PCR21:
 		type = tic64x_operand_const21;
+		shift = 1;
 		break;
 	case BFD_RELOC_TIC64X_PCR10:
 		type = tic64x_operand_const10;
+		shift = 1;
 		break;
 	case BFD_RELOC_TIC64X_LO16:
 	case BFD_RELOC_TIC64X_HI16:
@@ -434,9 +438,11 @@ md_apply_fix(fixS *fixP, valueT *valP, segT seg ATTRIBUTE_UNUSED)
 		break;
 	case BFD_RELOC_TIC64X_PCR7:
 		type = tic64x_operand_const7;
+		shift = 1;
 		break;
 	case BFD_RELOC_TIC64X_PCR12:
 		type = tic64x_operand_const12;
+		shift = 1;
 		break;
 	default:
 		as_fatal("Bad relocation type %X\n", fixP->fx_r_type);
@@ -447,10 +453,16 @@ md_apply_fix(fixS *fixP, valueT *valP, segT seg ATTRIBUTE_UNUSED)
 
 	/* Mask value by size of operand - apparently gas/bfd will detect
 	 * data loss. Possibly */
-	*valP &= ((1 << tic64x_operand_positions[type].size) - 1);
+	size = tic64x_operand_positions[type].size;
+
+	/* If operand gets shifted, actual data encoded is 2 bits larger */
+	if (shift)
+		size += 2;
+
+	*valP &= ((1 << size) - 1);
 
 	opcode = bfd_get_32(stdoutput, loc);
-	err = tic64x_set_operand(&opcode, type, *valP);
+	err = tic64x_set_operand(&opcode, type, (shift) ? *valP >> 2 : *valP);
 	bfd_put_32(stdoutput, opcode, loc);
 
 	if (err)
