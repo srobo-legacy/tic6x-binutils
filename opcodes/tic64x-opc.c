@@ -167,7 +167,7 @@ struct tic64x_op_template tic64x_opcodes[] = {
 		tic64x_operand_dstreg,
 		tic64x_operand_srcreg1,
 		tic64x_operand_srcreg2,
-		tic64x_operand_x,
+		tic64x_operand_invalid,
 		tic64x_operand_invalid
 	}
 },
@@ -178,7 +178,7 @@ struct tic64x_op_template tic64x_opcodes[] = {
 		tic64x_operand_dwdst5,
 		tic64x_operand_srcreg1,
 		tic64x_operand_srcreg2,
-		tic64x_operand_x,
+		tic64x_operand_invalid,
 		tic64x_operand_invalid
 	}
 },
@@ -189,7 +189,7 @@ struct tic64x_op_template tic64x_opcodes[] = {
 		tic64x_operand_dwdst5,
 		tic64x_operand_srcreg1,
 		tic64x_operand_dwsrc,
-		tic64x_operand_x,
+		tic64x_operand_invalid,
 		tic64x_operand_invalid
 	}
 },
@@ -200,7 +200,7 @@ struct tic64x_op_template tic64x_opcodes[] = {
 		tic64x_operand_dstreg,
 		tic64x_operand_const5,
 		tic64x_operand_srcreg2,
-		tic64x_operand_x,
+		tic64x_operand_invalid,
 		tic64x_operand_invalid
 	}
 },
@@ -222,7 +222,7 @@ struct tic64x_op_template tic64x_opcodes[] = {
 		tic64x_operand_dstreg,
 		tic64x_operand_srcreg1,
 		tic64x_operand_srcreg2,
-		tic64x_operand_x,
+		tic64x_operand_invalid,
 		tic64x_operand_invalid
 	}
 },
@@ -233,7 +233,7 @@ struct tic64x_op_template tic64x_opcodes[] = {
 		tic64x_operand_dstreg,
 		tic64x_operand_const5,
 		tic64x_operand_srcreg2,
-		tic64x_operand_x,
+		tic64x_operand_invalid,
 		tic64x_operand_invalid
 	}
 },
@@ -268,7 +268,7 @@ struct tic64x_op_template tic64x_opcodes[] = {
 		tic64x_operand_dstreg,
 		tic64x_operand_srcreg1,
 		tic64x_operand_srcreg2,
-		tic64x_operand_x,
+		tic64x_operand_invalid,
 		tic64x_operand_invalid
 	}
 },
@@ -279,7 +279,7 @@ struct tic64x_op_template tic64x_opcodes[] = {
 		tic64x_operand_dstreg,
 		tic64x_operand_const5,
 		tic64x_operand_srcreg2,
-		tic64x_operand_x,
+		tic64x_operand_invalid,
 		tic64x_operand_invalid
 	}
 },
@@ -439,7 +439,7 @@ struct tic64x_op_template tic64x_opcodes[] = {
 	{ tic64x_optxt_srcreg2, tic64x_optxt_none, tic64x_optxt_none},
 	{
 		tic64x_operand_srcreg2,
-		tic64x_operand_x,
+		tic64x_operand_invalid,
 		tic64x_operand_invalid,
 		tic64x_operand_invalid,
 		tic64x_operand_invalid
@@ -476,7 +476,7 @@ struct tic64x_op_template tic64x_opcodes[] = {
 		tic64x_operand_dstreg,
 		tic64x_operand_srcreg1,
 		tic64x_operand_srcreg2,
-		tic64x_operand_x,
+		tic64x_operand_invalid,
 		tic64x_operand_invalid
 	}
 },
@@ -551,7 +551,7 @@ struct tic64x_op_template tic64x_opcodes[] = {
 		tic64x_operand_dstreg,
 		tic64x_operand_srcreg1,
 		tic64x_operand_srcreg2,
-		tic64x_operand_x,
+		tic64x_operand_invalid,
 		tic64x_operand_invalid
 	}
 },
@@ -562,7 +562,7 @@ struct tic64x_op_template tic64x_opcodes[] = {
 		tic64x_operand_dstreg,
 		tic64x_operand_const5,
 		tic64x_operand_srcreg2,
-		tic64x_operand_x,
+		tic64x_operand_invalid,
 		tic64x_operand_invalid
 	}
 },
@@ -573,7 +573,7 @@ struct tic64x_op_template tic64x_opcodes[] = {
 		tic64x_operand_dstreg,
 		tic64x_operand_srcreg1,
 		tic64x_operand_srcreg2,
-		tic64x_operand_x,
+		tic64x_operand_invalid,
 		tic64x_operand_invalid
 	}
 },
@@ -584,7 +584,7 @@ struct tic64x_op_template tic64x_opcodes[] = {
 		tic64x_operand_dstreg,
 		tic64x_operand_const5,
 		tic64x_operand_srcreg2,
-		tic64x_operand_x,
+		tic64x_operand_invalid,
 		tic64x_operand_invalid
 	}
 },
@@ -595,7 +595,7 @@ struct tic64x_op_template tic64x_opcodes[] = {
 		tic64x_operand_dstreg,
 		tic64x_operand_srcreg1,
 		tic64x_operand_srcreg2,
-		tic64x_operand_x,
+		tic64x_operand_invalid,
 		tic64x_operand_invalid
 	}
 },
@@ -606,8 +606,7 @@ struct tic64x_op_template tic64x_opcodes[] = {
 		tic64x_operand_dstreg,
 		tic64x_operand_const5,
 		tic64x_operand_srcreg2,
-		tic64x_operand_x,
-		tic64x_operand_invalid
+		tic64x_operand_invalid,
 	}
 },
 {"pack2",	0x18,		0xFFC,
@@ -618,7 +617,7 @@ struct tic64x_op_template tic64x_opcodes[] = {
 		tic64x_operand_dstreg,
 		tic64x_operand_srcreg1,
 		tic64x_operand_srcreg2,
-		tic64x_operand_x,
+		tic64x_operand_invalid,
 		tic64x_operand_invalid
 	}
 },
@@ -629,7 +628,7 @@ struct tic64x_op_template tic64x_opcodes[] = {
 		tic64x_operand_dstreg,
 		tic64x_operand_srcreg1,
 		tic64x_operand_srcreg2,
-		tic64x_operand_x,
+		tic64x_operand_invalid,
 		tic64x_operand_invalid
 	}
 },
@@ -713,7 +712,7 @@ struct tic64x_op_template tic64x_opcodes[] = {
 		tic64x_operand_dstreg,
 		tic64x_operand_srcreg1,
 		tic64x_operand_srcreg2,
-		tic64x_operand_x,
+		tic64x_operand_invalid,
 		tic64x_operand_invalid
 	}
 },
@@ -724,7 +723,7 @@ struct tic64x_op_template tic64x_opcodes[] = {
 		tic64x_operand_dstreg,
 		tic64x_operand_srcreg1,
 		tic64x_operand_srcreg2,
-		tic64x_operand_x,
+		tic64x_operand_invalid,
 		tic64x_operand_invalid
 	}
 },
@@ -735,7 +734,7 @@ struct tic64x_op_template tic64x_opcodes[] = {
 		tic64x_operand_dwdst5,
 		tic64x_operand_srcreg1,
 		tic64x_operand_srcreg2,
-		tic64x_operand_x,
+		tic64x_operand_invalid,
 		tic64x_operand_invalid
 	}
 },
@@ -746,8 +745,8 @@ struct tic64x_op_template tic64x_opcodes[] = {
 		tic64x_operand_dwdst5,
 		tic64x_operand_srcreg1,
 		tic64x_operand_srcreg2,
-		tic64x_operand_x,
 		tic64x_operand_invalid,
+		tic64x_operand_invalid
 	}
 },
 {"sub",		0x0D8,		0xFFC,
@@ -757,7 +756,7 @@ struct tic64x_op_template tic64x_opcodes[] = {
 		tic64x_operand_dstreg,
 		tic64x_operand_const5,
 		tic64x_operand_srcreg2,
-		tic64x_operand_x,
+		tic64x_operand_invalid,
 		tic64x_operand_invalid
 	}
 },
@@ -779,7 +778,7 @@ struct tic64x_op_template tic64x_opcodes[] = {
 		tic64x_operand_dstreg,
 		tic64x_operand_srcreg1,
 		tic64x_operand_srcreg2,
-		tic64x_operand_x,
+		tic64x_operand_invalid,
 		tic64x_operand_invalid
 	}
 },
@@ -790,7 +789,7 @@ struct tic64x_op_template tic64x_opcodes[] = {
 		tic64x_operand_dstreg,
 		tic64x_operand_const5,
 		tic64x_operand_srcreg2,
-		tic64x_operand_x,
+		tic64x_operand_invalid,
 		tic64x_operand_invalid
 	}
 },
@@ -804,7 +803,7 @@ struct tic64x_op_template tic64x_opcodes[] = {
 		tic64x_operand_dstreg,
 		tic64x_operand_srcreg1,
 		tic64x_operand_srcreg2,
-		tic64x_operand_x,
+		tic64x_operand_invalid,
 		tic64x_operand_invalid
 	}
 },
@@ -837,7 +836,7 @@ struct tic64x_op_template tic64x_opcodes[] = {
 		tic64x_operand_dstreg,
 		tic64x_operand_srcreg1,
 		tic64x_operand_srcreg2,
-		tic64x_operand_x,
+		tic64x_operand_invalid,
 		tic64x_operand_invalid
 	}
 },
@@ -848,7 +847,7 @@ struct tic64x_op_template tic64x_opcodes[] = {
 		tic64x_operand_dstreg,
 		tic64x_operand_srcreg1,
 		tic64x_operand_srcreg2,
-		tic64x_operand_x,
+		tic64x_operand_invalid,
 		tic64x_operand_invalid
 	}
 },
