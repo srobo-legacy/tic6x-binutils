@@ -265,6 +265,27 @@ struct tic64x_op_template tic64x_opcodes[] = {
 	{ tic64x_optxt_srcreg1, tic64x_optxt_dwsrc, tic64x_optxt_dwdst },
 	{ tic64x_operand_dwdst5, tic64x_operand_invalid }
 },
+{"add2",	0x60,		0xFFC,
+	TIC64X_OP_UNIT_S | TIC64X_OP_USE_XPATH | TIC64X_OP_XPATH_SRC2 |
+	TIC64X_OP_MULTI_MNEMONIC,
+	{ tic64x_optxt_srcreg1, tic64x_optxt_srcreg2, tic64x_optxt_dstreg },
+	{ tic64x_operand_invalid, tic64x_operand_invalid }
+},
+{"add2",	0xB8,		0xFFC,
+	TIC64X_OP_UNIT_L | TIC64X_OP_USE_XPATH | TIC64X_OP_XPATH_SRC2,
+	{ tic64x_optxt_srcreg1, tic64x_optxt_srcreg2, tic64x_optxt_dstreg },
+	{ tic64x_operand_invalid, tic64x_operand_invalid }
+},
+{"add2",	0x930,		0xFFC,
+	TIC64X_OP_UNIT_D | TIC64X_OP_USE_XPATH | TIC64X_OP_XPATH_SRC2,
+	{ tic64x_optxt_srcreg1, tic64x_optxt_srcreg2, tic64x_optxt_dstreg },
+	{ tic64x_operand_invalid, tic64x_operand_invalid }
+},
+{"add4",	0xCB8,		0xFFC,
+	TIC64X_OP_UNIT_L | TIC64X_OP_USE_XPATH | TIC64X_OP_XPATH_SRC2,
+	{ tic64x_optxt_srcreg1, tic64x_optxt_srcreg2, tic64x_optxt_dstreg },
+	{ tic64x_operand_invalid, tic64x_operand_invalid }
+},
 {"b",		0x10,		0x7C,
 	TIC64X_OP_UNIT_S | TIC64X_OP_CONST_SCALE | TIC64X_OP_MEMSZ_WORD |
 	TIC64X_OP_CONST_PCREL | TIC64X_OP_MULTI_MNEMONIC,
