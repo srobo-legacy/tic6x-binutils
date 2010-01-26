@@ -1833,8 +1833,9 @@ tic64x_output_insn(struct tic64x_insn *insn, char *out, fragS *frag, int pcoffs)
 		if (!insn->operand_values[i].resolved) {
 			if (insn->operand_values[i].expr.X_op == O_symbol) {
 
-				int pcrel = insn->templ->flags &
-						TIC64X_OP_CONST_PCREL;
+				int pcrel = (insn->templ->flags &
+						TIC64X_OP_CONST_PCREL)
+						? TRUE : FALSE;
 				int rtype = type_to_rtype(insn,
 						insn->templ->operands[i]);
 
