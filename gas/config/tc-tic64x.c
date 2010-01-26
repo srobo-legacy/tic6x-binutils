@@ -394,17 +394,9 @@ tc_gen_reloc(asection *section ATTRIBUTE_UNUSED, fixS *fixP)
 {
 	arelent *rel;
 	asymbol *sym;
-
 	int pcrel;
 
-	if (fixP->fx_r_type == BFD_RELOC_TIC64X_PCR21 ||
-			fixP->fx_r_type == BFD_RELOC_TIC64X_PCR10 ||
-			fixP->fx_r_type == BFD_RELOC_TIC64X_PCR7 ||
-			fixP->fx_r_type == BFD_RELOC_TIC64X_PCR12) {
-		pcrel = 1;
-	} else {
-		pcrel = 0;
-	}
+	pcrel = fixP->fx_pcrel;
 
 	sym = symbol_get_bfdsym(fixP->fx_addsy);
 	rel = malloc(sizeof(*rel));
