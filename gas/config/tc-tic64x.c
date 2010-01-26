@@ -1327,10 +1327,7 @@ tic64x_opreader_constant(char *line, struct tic64x_insn *insn,
 	/* Pre-lookup the operand index we expect... */
 	if (type == tic64x_optxt_nops) {
 		realtype = tic64x_operand_nops;
-		i = find_operand_index(insn->templ, realtype);
-		if (i < 0)
-			abort_no_operand(insn, "tic64x_operand_nops");
-
+		i = -1;
 	} else {
 		for (j = 0; constant_types[j] != tic64x_operand_invalid; j++) {
 			if ((i = (find_operand_index(insn->templ,
@@ -1369,7 +1366,8 @@ tic64x_opreader_constant(char *line, struct tic64x_insn *insn,
 			return;
 		}
 
-		insn->operand_values[i].resolved = 1;
+		if (i != -1)
+			insn->operand_values[i].resolved = 1;
 	} else {
 		/* Not something useful right now, leave unresovled */
 		/*  Shifting will be handled by fixup/reloc code */
