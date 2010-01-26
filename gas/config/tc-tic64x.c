@@ -1674,6 +1674,11 @@ md_assemble(char *line)
 	/* Did pre-read hook see a condition statement? Done here to allow
 	 * more checking against unit/unit-no */
 	if (tic64x_line_had_cond) {
+		if (insn->templ->flags & TIC64X_OP_NOCOND) {
+			as_bad("Instruction does not have condition field");
+			return;
+		}
+
 		insn->cond_nz = tic64x_line_had_nz_cond;
 		insn->cond_reg = tic64x_line_had_cond_reg->num;
 
