@@ -1285,11 +1285,8 @@ void tic64x_opreader_double_register(char *line, struct tic64x_insn *insn,
 				"tic64x_opreader_double_register: low "
 				"bit set in register address");
 		}
+		insn->operand_values[i].resolved = 1;
 	} else if (optype == tic64x_optxt_dwsrc) {
-		i = find_operand_index(insn->templ, tic64x_operand_dwsrc);
-		if (i < 0)
-			abort_no_operand(insn, "dwsrc");
-
 		type = tic64x_operand_dwsrc;
 		tmp = (reg2->num & 0x1F);
 	} else {
@@ -1297,28 +1294,20 @@ void tic64x_opreader_double_register(char *line, struct tic64x_insn *insn,
 		return;
 	}
 
-	/* XXX XXX XXX - some of the add instructions can have a single reg
-	 * identifier in one mode, then in another the same field is used for
-	 * addressing a pair: do we know for certain that pair addresses are
-	 * always shifted, even if there's a spare bit? */
-	/* Update - spru732h p 241 has a comment indicating that for 5 bit wide
-	 * address fields, we don't shift, and ensure the lowest bit is 0 */
-
 	err = tic64x_set_operand(&insn->opcode, type, tmp);
 	if (err)
 		abort_setop_fail(insn, "dwreg", err);
-	insn->operand_values[i].resolved = 1;
 
-	/* Also in this series - if this dw pair happen to be the destintation,
-	 * set the side field for this insn */
+	/* If this dw pair happen to be the destintation, validate the
+	 * side field for this insn */
 	if (optype == tic64x_optxt_dwdst) {
 		if (insn->templ->flags & TIC64X_OP_NOSIDE)
 			abort_no_operand(insn, "tic64x_operand_s");
 
-		err = tic64x_set_operand(&insn->opcode, tic64x_operand_s,
-				(reg1->num & TIC64X_REG_UNIT2) ? 1 : 0);
-		if (err)
-			abort_setop_fail(insn, "tic64x_operand_s", err);
+		if ((insn->unit_num == 2 && !(reg2->num & TIC64X_REG_UNIT2)) ||
+		    (insn->unit_num == 1 && (reg2->num & TIC64X_REG_UNIT2)))
+			as_bad("Destination register pair differ in side from "
+				"execution unit specifier");
 	}
 
 	return;
