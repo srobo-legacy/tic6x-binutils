@@ -1036,6 +1036,23 @@ tic64x_opreader_memaccess(char *line, struct tic64x_insn *insn,
 		return;
 	}
 
+	/* So, we may have decided to scale above... but can we? */
+	if (sc == 1 && !(insn->templ->flags & TIC64X_OP_MEMACC_SBIT)) {
+		/* We can't scale. Can't fit offset in field then */
+		as_bad("Constant offset too large");
+		return;
+	} else if(sc == 1 && (insn->templ->flags & TIC64X_OP_MEMACC_SBIT)) {
+		/* If we have that bit and must scale, do it here */
+		/* Unless the instruction always scales, that is */
+
+		if (!(insn->templ->flags & TIC64X_OP_MEMACC_SCALE)) {
+			err = tic64x_set_operand(&insn->opcode,
+						tic64x_operand_scale,
+						c);
+			if (err)
+				abort_setop_fail(insn, "tic64x_operand_scale",
+									err);
+		}
 	}
 
 	/* Write offset/scale values - scale only if we have a scale bit */
@@ -1046,21 +1063,9 @@ tic64x_opreader_memaccess(char *line, struct tic64x_insn *insn,
 	err = tic64x_set_operand(&insn->opcode, tic64x_operand_rcoffset, tmp);
 	if (err)
 		abort_setop_fail(insn, "tic64x_operand_rcoffset", err);
+
 	insn->operand_values[i].resolved = 1;
 
-	/* Don't set scale if insn always scales */
-	if (!(insn->templ->flags & TIC64X_OP_MEMACC_SCALE)) {
-		i = find_operand_index(insn->templ, tic64x_operand_scale);
-		if (i < 0)
-			abort_no_operand(insn, "tic64x_operand_scale");
-
-		err = tic64x_set_operand(&insn->opcode,tic64x_operand_scale,sc);
-		if (err)
-			abort_setop_fail(insn, "tic64x_operand_scale", err);
-		insn->operand_values[i].resolved = 1;
-	}
-
-	skip_offset:
 	return;
 }
 
