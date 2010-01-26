@@ -146,6 +146,7 @@ struct {
 {tic64x_optxt_srcreg2,	tic64x_opreader_register,tic64x_optest_register},
 {tic64x_optxt_dwdst,	tic64x_opreader_double_register,tic64x_optest_double_register},
 {tic64x_optxt_dwsrc,	tic64x_opreader_double_register,tic64x_optest_double_register},
+{tic64x_optxt_dwsrc2,	tic64x_opreader_double_register,tic64x_optest_double_register},
 {tic64x_optxt_uconstant,tic64x_opreader_constant,tic64x_optest_constant},
 {tic64x_optxt_sconstant,tic64x_opreader_constant,tic64x_optest_constant},
 {tic64x_optxt_nops,	tic64x_opreader_constant,tic64x_optest_constant},
@@ -1297,6 +1298,9 @@ void tic64x_opreader_double_register(char *line, struct tic64x_insn *insn,
 		insn->operand_values[i].resolved = 1;
 	} else if (optype == tic64x_optxt_dwsrc) {
 		type = tic64x_operand_dwsrc;
+		tmp = (reg2->num & 0x1F);
+	} else if (optype == tic64x_optxt_dwsrc2) {
+		type = tic64x_operand_srcreg1;
 		tmp = (reg2->num & 0x1F);
 	} else {
 		as_bad("tic64x_opreader_double_register: unknown operand type");

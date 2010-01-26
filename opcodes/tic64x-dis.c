@@ -40,6 +40,7 @@ struct {
 { tic64x_optxt_srcreg2,		print_op_register	},
 { tic64x_optxt_dwdst,		print_op_dwreg		},
 { tic64x_optxt_dwsrc,		print_op_dwreg		},
+{ tic64x_optxt_dwsrc2,		print_op_dwreg		},
 { tic64x_optxt_uconstant,	print_op_constant	},
 { tic64x_optxt_sconstant,	print_op_constant	},
 { tic64x_optxt_nops,		print_op_constant	}
@@ -603,7 +604,7 @@ print_op_register(struct tic64x_op_template *t, uint32_t opcode,
 		/* We use a y bit to specify which side we execute on (s says
 		 * where result is stored); so if we're a src, use y, if dst,
 		 * use s */
-		if (type == tic64x_optxt_dwsrc) {
+		if (type == tic64x_optxt_dwsrc || type == tic64x_optxt_dwsrc2) {
 			if (y) {
 				if (TXTOPERAND_CAN_XPATH(t, type) && x) {
 					unitchar = 'A';
@@ -650,24 +651,28 @@ print_op_dwreg(struct tic64x_op_template *t, uint32_t opcode,
 	t2 = tic64x_operand_invalid;
 	unitchar = '?';
 
-	for (i = 0; i < TIC64X_MAX_OPERANDS; i++) {
-		if ((t->operands[i] == tic64x_operand_dwdst4 &&
+	if (type == tic64x_optxt_dwsrc) {
+		t2 = tic64x_operand_dwsrc;
+	} else if (type == tic64x_optxt_dwsrc2) {
+		t2 = tic64x_operand_srcreg1;
+	} else if (type == tic64x_optxt_dwdst) {
+		for (i = 0; i < TIC64X_MAX_OPERANDS; i++) {
+			if ((t->operands[i] == tic64x_operand_dwdst4 &&
 						type == tic64x_optxt_dwdst) ||
-		    (t->operands[i] == tic64x_operand_dwdst5 &&
-						type == tic64x_optxt_dwdst) ||
-		    (t->operands[i] == tic64x_operand_dwsrc &&
-						type == tic64x_optxt_dwsrc)) {
-			t2 = t->operands[i];
-			break;
+			    (t->operands[i] == tic64x_operand_dwdst5 &&
+						type == tic64x_optxt_dwdst)) {
+				t2 = t->operands[i];
+				break;
+			}
+		}
+		if (i == TIC64X_MAX_OPERANDS) {
+			fprintf(stderr, "tic64x print_op_dwreg: \"%s\" has no "
+				"matching dword reg operand\n", t->mnemonic);
+			snprintf(buffer, len, "%C", '\0');
+			return;
 		}
 	}
 
-	if (i == TIC64X_MAX_OPERANDS) {
-		fprintf(stderr, "tic64x print_op_dwreg: \"%s\" has no matching "
-				"dword reg operand\n", t->mnemonic);
-		snprintf(buffer, len, "%C", '\0');
-		return;
-	}
 
 	if (t->flags & TIC64X_OP_NOSIDE) {
 		fprintf(stderr, "tic64x print_op_register: \"%s\" has no "

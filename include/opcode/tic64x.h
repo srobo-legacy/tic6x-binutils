@@ -60,6 +60,8 @@ enum tic64x_text_operand {
 	tic64x_optxt_srcreg2,
 	tic64x_optxt_dwdst,
 	tic64x_optxt_dwsrc,
+	tic64x_optxt_dwsrc2,	/* dwsrc, but in src1 position. '2' because
+				 * it's uncommon */
 	tic64x_optxt_uconstant,
 	tic64x_optxt_sconstant,
 	tic64x_optxt_nops,
