@@ -53,6 +53,7 @@ struct tic64x_operand_pos tic64x_operand_positions [] = {
 {	16,	12	},	/* const12 */
 {	13,	10	},	/* const10 */
 {	16,	7	},	/* const7 */
+{	13,	4	},	/* const4 */
 {	8,	5	},	/* bitfldb */
 {	13,	3	},	/* nops */
 {	13,	5	},	/* srcreg1 */

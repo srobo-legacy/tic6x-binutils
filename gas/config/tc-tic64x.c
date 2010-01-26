@@ -1330,7 +1330,7 @@ static const enum tic64x_operand_type constant_types[] = {
 	tic64x_operand_const21, tic64x_operand_const16,
 	tic64x_operand_const15, tic64x_operand_const12,
 	tic64x_operand_const10, tic64x_operand_const7,
-	tic64x_operand_invalid };
+	tic64x_operand_const4, tic64x_operand_invalid };
 
 void
 tic64x_opreader_constant(char *line, struct tic64x_insn *insn,

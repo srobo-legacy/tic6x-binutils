@@ -37,6 +37,7 @@ enum tic64x_operand_type {
 	tic64x_operand_const12,
 	tic64x_operand_const10,
 	tic64x_operand_const7,
+	tic64x_operand_const4,
 	tic64x_operand_bitfldb,			/* Bitfield specifier, see clr*/
 	tic64x_operand_nops,			/* Number of nops to execute */
 	tic64x_operand_srcreg1,			/* Generic source registers */
