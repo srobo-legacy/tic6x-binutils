@@ -392,8 +392,13 @@ struct tic64x_op_template tic64x_opcodes[] = {
 	{ tic64x_operand_const21, tic64x_operand_invalid }
 },
 {"clr",		0xC8,		0xFC,
-	TIC64X_OP_UNIT_S,
+	TIC64X_OP_UNIT_S | TIC64X_OP_MULTI_MNEMONIC,
 	{ tic64x_optxt_srcreg2, tic64x_optxt_clr, tic64x_optxt_dstreg },
+	{ tic64x_operand_invalid, tic64x_operand_invalid }
+},
+{"clr",		0xFE0,		0xFFC,
+	TIC64X_OP_UNIT_S | TIC64X_OP_USE_XPATH | TIC64X_OP_XPATH_SRC2,
+	{ tic6x_optxt_srcreg2, tic64x_optxt_srcreg1, tic64x_optxt_dstreg },
 	{ tic64x_operand_invalid, tic64x_operand_invalid }
 },
 {"dotpu4",	0x1B0,		0xFFC,
