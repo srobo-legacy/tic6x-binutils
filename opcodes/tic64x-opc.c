@@ -374,6 +374,29 @@ struct tic64x_op_template tic64x_opcodes[] = {
 	}
 },
 /* XXX addaw form on p 107 is too hacky for us right now */
+{"addk",	0x50,		0x7C,
+	TIC64X_OP_UNIT_S,
+	{ tic64x_optxt_sconstant, tic64x_optxt_dstreg, tic64x_optxt_none },
+	{
+		tic64x_operand_const16,
+		tic64x_operand_dstreg,
+		tic64x_operand_invalid,
+		tic64x_operand_invalid,
+		tic64x_operand_invalid
+	}
+},
+{"addkpc",	0x160,	0x1FFC,
+	TIC64X_OP_UNIT_S | TIC64X_OP_FIXED_UNITNO | TIC64X_OP_FIXED_UNIT2 |
+	TIC64X_OP_CONST_SCALE | TIC64X_OP_MEMSZ_WORD | TIC64X_OP_CONST_PCREL,
+	{ tic64x_optxt_sconstant, tic64x_optxt_dstreg, tic64x_optxt_uconstant },
+	{
+		tic64x_operand_dstreg,
+		tic64x_operand_const7,
+		tic64x_operand_nops,
+		tic64x_operand_invalid,
+		tic64x_operand_invalid
+	}
+},
 {"b",		0x10,		0x7C,
 	TIC64X_OP_UNIT_S | TIC64X_OP_CONST_SCALE | TIC64X_OP_MEMSZ_WORD |
 	TIC64X_OP_CONST_PCREL | TIC64X_OP_MULTI_MNEMONIC,
