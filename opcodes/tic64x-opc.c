@@ -384,6 +384,20 @@ struct tic64x_op_template tic64x_opcodes[] = {
 	{ tic64x_optxt_srcreg2, tic64x_optxt_nops, tic64x_optxt_none},
 	{ tic64x_operand_invalid, tic64x_operand_invalid }
 },
+{"bpos",	0x20,		0x1FFC,
+	TIC64X_OP_UNIT_S | TIC64X_OP_CONST_SCALE | TIC64X_OP_MEMSZ_WORD |
+	TIC64X_OP_CONST_PCREL,
+	{ tic64x_optxt_sconstant, tic64x_optxt_dstreg, tic64x_optxt_none },
+	{ tic64x_operand_const10, tic64x_operand_invalid }
+},
+/* Note that callp uses a hackity top four bits, but never mind, the
+ * rest conforms, aside from the return addr being put in {A,B}3. */
+{"callp",	0x10000010,	0xF000007C,
+	TIC64X_OP_UNIT_S | TIC64X_OP_CONST_SCALE | TIC64X_OP_MEMSZ_WORD |
+	TIC64X_OP_CONST_PCREL,
+	{ tic64x_optxt_sconstant, tic64x_optxt_none, tic64x_optxt_none },
+	{ tic64x_operand_const21, tic64x_operand_invalid }
+},
 {"dotpu4",	0x1B0,		0xFFC,
 	TIC64X_OP_UNIT_M | TIC64X_OP_USE_XPATH | TIC64X_OP_XPATH_SRC2,
 	{ tic64x_optxt_srcreg1, tic64x_optxt_srcreg2, tic64x_optxt_dstreg},
