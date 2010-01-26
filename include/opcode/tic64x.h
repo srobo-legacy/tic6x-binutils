@@ -88,7 +88,7 @@ struct tic64x_op_template {
 					 * unit 1 or 2 */
 #define TIC64X_OP_NOCOND	0x20	/* Doesn't have conditional execution
 					 * field, almost all insns have them. */
-#define TIC64X_OP_SIDE		0x40	/* 'Side' A/B for destination register*/
+#define TIC64X_OP_NOSIDE	0x40	/* Has no side bit */
 #define TIC64X_OP_MEMACCESS	0x80	/* Accesses memory, ie is a load or
 					 * store instruction. Used to work out
 					 * when we should have a T1 or T2 suffix

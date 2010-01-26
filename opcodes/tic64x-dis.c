@@ -311,7 +311,7 @@ print_insn(struct tic64x_op_template *templ, uint32_t opcode,
 			} else {
 				unit_no = '1';
 			}
-		} else if (templ->flags & TIC64X_OP_SIDE) {
+		} else if (!(templ->flags & TIC64X_OP_NOSIDE)) {
 			if (tic64x_get_operand(opcode, tic64x_operand_s, 0)) {
 				unit_no = '2';
 			} else {
@@ -334,7 +334,7 @@ print_insn(struct tic64x_op_template *templ, uint32_t opcode,
 	/* T1/T2 specifier? */
 	if (templ->flags & TIC64X_OP_MEMACCESS) {
 		tchar = "T";
-		if (!(templ->flags & TIC64X_OP_SIDE)) {
+		if (templ->flags & TIC64X_OP_NOSIDE) {
 			fprintf(stderr, "tic64x print_insn: instruction with "
 				"memory access but not dest/side bit?");
 			memnum = "?";
@@ -545,7 +545,7 @@ print_op_register(struct tic64x_op_template *t, uint32_t opcode,
 		return;
 	}
 
-	if (!(t->flags & TIC64X_OP_SIDE) &&
+	if ((t->flags & TIC64X_OP_NOSIDE) &&
 					!(t->flags & TIC64X_OP_FIXED_UNITNO)) {
 		fprintf(stderr, "tic64x print_op_register: \"%s\" has no "
 					"side bit?", t->mnemonic);
@@ -584,7 +584,7 @@ print_op_register(struct tic64x_op_template *t, uint32_t opcode,
 					unitchar = 'A';
 				}
 			}
-		} else if (t->flags & TIC64X_OP_SIDE) {
+		} else if (!(t->flags & TIC64X_OP_NOSIDE)) {
 			if (side) {
 				if (TXTOPERAND_CAN_XPATH(t, type) && x) {
 					unitchar = 'A';
@@ -669,7 +669,7 @@ print_op_dwreg(struct tic64x_op_template *t, uint32_t opcode,
 		return;
 	}
 
-	if (!(t->flags & TIC64X_OP_SIDE)) {
+	if (t->flags & TIC64X_OP_NOSIDE) {
 		fprintf(stderr, "tic64x print_op_register: \"%s\" has no "
 					"side bit?", t->mnemonic);
 		snprintf(buffer, len, "%C", '\0');
@@ -693,7 +693,7 @@ print_op_dwreg(struct tic64x_op_template *t, uint32_t opcode,
 			} else {
 				unitchar = 'A';
 			}
-		} else if (t->flags & TIC64X_OP_SIDE) {
+		} else if (!(t->flags & TIC64X_OP_NOSIDE)) {
 			/* We can use side bit to determine where this is read
 			 * from. AFAIK you can't read dw reg's over xpath,
 			 * so we can ignore that situation */

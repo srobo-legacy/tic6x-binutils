@@ -1324,7 +1324,7 @@ void tic64x_opreader_double_register(char *line, struct tic64x_insn *insn,
 	/* Also in this series - if this dw pair happen to be the destintation,
 	 * set the side field for this insn */
 	if (optype == tic64x_optxt_dwdst) {
-		if (!(insn->templ->flags & TIC64X_OP_SIDE))
+		if (insn->templ->flags & TIC64X_OP_NOSIDE)
 			abort_no_operand(insn, "tic64x_operand_s");
 
 		err = tic64x_set_operand(&insn->opcode, tic64x_operand_s,
@@ -1822,7 +1822,7 @@ tic64x_output_insn(struct tic64x_insn *insn, char *out, fragS *frag, int pcoffs)
 	if (insn->parallel)
 		tic64x_set_operand(&insn->opcode, tic64x_operand_p, 1);
 
-	if (insn->templ->flags & TIC64X_OP_SIDE)
+	if (!(insn->templ->flags & TIC64X_OP_NOSIDE))
 		tic64x_set_operand(&insn->opcode, tic64x_operand_s, s);
 
 	if (insn->templ->flags & TIC64X_OP_UNITNO)
