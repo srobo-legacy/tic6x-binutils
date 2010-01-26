@@ -568,6 +568,102 @@ struct tic64x_op_template tic64x_opcodes[] = {
 },
 /* XXX - not using cmtl for now, has slightly odd absolute pointer situation,
  * also is c64x+, also is atomic and so unlikely to be used */
+{"ddotp4",	0x10000630,	0xF0000FFC,
+	TIC64X_OP_UNIT_M | TIC64X_OP_USE_XPATH | TIC64X_OP_XPATH_SRC2 |
+	TIC64X_OP_NOCOND,
+	{ tic64x_optxt_srcreg1, tic64x_optxt_srcreg2, tic64x_optxt_dwdst },
+	{ tic64x_operand_dwdst5, tic64x_operand_invalid }
+},
+{"ddotph2",	0x100005F0,	0xF0000FFC,
+	TIC64X_OP_UNIT_M | TIC64X_OP_USE_XPATH | TIC64X_OP_XPATH_SRC2 |
+	TIC64X_OP_NOCOND,
+	{ tic64x_optxt_dwsrc2, tic64x_optxt_srcreg2, tic64x_optxt_dwdst },
+	{ tic64x_operand_dwdst5, tic64x_operand_invalid }
+},
+{"ddotph2r",	0x10000570,	0xF0000FFC,
+	TIC64X_OP_UNIT_M | TIC64X_OP_USE_XPATH | TIC64X_OP_XPATH_SRC2 |
+	TIC64X_OP_NOCOND,
+	{ tic64x_optxt_dwsrc2, tic64x_optxt_srcreg2, tic64x_optxt_dstreg },
+	{ tic64x_operand_invalid, tic64x_operand_invalid }
+},
+{"ddotpl2",	0x100005B0,	0xF0000FFC,
+	TIC64X_OP_UNIT_M | TIC64X_OP_USE_XPATH | TIC64X_OP_XPATH_SRC2 |
+	TIC64X_OP_NOCOND,
+	{ tic64x_optxt_dwsrc2, tic64x_optxt_srcreg2, tic64x_optxt_dwdst },
+	{ tic64x_operand_dwdst5, tic64x_operand_invalid }
+},
+{"ddotpl2r",	0x10000530,	0xF0000FFC,
+	TIC64X_OP_UNIT_M | TIC64X_OP_USE_XPATH | TIC64X_OP_XPATH_SRC2 |
+	TIC64X_OP_NOCOND,
+	{ tic64x_optxt_dwsrc2, tic64x_optxt_srcreg2, tic64x_optxt_dstreg },
+	{ tic64x_operand_invalid, tic64x_operand_invalid }
+},
+{"deal",	0x3A0F0,	0x3EFFC,
+	TIC64X_OP_UNIT_M | TIC64X_OP_USE_XPATH | TIC64X_OP_XPATH_SRC2,
+	{ tic64x_optxt_srcreg2, tic64x_optxt_dstreg, tic64x_optxt_none },
+	{ tic64x_operand_invalid, tic64x_operand_invalid }
+},
+/* This isn't really an instruction that's useful right now, but it's simple
+ * to type in and doesn't require hacks, so what the hell. */
+{"dint",	0x10004000,	0xFFFFFFFC,
+	TIC64X_OP_NOCOND,
+	{ tic64x_optxt_none, tic64x_optxt_none, tic64x_optxt_none },
+	{ tic64x_operand_invalid, tic64x_operand_invalid }
+},
+{"dmv",		0xEF0,		0xFFC,
+	TIC64X_OP_UNIT_S | TIC64X_OP_USE_XPATH | TIC64X_OP_XPATH_SRC2,
+	{ tic64x_optxt_srcreg1, tic64x_optxt_srcreg2, tic64x_optxt_dwdst },
+	{ tic64x_operand_dwdst5, tic64x_operand_invalid }
+},
+{"dotp2",	0x330,		0xFFC,
+	TIC64X_OP_UNIT_M | TIC64X_OP_USE_XPATH | TIC64X_OP_XPATH_SRC2 |
+	TIC64X_OP_MULTI_MNEMONIC,
+	{ tic64x_optxt_srcreg1, tic64x_optxt_srcreg2, tic64x_optxt_dstreg },
+	{ tic64x_operand_invalid, tic64x_operand_invalid }
+},
+{"dotp2",	0x2F0,		0xFFC,
+	TIC64X_OP_UNIT_M | TIC64X_OP_USE_XPATH | TIC64X_OP_XPATH_SRC2,
+	{ tic64x_optxt_srcreg1, tic64x_optxt_srcreg2, tic64x_optxt_dwdst },
+	{ tic64x_operand_dwdst5, tic64x_operand_invalid }
+},
+{"dotpn2",	0x270,		0xFFC,
+	TIC64X_OP_UNIT_M | TIC64X_OP_USE_XPATH | TIC64X_OP_XPATH_SRC2,
+	{ tic64x_optxt_srcreg1, tic64x_optxt_srcreg2, tic64x_optxt_dstreg },
+	{ tic64x_operand_invalid, tic64x_operand_invalid }
+},
+{"dotpnrsu2",	0x1F0,		0xFFC,
+	TIC64X_OP_UNIT_M | TIC64X_OP_USE_XPATH | TIC64X_OP_XPATH_SRC2,
+	{ tic64x_optxt_srcreg1, tic64x_optxt_srcreg2, tic64x_optxt_dstreg },
+	{ tic64x_operand_invalid, tic64x_operand_invalid }
+},
+/* Danger Will Robinson: dotpnrus2 is dotpnrsu2 with the operands swapped. */
+{"dotpnrus2",	0x1F0,		0xFFC,
+	TIC64X_OP_UNIT_M | TIC64X_OP_USE_XPATH | TIC64X_OP_XPATH_SRC2,
+	{ tic64x_optxt_srcreg2, tic64x_optxt_srcreg1, tic64x_optxt_dstreg },
+	{ tic64x_operand_invalid, tic64x_operand_invalid }
+},
+{"dotprsu2",	0x370,		0xFFC,
+	TIC64X_OP_UNIT_M | TIC64X_OP_USE_XPATH | TIC64X_OP_XPATH_SRC2,
+	{ tic64x_optxt_srcreg1, tic64x_optxt_srcreg2, tic64x_optxt_dstreg },
+	{ tic64x_operand_invalid, tic64x_operand_invalid }
+},
+/* Again; the below and above insns are the same */
+{"dotprus2", 	0x370,		0xFFC,
+	TIC64X_OP_UNIT_M | TIC64X_OP_USE_XPATH | TIC64X_OP_XPATH_SRC2,
+	{ tic64x_optxt_srcreg2, tic64x_optxt_srcreg1, tic64x_optxt_dstreg },
+	{ tic64x_operand_invalid, tic64x_operand_invalid }
+},
+{"dotpsu4",	0xB0,		0xFFC,
+	TIC64X_OP_UNIT_M | TIC64X_OP_USE_XPATH | TIC64X_OP_XPATH_SRC2,
+	{ tic64x_optxt_srcreg2, tic64x_optxt_srcreg1, tic64x_optxt_dstreg },
+	{ tic64x_operand_invalid, tic64x_operand_invalid }
+},
+/* Again; above and below are the same, swapped operands */
+{"dotpus4",	0xB0,		0xFFC,
+	TIC64X_OP_UNIT_M | TIC64X_OP_USE_XPATH | TIC64X_OP_XPATH_SRC2,
+	{ tic64x_optxt_srcreg2, tic64x_optxt_srcreg1, tic64x_optxt_dstreg },
+	{ tic64x_operand_invalid, tic64x_operand_invalid }
+},
 {"dotpu4",	0x1B0,		0xFFC,
 	TIC64X_OP_UNIT_M | TIC64X_OP_USE_XPATH | TIC64X_OP_XPATH_SRC2,
 	{ tic64x_optxt_srcreg1, tic64x_optxt_srcreg2, tic64x_optxt_dstreg},
