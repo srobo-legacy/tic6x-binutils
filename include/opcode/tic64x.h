@@ -37,6 +37,7 @@ enum tic64x_operand_type {
 	tic64x_operand_const12,
 	tic64x_operand_const10,
 	tic64x_operand_const7,
+	tic64x_operand_bitfldb,			/* Bitfield specifier, see clr*/
 	tic64x_operand_nops,			/* Number of nops to execute */
 	tic64x_operand_srcreg1,			/* Generic source registers */
 	tic64x_operand_srcreg2,			/* one and two, any use */
@@ -60,7 +61,8 @@ enum tic64x_text_operand {
 	tic64x_optxt_dwsrc,
 	tic64x_optxt_uconstant,
 	tic64x_optxt_sconstant,
-	tic64x_optxt_nops
+	tic64x_optxt_nops,
+	tic64x_optxt_clr	/* Double operand for clr insn */
 };
 
 #define TIC64X_ADDRMODE_NEG		0
