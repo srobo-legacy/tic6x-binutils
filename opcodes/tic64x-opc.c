@@ -397,6 +397,30 @@ struct tic64x_op_template tic64x_opcodes[] = {
 		tic64x_operand_invalid
 	}
 },
+/* XXX - addsub instruction counts as being hacky, as does addsub2 */
+{"addu",	0x578,		0xFFC,
+	TIC64X_OP_UNIT_L | TIC64X_OP_USE_XPATH | TIC64X_OP_XPATH_SRC2 |
+	TIC64X_OP_MULTI_MNEMONIC,
+	{ tic64x_optxt_srcreg1, tic64x_optxt_srcreg2, tic64x_optxt_dwdst },
+	{
+		tic64x_operand_srcreg1,
+		tic64x_operand_srcreg2,
+		tic64x_operand_dwdst5,
+		tic64x_operand_invalid,
+		tic64x_operand_invalid
+	}
+},
+{"addu",	0x538,		0xFFC,
+	TIC64X_OP_UNIT_L | TIC64X_OP_USE_XPATH | TIC64X_OP_XPATH_SRC1,
+	{ tic64x_optxt_srcreg1, tic64x_optxt_dwsrc, tic64x_optxt_dwdst },
+	{
+		tic64x_operand_srcreg1,
+		tic64x_operand_dwsrc,
+		tic64x_operand_dwdst5,
+		tic64x_operand_invalid,
+		tic64x_operand_invalid
+	}
+},
 {"b",		0x10,		0x7C,
 	TIC64X_OP_UNIT_S | TIC64X_OP_CONST_SCALE | TIC64X_OP_MEMSZ_WORD |
 	TIC64X_OP_CONST_PCREL | TIC64X_OP_MULTI_MNEMONIC,
