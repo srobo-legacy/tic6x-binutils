@@ -386,10 +386,15 @@ struct tic64x_op_template tic64x_opcodes[] = {
 	{ tic64x_operand_invalid, tic64x_operand_invalid }
 },
 {"callp",	0x10000010,	0xF000007C,
-	TIC64X_OP_UNIT_S | TIC64X_CONST_SCALE | TIC64X_OP_MEMSZ_WORD |
+	TIC64X_OP_UNIT_S | TIC64X_OP_CONST_SCALE | TIC64X_OP_MEMSZ_WORD |
 	TIC64X_OP_CONST_PCREL,
 	{ tic64x_optxt_sconstant, tic64x_optxt_none, tic64x_optxt_none },
 	{ tic64x_operand_const21, tic64x_operand_invalid }
+},
+{"clr",		0xC8,		0xFC,
+	TIC64X_OP_UNIT_S,
+	{ tic64x_optxt_srcreg2, tic64x_optxt_clr, tic64x_optxt_dstreg },
+	{ tic64x_operand_invalid, tic64x_operand_invalid }
 },
 {"dotpu4",	0x1B0,		0xFFC,
 	TIC64X_OP_UNIT_M | TIC64X_OP_USE_XPATH | TIC64X_OP_XPATH_SRC2,
