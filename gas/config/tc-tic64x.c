@@ -1382,7 +1382,7 @@ tic64x_opreader_constant(char *line, struct tic64x_insn *insn,
 
 	tic64x_parse_expr(line, &expr);
 	if (expr.X_op == O_constant) {
-		if (type == tic64x_optxt_sconstant && expr.X_add_number < 0) {
+		if (type == tic64x_optxt_uconstant && expr.X_add_number < 0) {
 			as_bad("Negative operand, expected unsigned");
 			return;
 		}
