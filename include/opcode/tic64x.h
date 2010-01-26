@@ -86,9 +86,8 @@ struct tic64x_op_template {
 
 #define TIC64X_OP_UNITNO	0x10	/* Insn has 'y' bit at bit 7, specifying
 					 * unit 1 or 2 */
-#define TIC64X_OP_COND		0x20	/* Has conditional execution field,
-					 * top three bits of insn. Implies
-					 * that there's also a 'z' field */
+#define TIC64X_OP_NOCOND	0x20	/* Doesn't have conditional execution
+					 * field, almost all insns have them. */
 #define TIC64X_OP_SIDE		0x40	/* 'Side' A/B for destination register*/
 #define TIC64X_OP_MEMACCESS	0x80	/* Accesses memory, ie is a load or
 					 * store instruction. Used to work out
