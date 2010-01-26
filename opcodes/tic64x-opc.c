@@ -357,7 +357,8 @@ struct tic64x_op_template tic64x_opcodes[] = {
 },
 /* B IRP and B NRP don't really fall into what's being developed right now */
 {"bdec",	0x1020,		0x1FFC,
-	TIC64X_OP_UNIT_S,
+	TIC64X_OP_UNIT_S | TIC64X_OP_CONST_SCALE | TIC64X_OP_MEMSZ_WORD |
+	TIC64X_OP_CONST_PCREL,
 	{ tic64x_optxt_sconstant, tic64x_optxt_dstreg, tic64x_optxt_none },
 	{ tic64x_operand_const10, tic64x_operand_invalid }
 },
