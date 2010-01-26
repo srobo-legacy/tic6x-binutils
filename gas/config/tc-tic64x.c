@@ -1103,7 +1103,7 @@ tic64x_opreader_register(char *line, struct tic64x_insn *insn,
 	const char *err;
 	struct tic64x_register *reg;
 	enum tic64x_operand_type t2;
-	int i, tmp;
+	int tmp;
 
 	/* Expect only a single piece of text, should be register */
 	reg = tic64x_sym_to_reg(line);
@@ -1135,16 +1135,9 @@ tic64x_opreader_register(char *line, struct tic64x_insn *insn,
 		return;
 	}
 
-	i = find_operand_index(insn->templ, t2);
-	if (i < 0)
-		/* XXX - I guess those abort routines should just print the
-		 * enumeration number, as we're unlikely to have the text name*/
-		abort_no_operand(insn, "{register}");
-
 	err = tic64x_set_operand(&insn->opcode, t2, reg->num & 0x1F);
 	if (err)
 		abort_setop_fail(insn, "{register}", err);
-	insn->operand_values[i].resolved = 1;
 
 	/* Now set some more interesting fields - if working on destination reg,
 	 * set the side of processor we're working on. Also set xpath field */
@@ -1199,7 +1192,6 @@ tic64x_opreader_register(char *line, struct tic64x_insn *insn,
 		err = tic64x_set_operand(&insn->opcode, tic64x_operand_x, tmp);
 		if (err)
 			abort_setop_fail(insn, "tic64x_operand_x", err);
-		insn->operand_values[i].resolved = 1;
 	}
 
 	return;
