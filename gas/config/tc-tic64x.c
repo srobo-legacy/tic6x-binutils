@@ -1199,7 +1199,7 @@ void tic64x_opreader_double_register(char *line, struct tic64x_insn *insn,
 	const char *err;
 	char *rtext;
 	enum tic64x_operand_type type;
-	int tmp, i;
+	int tmp, i, side;
 	char c;
 
 	/* Double register is of the form "A0:A1", or whatever symbolic names
@@ -1293,17 +1293,20 @@ void tic64x_opreader_double_register(char *line, struct tic64x_insn *insn,
 	if (err)
 		abort_setop_fail(insn, "dwreg", err);
 
-	/* If this dw pair happen to be the destintation, validate the
-	 * side field for this insn */
-	if (optype == tic64x_optxt_dwdst) {
-		if (insn->templ->flags & TIC64X_OP_NOSIDE)
-			abort_no_operand(insn, "tic64x_operand_s");
+	if (insn->templ->flags & TIC64X_OP_NOSIDE)
+		abort_no_operand(insn, "tic64x_operand_s");
 
-		if ((insn->unit_num == 2 && !(reg2->num & TIC64X_REG_UNIT2)) ||
-		    (insn->unit_num == 1 && (reg2->num & TIC64X_REG_UNIT2)))
-			as_bad("Destination register pair differ in side from "
-				"execution unit specifier");
-	}
+	/* Validate that this pair comes from the right side. It has to be
+	 * the side of execution (can't put dw over xpath), unless it's memory
+	 * access */
+
+	side = (insn->templ->flags & TIC64X_OP_MEMACCESS)
+		? insn->mem_unit_num : insn->unit_num;
+
+	if ((side == 2 && !(reg2->num & TIC64X_REG_UNIT2)) ||
+	    (side == 1 && (reg2->num & TIC64X_REG_UNIT2)))
+		as_bad("Register pair differ in side from "
+			"execution unit specifier");
 
 	return;
 }
