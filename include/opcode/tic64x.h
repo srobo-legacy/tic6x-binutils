@@ -10,6 +10,12 @@ struct tic64x_register {
 	int num;
 };
 
+struct tic64x_operand_pos {
+	int position;
+	int size;
+};
+extern struct tic64x_operand_pos tic64x_operand_positions[];
+
 /* Caution - this enum is used as an index to a table in tic64x-opc.c, if
  * adding a new operand type or changing ordering, also modify operand
  * position/size table to reflect changes. */

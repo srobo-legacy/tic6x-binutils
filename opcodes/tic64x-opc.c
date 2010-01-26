@@ -33,10 +33,7 @@ struct tic64x_register tic64x_regs[] = {
 	{NULL,	0}
 };
 
-static struct {
-	int	position;
-	int	size;
-} operand_positions [] = {
+struct tic64x_operand_pos tic64x_operand_positions [] = {
 /* Note - this array indexed by tic64x_operand_type, if ordering is changed
  * here, you need to change that enum definition */
 {	0,	0	},	/* invalid */
@@ -72,20 +69,21 @@ tic64x_set_operand(uint32_t *op, enum tic64x_operand_type type, int value)
 {
 
 	if (value < 0) {
-		if (-value >= (1 << operand_positions[type].size)) {
+		if (-value >= (1 << tic64x_operand_positions[type].size)) {
 			return "Operand too large for position";
 		}
 	} else {
-		if (value >= (1 << operand_positions[type].size)) {
+		if (value >= (1 << tic64x_operand_positions[type].size)) {
 			return "Operand too large for position";
 		}
 	}
 
-	if (operand_positions[type].position + operand_positions[type].size >32)
+	if (tic64x_operand_positions[type].position +
+				tic64x_operand_positions[type].size >32)
 		return "Operand type falls off end of opcode";
 
-	value &= ((1 << operand_positions[type].size) - 1);
-	value <<= operand_positions[type].position;
+	value &= ((1 << tic64x_operand_positions[type].size) - 1);
+	value <<= tic64x_operand_positions[type].position;
 	*op |= value;
 	return NULL;
 }
@@ -118,8 +116,8 @@ int
 tic64x_get_operand(uint32_t opcode,  enum tic64x_operand_type t, int signx)
 {
 
-	return get_operand(opcode, operand_positions[t].position,
-				operand_positions[t].size, signx);
+	return get_operand(opcode, tic64x_operand_positions[t].position,
+				tic64x_operand_positions[t].size, signx);
 }
 
 /* NB: When transcribing add instructions, I may have missed some of the ti
