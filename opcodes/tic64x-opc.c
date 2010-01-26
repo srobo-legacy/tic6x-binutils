@@ -125,6 +125,29 @@ tic64x_get_operand(uint32_t opcode,  enum tic64x_operand_type t, int signx)
  * matter functionally because it's add, but this may need to be fixed in the
  * future */
 struct tic64x_op_template tic64x_opcodes[] = {
+{"abs",		0x358,		0x3EFFC,
+	TIC64X_OP_UNIT_L | TIC64X_OP_USE_XPATH | TIC64X_OP_XPATH_SRC2 |
+	TIC64X_OP_MULTI_MNEMONIC,
+	{ tic64x_optxt_srcreg2, tic64x_optxt_dstreg, tic64x_optxt_none },
+	{
+		tic64x_operand_srcreg2,
+		tic64x_operand_dstreg,
+		tic64x_operand_invalid,
+		tic64x_operand_invalid,
+		tic64x_operand_invalid
+	}
+},
+{"abs",		0x718,		0x3EFFC,
+	TIC64X_OP_UNIT_L,
+	{ tic64x_optxt_dwsrc, tic64x_optxt_dwdst, tic64x_optxt_none },
+	{
+		tic64x_operand_dwsrc,
+		tic64x_operand_dwdst5,
+		tic64x_operand_invalid,
+		tic64x_operand_invalid,
+		tic64x_operand_invalid
+	}
+},
 {"add",		0x78,		0xFFC,
 	TIC64X_OP_UNIT_L | TIC64X_OP_MULTI_MNEMONIC | TIC64X_OP_USE_XPATH |
 	TIC64X_OP_XPATH_SRC2,
