@@ -97,13 +97,13 @@ reloc_howto_type tic64x_howto_table[] = {
 /* I don't know what this section offset is supposed to be... */
 
 	HOWTO(R_C60S16, 0, 4, 16, FALSE, 7, complain_overflow_bitfield,
-		tic64x_relocation, "RS16", FALSE, 0xFFFF, 0xFFFF, FALSE),
+		NULL, "RS16", FALSE, 0xFFFF, 0xFFFF, FALSE),
 
 	HOWTO(R_C60PCR7, 2, 4, 7, TRUE, 16, complain_overflow_bitfield,
-		tic64x_relocation, "RPCR7", FALSE, 0x7F, 0x7F, TRUE),
+		NULL, "RPCR7", FALSE, 0x7F, 0x7F, TRUE),
 
 	HOWTO(R_C60PCR12, 2, 4, 12, TRUE, 16, complain_overflow_bitfield,
-		tic64x_relocation, "RPCR12", FALSE, 0xFFF, 0xFFF, TRUE)
+		NULL, "RPCR12", FALSE, 0xFFF, 0xFFF, TRUE)
 };
 
 reloc_howto_type *
