@@ -98,8 +98,8 @@ static opreader tic64x_opreader_double_register;
 static optester tic64x_optest_double_register;
 static opreader tic64x_opreader_constant;
 static optester tic64x_optest_constant;
-static opreader tic64x_opreader_clr;
-static optester tic64x_optest_clr;
+static opreader tic64x_opreader_bfield;
+static optester tic64x_optest_bfield;
 
 static int tic64x_compare_operands(struct tic64x_insn *insn,
 					struct tic64x_op_template *templ,
@@ -150,7 +150,7 @@ struct {
 {tic64x_optxt_uconstant,tic64x_opreader_constant,tic64x_optest_constant},
 {tic64x_optxt_sconstant,tic64x_opreader_constant,tic64x_optest_constant},
 {tic64x_optxt_nops,	tic64x_opreader_constant,tic64x_optest_constant},
-{tic64x_optxt_clr,	tic64x_opreader_clr,	tic64x_optest_clr },
+{tic64x_optxt_bfield,	tic64x_opreader_bfield,	tic64x_optest_bfield },
 {tic64x_optxt_none,	NULL, NULL}
 };
 
@@ -731,7 +731,7 @@ tic64x_optest_constant(char *line, struct tic64x_insn *insn ATTRIBUTE_UNUSED,
 }
 
 int
-tic64x_optest_clr(char *line, struct tic64x_insn *insn ATTRIBUTE_UNUSED,
+tic64x_optest_bfield(char *line, struct tic64x_insn *insn ATTRIBUTE_UNUSED,
 				enum tic64x_text_operand op ATTRIBUTE_UNUSED)
 {
 
@@ -1399,14 +1399,14 @@ tic64x_opreader_constant(char *line, struct tic64x_insn *insn,
 }
 
 void
-tic64x_opreader_clr(char *line, struct tic64x_insn *insn,
+tic64x_opreader_bfield(char *line, struct tic64x_insn *insn,
 			enum tic64x_text_operand type ATTRIBUTE_UNUSED)
 {
 	expressionS expr1, expr2;
 	char *part2;
 	int val1, val2;
 
-	/* This code remains untested until we actually run into a clr insn */
+	/* This code remains untested until we actually run into a bfield op */
 
 	part2 = strchr(line, ',');
 	*part2++ = 0;
@@ -1481,15 +1481,15 @@ tic64x_compare_operands(struct tic64x_insn *insn,
 void
 md_assemble(char *line)
 {
-	char *operands[TIC64X_MAX_TXT_OPERANDS];
+	char *operands[TIC64X_MAX_TXT_OPERANDS+1];
 	struct tic64x_insn *insn;
 	struct tic64x_op_template *multi;
 	char *mnemonic;
 	enum tic64x_text_operand optype;
-	int i, j, mvfail, clrfail;
+	int i, j, mvfail, bfieldfail;
 
 	mvfail = 0;
-	clrfail = 0;
+	bfieldfail = 0;
 	insn = malloc(sizeof(*insn));
 	memset(insn, 0, sizeof(*insn));
 
@@ -1518,8 +1518,6 @@ md_assemble(char *line)
 		as_warn("Replacing \"mv\" instruction with add 0; schedule your"
 			" own instructions");
 		mvfail = 1; /* Horror */
-	} else if (!strcmp(mnemonic, "clr")) {
-		clrfail = 1;
 	}
 
 
@@ -1592,13 +1590,8 @@ md_assemble(char *line)
 	memset(operands, 0, sizeof(operands));
 	operands[0] = line;
 	i = 1;
-	while (!is_end_of_line[(int)*line] && i < TIC64X_MAX_TXT_OPERANDS) {
+	while (!is_end_of_line[(int)*line] && i < TIC64X_MAX_TXT_OPERANDS+1) {
 		if (*line == ',') {
-			/* Rather than handle 4 operands, hack operand reader
-			 * here for clr operand type */
-			if (clrfail)
-				continue;
-
 			*line = 0;
 			operands[i] = line + 1;
 			i++;
@@ -1665,6 +1658,18 @@ md_assemble(char *line)
 		}
 
 		insn->templ = multi;	/* Swap type of instruction */
+	}
+
+	/* Set mode nightmare: if insn has bitfield, congeal middle two
+	 * operands back into one. Highly unpleasent, but saves having to
+	 * patch up everything to support four operands. */
+	if (insn->templ->flags & TIC64X_OP_BITFIELD) {
+		/* Seeing how it was in this form in the first place.. */
+		char *tmp;
+		tmp = malloc(1024);
+		snprintf(tmp, 1023, "%s, %s", operands[1], operands[2]);
+		operands[1] = tmp;
+		operands[2] = operands[3];
 	}
 
 	/* Now that our instruction is definate, some checks */
@@ -1794,6 +1799,10 @@ md_assemble(char *line)
 	read_insns_loc[read_insns_index] = frag_more(4);
 	read_insns_frags[read_insns_index] = frag_now;
 	read_insns[read_insns_index++] = insn;
+
+	if (insn->templ->flags & TIC64X_OP_BITFIELD) {
+		free(operands[1]);
+	}
 
 	return;
 }

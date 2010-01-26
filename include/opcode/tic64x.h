@@ -65,7 +65,7 @@ enum tic64x_text_operand {
 	tic64x_optxt_uconstant,
 	tic64x_optxt_sconstant,
 	tic64x_optxt_nops,
-	tic64x_optxt_clr	/* Double operand for clr insn */
+	tic64x_optxt_bfield	/* Double operand for clr insn */
 };
 
 #define TIC64X_ADDRMODE_NEG		0
@@ -135,6 +135,9 @@ struct tic64x_op_template {
 					 * flag to indicate const is scaled */
 #define TIC64X_OP_CONST_PCREL	0x40000 /* Constant, whatever it may be,
 					 * is PC relative */
+#define TIC64X_OP_BITFIELD	0x80000	/* Instruction contains a bitfield
+					 * operand, making this four text
+					 * operands */
 
 
 #define TIC64X_MAX_TXT_OPERANDS	3
