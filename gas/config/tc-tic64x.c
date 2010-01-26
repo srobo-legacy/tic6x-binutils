@@ -1030,33 +1030,12 @@ tic64x_opreader_memaccess(char *line, struct tic64x_insn *insn,
 			sc = 0;
 		}
 	} else {
-		/* offset, not reg, not constant, so it has a symbol.
-		 * resolve that later */
-		i = find_operand_index(insn->templ, tic64x_operand_rcoffset);
-		if (i < 0)
-			abort_no_operand(insn, "tic64x_operand_rcoffset");
+		/* Don't support a circumstance where user is making
+		 * some relocatable/fixupable calculation in offset */
+		as_bad("Offset field not a constant");
+		return;
+	}
 
-		memcpy(&insn->operand_values[i].expr, &expr, sizeof(expr));
-
-		/* Set scale bit to resolved - I don't forsee a situation where
-		 * someone's going to both have an unresolved offset, _and_
-		 * have it extremely large. XXX is appropriate I guess */
-		/* Don't set if instruction _always_ scales */
-		if (!(insn->templ->flags & TIC64X_OP_MEMACC_SCALE)) {
-			i = find_operand_index(insn->templ,
-					tic64x_operand_scale);
-			if (i < 0)
-				abort_no_operand(insn, "tic64x_operand_scale");
-
-			err = tic64x_set_operand(&insn->opcode,
-						tic64x_operand_scale,0);
-			if (err)
-				abort_setop_fail(insn, "tic64x_operand_scale",
-									err);
-			insn->operand_values[i].resolved = 1;
-		}
-
-		goto skip_offset; /* Mwuuhahahaaaha */
 	}
 
 	/* Write offset/scale values - scale only if we have a scale bit */
