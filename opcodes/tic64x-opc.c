@@ -327,6 +327,28 @@ struct tic64x_op_template tic64x_opcodes[] = {
 		tic64x_operand_invalid
 	}
 },
+{"addah",	0x1A40,		0x1FFC,
+	TIC64X_OP_UNIT_D | TIC64X_OP_MULTI_MNEMONIC,
+	{ tic64x_optxt_srcreg2, tic64x_optxt_srcreg1, tic64x_optxt_dstreg },
+	{
+		tic64x_operand_srcreg1,
+		tic64x_operand_srcreg2,
+		tic64x_operand_dstreg,
+		tic64x_operand_invalid,
+		tic64x_operand_invalid
+	}
+},
+{"addah",	0x1B40,		0x1FFC,
+	TIC64X_OP_UNIT_D,
+	{ tic64x_optxt_srcreg2, tic64x_optxt_uconstant, tic64x_optxt_dstreg },
+	{
+		tic64x_operand_const5,
+		tic64x_operand_srcreg2,
+		tic64x_operand_dstreg,
+		tic64x_operand_invalid,
+		tic64x_operand_invalid
+	}
+},
 {"b",		0x10,		0x7C,
 	TIC64X_OP_UNIT_S | TIC64X_OP_CONST_SCALE | TIC64X_OP_MEMSZ_WORD |
 	TIC64X_OP_CONST_PCREL | TIC64X_OP_MULTI_MNEMONIC,
