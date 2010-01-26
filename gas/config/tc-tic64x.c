@@ -1063,7 +1063,8 @@ tic64x_opreader_memaccess(char *line, struct tic64x_insn *insn,
 	}
 
 	/* So, we may have decided to scale above... but can we? */
-	if (sc == 1 && !(insn->templ->flags & TIC64X_OP_MEMACC_SBIT)) {
+	if (sc == 1 && !(insn->templ->flags & TIC64X_OP_MEMACC_SBIT) &&
+			!(insn->templ->flags & TIC64X_OP_MEMACC_SCALE)) {
 		/* We can't scale. Can't fit offset in field then */
 		as_bad("Constant offset too large");
 		return;
