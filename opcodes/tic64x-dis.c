@@ -735,21 +735,22 @@ print_op_constant(struct tic64x_op_template *t, uint32_t opcode,
 
 	/* There are multiple constant operand forms... */
 	t2 = tic64x_operand_invalid;
-	for (i = 0; i < TIC64X_MAX_OPERANDS; i++) {
-		if (t->operands[i] == tic64x_operand_const5 ||
-		    t->operands[i] == tic64x_operand_const5p2 ||
-		    t->operands[i] == tic64x_operand_const21 ||
-		    t->operands[i] == tic64x_operand_const16 ||
-		    t->operands[i] == tic64x_operand_const15 ||
-		    t->operands[i] == tic64x_operand_const12 ||
-		    t->operands[i] == tic64x_operand_const10 ||
-		    t->operands[i] == tic64x_operand_nops) {
-			if (type == tic64x_optxt_nops &&
-					t->operands[i] != tic64x_operand_nops)
-				continue;
-
-			t2 = t->operands[i];
-			break;
+	if (type == tic64x_optxt_nops) {
+		t2 = tic64x_operand_nops;
+		i = 0;
+	} else {
+		for (i = 0; i < TIC64X_MAX_OPERANDS; i++) {
+			if (t->operands[i] == tic64x_operand_const5 ||
+				t->operands[i] == tic64x_operand_const5p2 ||
+				t->operands[i] == tic64x_operand_const21 ||
+				t->operands[i] == tic64x_operand_const16 ||
+				t->operands[i] == tic64x_operand_const15 ||
+				t->operands[i] == tic64x_operand_const12 ||
+				t->operands[i] == tic64x_operand_const10 ||
+				t->operands[i] == tic64x_operand_nops) {
+					t2 = t->operands[i];
+					break;
+			}
 		}
 	}
 
