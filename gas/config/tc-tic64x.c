@@ -746,7 +746,9 @@ tic64x_opreader_memaccess(char *line, struct tic64x_insn *insn,
 	const char *err;
 	char *regname, *offs;
 	struct tic64x_register *reg, *offsetreg;
+	enum tic64x_operand_type offs_type;
 	int off_reg, pos_neg, pre_post, nomod_modify, has_offset, i, tmp, sc;
+	int offs_operand, offs_size;
 	char c;
 
 	off_reg = -1;
@@ -968,17 +970,21 @@ tic64x_opreader_memaccess(char *line, struct tic64x_insn *insn,
 	if (err)
 		abort_setop_fail(insn, "tic64x_operand_addrmode", err);
 
-	/* Tricky part - offset might not be resolved (with 5 bits, not certain
-	 * _why_ that would be, but never mind) so we'll check if it's a
-	 * register or constant. If the former, write it. If the latter, check
-	 * if it's a numeric constant or whether it involves symbols. If symbols
-	 * it'll have to be left unresolved.
-	 * Also for constants, see whether we need to scale them or not. Turn
-	 * scaling off for register offsets - I don't think there's assembly
-	 * syntax for scaled registers */
+	offs_operand = find_operand_index(insn->templ, tic64x_operand_rcoffset);
+	offs_type = tic64x_operand_rcoffset;
+	if (offs_operand < 0) {
+		offs_operand = find_operand_index(insn->templ,
+						tic64x_operand_const15);
+		offs_type = tic64x_operand_const15;
+	}
+
+	if (offs_operand < 0)
+		as_fatal("memaccess with no r/c offset operand");
 
 	if (!has_offset) {
 		/* _really_ simple, no offset, no scale */
+		/* XXX Don't scale register offsets for now, not aware of
+		 * assembly syntax to express which way it should go */
 		tmp = 0;
 		sc = 0;
 	} else if (off_reg == TIC64X_ADDRMODE_REGISTER) {
@@ -986,6 +992,7 @@ tic64x_opreader_memaccess(char *line, struct tic64x_insn *insn,
 		tmp = offsetreg->num & 0x1F;
 		sc = 0;
 	} else if (has_offset && expr.X_op == O_constant) {
+		offs_size = tic64x_operand_positions[offs_type].size;
 		tmp = expr.X_add_number;
 		if (tmp < 0) {
 			as_bad("tic64x-pedantic-mode: can't add/subtract a "
@@ -994,7 +1001,9 @@ tic64x_opreader_memaccess(char *line, struct tic64x_insn *insn,
 			return;
 		}
 
-		if (tmp > 31 || insn->templ->flags & TIC64X_OP_MEMACC_SCALE) {
+		if (tmp > ((1 << offs_size) - 1) ||
+			insn->templ->flags & TIC64X_OP_MEMACC_SCALE) {
+
 			/* If the instruction always scales the offset, or if
 			 * the offset is too large to fit, scale it. The
 			 * amount by which it's scaled is the size of memory
@@ -1018,7 +1027,7 @@ tic64x_opreader_memaccess(char *line, struct tic64x_insn *insn,
 
 			/* Ok, we can scale it, but even then does it fit? */
 			tmp /= i;
-			if (tmp > 31) {
+			if (tmp > ((1 << offs_size) - 1 )) {
 				as_bad("Constant offset too large");
 				return;
 			}
@@ -1026,7 +1035,7 @@ tic64x_opreader_memaccess(char *line, struct tic64x_insn *insn,
 			/* Success; enable scaling */
 			sc = 1;
 		} else {
-			/* When < 31 in the first place, don't scale */
+			/* When < size and we have a choice, don't scale */
 			sc = 0;
 		}
 	} else {
@@ -1055,16 +1064,11 @@ tic64x_opreader_memaccess(char *line, struct tic64x_insn *insn,
 		}
 	}
 
-	/* Write offset/scale values - scale only if we have a scale bit */
-	i = find_operand_index(insn->templ, tic64x_operand_rcoffset);
-	if (i < 0)
-		abort_no_operand(insn, "tic64x_operand_rcoffset");
-
-	err = tic64x_set_operand(&insn->opcode, tic64x_operand_rcoffset, tmp);
+	err = tic64x_set_operand(&insn->opcode, offs_type, tmp);
 	if (err)
-		abort_setop_fail(insn, "tic64x_operand_rcoffset", err);
+		abort_setop_fail(insn, "tic64x_operand_r/c", err);
 
-	insn->operand_values[i].resolved = 1;
+	insn->operand_values[offs_operand].resolved = 1;
 
 	return;
 }
