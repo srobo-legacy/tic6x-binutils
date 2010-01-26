@@ -355,8 +355,9 @@ md_estimate_size_before_relax(fragS *frag, segT seg)
 }
 
 long
-md_pcrel_from (fixS *fixP)
+md_pcrel_from_seg (fixS *fixP, segT segment)
 {
+	addressT addr;
 
 	/* MERCY: we can use fx_pcrel_adjust to store the offset between fixup
 	 * insn and start of packet. Which would be insanely difficult to
@@ -366,7 +367,11 @@ md_pcrel_from (fixS *fixP)
 
 	/* NB: I have nothing to test against, but I assume this offset
 	 * is _supposed_ to be negative */
-	return (long) -fixP->fx_pcrel_adjust;
+	addr = fixP->fx_frag->fr_address;
+	addr -= segment->vma;
+	addr += fixP->fx_where;
+	addr -= fixP->fx_pcrel_adjust;
+	return (long)addr;
 }
 
 valueT

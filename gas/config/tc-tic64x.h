@@ -3,6 +3,8 @@
 #ifndef _TC_TIC64X_H_
 #define _TC_TIC64X_H_
 
+#include "write.h"
+
 /* Set cpu for obj-coff.h */
 #define TC_TIC64X
 
@@ -35,6 +37,10 @@ void tic64x_start_line_hook(void);
  * file ending, use afterpass hook */
 void md_after_pass_hook(void);
 #define md_after_pass_hook md_after_pass_hook
+
+/* For accurate pcrel calculations... */
+long md_pcrel_from_seg(fixS *fixP, segT segment);
+#define MD_PCREL_FROM_SECTION(FIX, SEC) md_pcrel_from_seg((FIX), (SEC))
 
 
 #endif /* _TC_TIC64X_H_ */
