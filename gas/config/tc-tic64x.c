@@ -946,16 +946,10 @@ tic64x_opreader_memaccess(char *line, struct tic64x_insn *insn,
 
 	/* So - we have a base register, addressing mode, offset and maybe scale
 	 * bit, which we need to fill out in insn. Simple ones first */
-	i = find_operand_index(insn->templ, tic64x_operand_basereg);
-	if (i < 0)
-		abort_no_operand(insn, "tic64x_operand_basereg");
-
 	err = tic64x_set_operand(&insn->opcode, tic64x_operand_basereg,
 							reg->num & 0x1F);
 	if (err)
 		abort_setop_fail(insn, "tic64x_operand_basereg", err);
-
-	insn->operand_values[i].resolved = 1;
 
 	/* Addressing mode - ditch any fields that haven't been set or are zero.
 	 * We rely on earlier checks (XXX not written yet...) to ensure it's
@@ -970,14 +964,9 @@ tic64x_opreader_memaccess(char *line, struct tic64x_insn *insn,
 	if (nomod_modify > 0)
 		tmp |= nomod_modify;
 
-	i = find_operand_index(insn->templ, tic64x_operand_addrmode);
-	if (i < 0)
-		abort_no_operand(insn, "tic64x_operand_addrmode");
-
 	err = tic64x_set_operand(&insn->opcode, tic64x_operand_addrmode, tmp);
 	if (err)
 		abort_setop_fail(insn, "tic64x_operand_addrmode", err);
-	insn->operand_values[i].resolved = 1;
 
 	/* Tricky part - offset might not be resolved (with 5 bits, not certain
 	 * _why_ that would be, but never mind) so we'll check if it's a
