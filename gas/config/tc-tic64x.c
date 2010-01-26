@@ -102,7 +102,8 @@ static optester tic64x_optest_constant;
 static int tic64x_compare_operands(struct tic64x_insn *insn,
 					struct tic64x_op_template *templ,
 							char **operands);
-static void tic64x_output_insn(struct tic64x_insn *insn, char *out, fragS *f);
+static void tic64x_output_insn(struct tic64x_insn *insn, char *out, fragS *f,
+								int pcoffs);
 
 /* A few things we might want to handle - more complete table in tic54x, also
  * see spru186 for a full reference */
@@ -357,10 +358,15 @@ long
 md_pcrel_from (fixS *fixP)
 {
 
-	/* Another thing not implemented by tic54x, we probably don't need to
-	 * either */
-	UNUSED(fixP);
-	return 0;
+	/* MERCY: we can use fx_pcrel_adjust to store the offset between fixup
+	 * insn and start of packet. Which would be insanely difficult to
+	 * calculate from here, given that we have to inspect p bits up to
+	 * 8 packets backwards, possibly in a different fragment (and they only
+	 * have singly linked lists... */
+
+	/* NB: I have nothing to test against, but I assume this offset
+	 * is _supposed_ to be negative */
+	return (long) -fixP->fx_pcrel_adjust;
 }
 
 valueT
@@ -1764,7 +1770,7 @@ tic64x_output_insn_packet()
 		else
 			insn->parallel = 1;
 
-		tic64x_output_insn(insn, out, frag);
+		tic64x_output_insn(insn, out, frag, i * 4);
 #if 0
 /* Insn can't be freed, it might be being fixed up. Needs more thought
  * about insn lifetime */
@@ -1776,8 +1782,9 @@ tic64x_output_insn_packet()
 }
 
 void
-tic64x_output_insn(struct tic64x_insn *insn, char *out, fragS *frag)
+tic64x_output_insn(struct tic64x_insn *insn, char *out, fragS *frag, int pcoffs)
 {
+	fixS *fix;
 	int i, s, y;
 
 	insn->opcode |= insn->templ->opcode;
@@ -1822,9 +1829,10 @@ tic64x_output_insn(struct tic64x_insn *insn, char *out, fragS *frag)
 				int rtype = type_to_rtype(insn,
 						insn->templ->operands[i]);
 
-				fix_new_exp(frag, out - frag->fr_literal,
+				fix = fix_new_exp(frag, out - frag->fr_literal,
 						4, &insn->operand_values[i].expr
 						, pcrel, rtype);
+				fix->fx_pcrel_adjust = pcoffs;
 			} else {
 				as_fatal("Unresolved operand %d for \"%s\" is "
 					"not a symbol (internal error)",
