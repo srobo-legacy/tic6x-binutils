@@ -1478,6 +1478,98 @@ tic64x_compare_operands(struct tic64x_insn *insn,
 }
 
 
+static int
+validation_and_conditions(struct tic64x_insn *insn)
+{
+
+	if (!(UNITCHAR_2_FLAG(insn->unit) & insn->templ->flags)) {
+		as_bad("Instruction \"%s\" can't go in unit %C. XXX - currently"
+			" have no way of representing instructions that go "
+			"in multiple units", insn->templ->mnemonic, insn->unit);
+		return 1;
+	}
+
+	if (insn->templ->flags & TIC64X_OP_FIXED_UNITNO) {
+		if (((insn->templ->flags & TIC64X_OP_FIXED_UNIT2) &&
+					insn->unit_num != 2) ||
+		    (!(insn->templ->flags & TIC64X_OP_FIXED_UNIT2) &&
+					insn->unit_num != 1)) {
+			as_bad("\"%s\" can't execute on unit %d ",
+				insn->templ->mnemonic, insn->unit_num);
+			return 1;
+		}
+	}
+
+	if (insn->templ->flags & TIC64X_OP_MEMACCESS) {
+		if (insn->mem_unit_num == -1) {
+			as_bad("Expected memory datapath T1/T2 in unit "
+				"specifier for \"%s\"", insn->templ->mnemonic);
+			return 1;
+		}
+	} else {
+		if (insn->mem_unit_num != -1) {
+			as_bad("Memory datapath T1/T2 specifier found for "
+				"non-memory access instruction");
+			return 1;
+		}
+	}
+
+	if (!(insn->templ->flags & TIC64X_OP_USE_XPATH)) {
+		if (insn->uses_xpath != 0) {
+			as_bad("Unexpected 'X' in unit specifier for "
+				"instruction that does not use cross-path");
+			return 1;
+		}
+	}
+
+	/* Did pre-read hook see a condition statement? Done here to allow
+	 * more checking against unit/unit-no */
+	if (tic64x_line_had_cond) {
+		if (insn->templ->flags & TIC64X_OP_NOCOND) {
+			as_bad("Instruction does not have condition field");
+			return 1;
+		}
+
+		insn->cond_nz = tic64x_line_had_nz_cond;
+		insn->cond_reg = tic64x_line_had_cond_reg->num;
+
+		if ((insn->unit_num == 1 && (insn->cond_reg & TIC64X_REG_UNIT2))
+		||(insn->unit_num == 2 && !(insn->cond_reg & TIC64X_REG_UNIT2)))
+			if (insn->uses_xpath)
+				as_warn("Caution: condition register on "
+					"opposite side of processor, and xpath "
+					"is used in instruction; author is "
+					"uncertain whether this is permitted");
+
+		/* See creg format */
+		switch (insn->cond_reg) {
+		case TIC64X_REG_UNIT2 | 0:
+			insn->cond_reg = 1;
+			break;
+		case TIC64X_REG_UNIT2 | 1:
+			insn->cond_reg = 2;
+			break;
+		case TIC64X_REG_UNIT2 | 2:
+			insn->cond_reg = 3;
+			break;
+		case 1:
+			insn->cond_reg = 4;
+			break;
+		case 2:
+			insn->cond_reg = 5;
+			break;
+		case 0:
+			insn->cond_reg = 6;
+			break;
+		default:
+			as_bad("Invalid register for conditional, must be 0-2");
+			return 1;
+		}
+	}
+
+	return 0;
+}
+
 void
 md_assemble(char *line)
 {
@@ -1672,92 +1764,10 @@ md_assemble(char *line)
 		operands[2] = operands[3];
 	}
 
-	/* Now that our instruction is definate, some checks */
-	if (!(UNITCHAR_2_FLAG(insn->unit) & insn->templ->flags)) {
-		as_bad("Instruction \"%s\" can't go in unit %C. XXX - currently"
-			" have no way of representing instructions that go "
-			"in multiple units", insn->templ->mnemonic, insn->unit);
+	/* Now that we have an insn, validate a few general parts of it,
+	 * also apply a conditional if the pre-read hook caught it */
+	if (validation_and_conditions(insn))
 		return;
-	}
-
-	if (insn->templ->flags & TIC64X_OP_FIXED_UNITNO) {
-		if (((insn->templ->flags & TIC64X_OP_FIXED_UNIT2) &&
-					insn->unit_num != 2) ||
-		    (!(insn->templ->flags & TIC64X_OP_FIXED_UNIT2) &&
-					insn->unit_num != 1)) {
-			as_bad("\"%s\" can't execute on unit %d ",
-				insn->templ->mnemonic, insn->unit_num);
-			return;
-		}
-	}
-
-	if (insn->templ->flags & TIC64X_OP_MEMACCESS) {
-		if (insn->mem_unit_num == -1) {
-			as_bad("Expected memory datapath T1/T2 in unit "
-				"specifier for \"%s\"", insn->templ->mnemonic);
-			return;
-		}
-	} else {
-		if (insn->mem_unit_num != -1) {
-			as_bad("Memory datapath T1/T2 specifier found for "
-				"non-memory access instruction");
-			return;
-		}
-	}
-
-	if (!(insn->templ->flags & TIC64X_OP_USE_XPATH)) {
-		if (insn->uses_xpath != 0) {
-			as_bad("Unexpected 'X' in unit specifier for "
-				"instruction that does not use cross-path");
-			return;
-		}
-	}
-
-	/* Did pre-read hook see a condition statement? Done here to allow
-	 * more checking against unit/unit-no */
-	if (tic64x_line_had_cond) {
-		if (insn->templ->flags & TIC64X_OP_NOCOND) {
-			as_bad("Instruction does not have condition field");
-			return;
-		}
-
-		insn->cond_nz = tic64x_line_had_nz_cond;
-		insn->cond_reg = tic64x_line_had_cond_reg->num;
-
-		if ((insn->unit_num == 1 && (insn->cond_reg & TIC64X_REG_UNIT2))
-		||(insn->unit_num == 2 && !(insn->cond_reg & TIC64X_REG_UNIT2)))
-			if (insn->uses_xpath)
-				as_warn("Caution: condition register on "
-					"opposite side of processor, and xpath "
-					"is used in instruction; author is "
-					"uncertain whether this is permitted");
-
-		/* See creg format */
-		switch (insn->cond_reg) {
-		case TIC64X_REG_UNIT2 | 0:
-			insn->cond_reg = 1;
-			break;
-		case TIC64X_REG_UNIT2 | 1:
-			insn->cond_reg = 2;
-			break;
-		case TIC64X_REG_UNIT2 | 2:
-			insn->cond_reg = 3;
-			break;
-		case 1:
-			insn->cond_reg = 4;
-			break;
-		case 2:
-			insn->cond_reg = 5;
-			break;
-		case 0:
-			insn->cond_reg = 6;
-			break;
-		default:
-			as_bad("Invalid register for conditional, must be 0-2");
-			return;
-		}
-	}
-	/* Leave untouched if no condition - all zeros means unconditional */
 
 	for (i = 0; i < TIC64X_MAX_TXT_OPERANDS && operands[i]; i++) {
 		/* We have some text, lookup what kind of operand we expect,
