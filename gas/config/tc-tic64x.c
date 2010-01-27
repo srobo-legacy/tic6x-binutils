@@ -1186,7 +1186,7 @@ tic64x_opreader_memrel15(char *line, struct tic64x_insn *insn,
 		if (insn->templ->flags & TIC64X_OP_CONST_SCALE) {
 			shift = insn->templ->flags & TIC64X_OP_MEMSZ_MASK;
 			shift >>= TIC64X_OP_MEMSZ_SHIFT;
-			if ((val & ((1 << shift) - 1)) {
+			if ((val & ((1 << shift) - 1))) {
 				as_bad("Offset not aligned to memory access "
 					"granuality");
 				return;
