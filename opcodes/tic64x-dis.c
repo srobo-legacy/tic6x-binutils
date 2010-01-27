@@ -25,6 +25,7 @@ typedef void (op_printer) (struct tic64x_op_template *t,
 
 op_printer print_op_none;
 op_printer print_op_memaccess;
+op_printer print_op_memrel15;
 op_printer print_op_register;
 op_printer print_op_dwreg;
 op_printer print_op_constant;
@@ -35,6 +36,7 @@ struct {
 } operand_printers[] = {
 { tic64x_optxt_none,		print_op_none		},
 { tic64x_optxt_memaccess,	print_op_memaccess	},
+{ tic64x_optxt_memrel15,	print_op_memrel15	},
 { tic64x_optxt_dstreg,		print_op_register	},
 { tic64x_optxt_srcreg1,		print_op_register	},
 { tic64x_optxt_srcreg2,		print_op_register	},
@@ -523,6 +525,29 @@ print_op_memaccess(struct tic64x_op_template *t, uint32_t opcode,
 		snprintf(buffer, len, "*%s%s%s%s[%s]", pre, regchar, regno,
 							post, offsetstr);
 	}
+	return;
+}
+
+void
+print_op_memrel15(struct tic64x_op_template *t, uint32_t opcode,
+		enum tic64x_text_operand type ATTRIBUTE_UNUSED,
+		char *buffer, int len)
+{
+	int regno, offset, scale;
+
+	if (tic64x_get_operand(opcode, tic64x_operand_y, 0))
+		regno = 15;
+	else
+		regno = 14;
+
+	offset = tic64x_get_operand(opcode, tic64x_operand_const15, 0);
+	if (t->flags & TIC64X_OP_CONST_SCALE) {
+		scale = t->flags & TIC64X_OP_MEMSZ_MASK;
+		scale >>= TIC64X_OP_MEMSZ_SHIFT;
+		offset <<= scale;
+	}
+
+	snprintf(buffer, len, "*+B%d[%X]", regno, offset);
 	return;
 }
 
