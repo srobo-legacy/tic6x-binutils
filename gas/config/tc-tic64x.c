@@ -806,7 +806,6 @@ tic64x_opreader_memaccess(char *line, struct tic64x_insn *insn,
 	const char *err;
 	char *regname, *offs;
 	struct tic64x_register *reg, *offsetreg;
-	enum tic64x_operand_type offs_type;
 	int off_reg, pos_neg, pre_post, nomod_modify, has_offset, i, tmp, sc;
 	int offs_operand, offs_size;
 	char c;
@@ -1045,7 +1044,7 @@ tic64x_opreader_memaccess(char *line, struct tic64x_insn *insn,
 		tmp = offsetreg->num & 0x1F;
 		sc = 0;
 	} else if (has_offset && expr.X_op == O_constant) {
-		offs_size = tic64x_operand_positions[offs_type].size;
+		offs_size = tic64x_operand_positions[tic64x_operand_rcoffset].size;
 		tmp = expr.X_add_number;
 		if (tmp < 0) {
 			as_bad("tic64x-pedantic-mode: can't add/subtract a "
@@ -1116,7 +1115,7 @@ tic64x_opreader_memaccess(char *line, struct tic64x_insn *insn,
 		}
 	}
 
-	err = tic64x_set_operand(&insn->opcode, offs_type, tmp);
+	err = tic64x_set_operand(&insn->opcode, tic64x_operand_rcoffset, tmp);
 	if (err)
 		abort_setop_fail(insn, "tic64x_operand_r/c", err);
 
