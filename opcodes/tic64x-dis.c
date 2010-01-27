@@ -11,7 +11,7 @@
 #define TXTOPERAND_CAN_XPATH(templ, type)				\
 		((((templ)->flags & TIC64X_OP_XPATH_SRC2) &&		\
 					(type) == tic64x_optxt_srcreg2) ||\
-		(!((templ)->flags & TIC64X_OP_XPATH_SRC2) &&	\
+		(((templ)->flags & TIC64X_OP_XPATH_SRC1) &&		\
 					(type) == tic64x_optxt_srcreg1))
 
 
@@ -352,7 +352,8 @@ print_insn(struct tic64x_op_template *templ, uint32_t opcode,
 	}
 
 	/* Cross-path? */
-	if (templ->flags & TIC64X_OP_USE_XPATH &&
+	if (((templ->flags & TIC64X_OP_XPATH_SRC1) ||
+				(templ->flags & TIC64X_OP_XPATH_SRC2)) &&
 				tic64x_get_operand(opcode, tic64x_operand_x, 0))
 		xpath = "X";
 	else

@@ -13,7 +13,7 @@
 #define TXTOPERAND_CAN_XPATH(insn, type) 				\
 		((((insn)->templ->flags & TIC64X_OP_XPATH_SRC2) &&	\
 					(type) == tic64x_optxt_srcreg2) ||\
-		(!((insn)->templ->flags & TIC64X_OP_XPATH_SRC2) &&	\
+		(((insn)->templ->flags & TIC64X_OP_XPATH_SRC1) &&	\
 					(type) == tic64x_optxt_srcreg1))
 
 #define abort_no_operand(insn, type)					\
@@ -665,8 +665,7 @@ tic64x_optest_register(char *line, struct tic64x_insn *insn,
 		 * There are a few circumstances where this permittable though*/
 
 		/* Is xpath on, and does it match our register */
-		if ((insn->templ->flags & TIC64X_OP_USE_XPATH) &&
-					TXTOPERAND_CAN_XPATH(insn, type)) {
+		if (TXTOPERAND_CAN_XPATH(insn, type)) {
 			/* Xpath on, matches us, we're valid. */
 			return 1;
 		/* We're also excused if we're dest/src of a load/store */
@@ -1514,7 +1513,8 @@ validation_and_conditions(struct tic64x_insn *insn)
 		}
 	}
 
-	if (!(insn->templ->flags & TIC64X_OP_USE_XPATH)) {
+	if (!(insn->templ->flags & TIC64X_OP_XPATH_SRC1) &&
+				!(insn->templ->flags & TIC64X_OP_XPATH_SRC2)) {
 		if (insn->uses_xpath != 0) {
 			as_bad("Unexpected 'X' in unit specifier for "
 				"instruction that does not use cross-path");

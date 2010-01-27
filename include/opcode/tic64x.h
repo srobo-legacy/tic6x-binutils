@@ -117,10 +117,8 @@ struct tic64x_op_template {
 					 * md_assemble expects this to come
 					 * first */
 
-#define TIC64X_OP_USE_XPATH	0x2000	/* An operand uses cross path, must
-					 * have x bit 12 in opcode */
-#define TIC64X_OP_XPATH_SRC1	0x0000	/* Not set -> src1 */
-#define TIC64X_OP_XPATH_SRC2	0x4000	/* Set -> src2 is xpath */
+#define TIC64X_OP_XPATH_SRC1	0x2000	/* src1 is xpath */
+#define TIC64X_OP_XPATH_SRC2	0x4000	/* src2 is xpath */
 
 #define TIC64X_OP_MEMACC_SCALE	0x8000	/* Some memory access insns always
 					 * scale the operand by the size of
