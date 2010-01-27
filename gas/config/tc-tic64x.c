@@ -449,6 +449,7 @@ md_apply_fix(fixS *fixP, valueT *valP, segT seg ATTRIBUTE_UNUSED)
 		as_fatal("Base/Section relocation: what are these anyway?");
 	case BFD_RELOC_TIC64X_DIR15:
 		type = tic64x_operand_const15;
+as_fatal("FIXME: relocations of const15s need to know memory access size");
 		break;
 	case BFD_RELOC_TIC64X_PCR21:
 		type = tic64x_operand_const21;
