@@ -55,7 +55,7 @@ enum tic64x_operand_type {
 enum tic64x_text_operand {
 	tic64x_optxt_none = 0,
 	tic64x_optxt_memaccess,
-	tic64x_optxt_memrel15,
+	tic64x_optxt_memrel15,	/* see note */
 	tic64x_optxt_dstreg,
 	tic64x_optxt_srcreg1,
 	tic64x_optxt_srcreg2,
@@ -68,6 +68,19 @@ enum tic64x_text_operand {
 	tic64x_optxt_nops,
 	tic64x_optxt_bfield	/* Double operand for clr insn */
 };
+
+/* Note: So, memaccess and memrel15 operands can be near indistinguishable,
+ * and if we pick memaccess and hit something that needs relocating or is large,
+ * user will look like this: >:|. So, put memrel15 opcodes ahead of memaccess
+ * ones in opcode table, to ensure they're selected in ambiguous circumtances.
+ *
+ * The correct solution is see in a memaccess opcode that this could need to
+ * be bumped up to memrel15, and either switch there, or reserve some space
+ * in the fragment and come back to it later. Which is more complicated. So
+ * avoid that for now.
+ *
+ * Unfortunately this isn't going to end with the user getting enlightening
+ * error messages */
 
 #define TIC64X_ADDRMODE_NEG		0
 #define TIC64X_ADDRMODE_POS		1
