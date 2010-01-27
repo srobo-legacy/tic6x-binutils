@@ -673,6 +673,22 @@ struct tic64x_op_template tic64x_opcodes[] = {
 	{ tic64x_optxt_srcreg2, tic64x_optxt_srcreg1, tic64x_optxt_dstreg },
 	{ tic64x_operand_invalid, tic64x_operand_invalid }
 },
+{"extu",	0x8,		0xFC,
+	TIC64X_OP_UNIT_S | TIC64X_OP_BITFIELD | TIC64X_OP_MULTI_MNEMONIC,
+	{ tic64x_optxt_srcreg2, tic64x_optxt_bfield, tic64x_optxt_dstreg },
+	{ tic64x_operand_invalid, tic64x_operand_invalid }
+},
+{"extu",	0xAE0,		0xFFC,
+	TIC64X_OP_UNIT_S | TIC64X_OP_XPATH_SRC2,
+	{ tic64x_txtop_srcreg2, tic64x_txtop_srcreg1, tic64x_txtop_dstreg },
+	{ tic64x_operand_invalid, tic64x_operand_invalid }
+},
+/* Do we want or need Galois field instructions? Not right now */
+{"idle",	0x1E000,	0x3FFFC,
+	TIC64X_NO_COND,
+	{ tic64x_optxt_none, tic64x_optxt_none, tic64x_optxt_none },
+	{ tic64x_operand_invalid, tic64x_operand_invalid }
+}
 {"lddw",	0x164,		0x17C,
 	TIC64X_OP_UNIT_D | TIC64X_OP_UNITNO | TIC64X_OP_MEMACCESS |
 	TIC64X_OP_MEMSZ_DWORD | TIC64X_OP_MEMACC_SCALE,
