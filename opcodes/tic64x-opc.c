@@ -680,15 +680,37 @@ struct tic64x_op_template tic64x_opcodes[] = {
 },
 {"extu",	0xAE0,		0xFFC,
 	TIC64X_OP_UNIT_S | TIC64X_OP_XPATH_SRC2,
-	{ tic64x_txtop_srcreg2, tic64x_txtop_srcreg1, tic64x_txtop_dstreg },
+	{ tic64x_optxt_srcreg2, tic64x_optxt_srcreg1, tic64x_optxt_dstreg },
 	{ tic64x_operand_invalid, tic64x_operand_invalid }
 },
 /* Do we want or need Galois field instructions? Not right now */
 {"idle",	0x1E000,	0x3FFFC,
-	TIC64X_NO_COND,
+	TIC64X_OP_NOCOND,
 	{ tic64x_optxt_none, tic64x_optxt_none, tic64x_optxt_none },
 	{ tic64x_operand_invalid, tic64x_operand_invalid }
-}
+},
+{"ldb",		0x2C,		0x7C,
+	TIC64X_OP_UNIT_D | TIC64X_OP_MEMACCESS | TIC64X_OP_MEMSZ_BYTE |
+	TIC64X_OP_MULTI_MNEMONIC | TIC64X_OP_CONST_SCALE,
+	{ tic64x_optxt_memrel15, tic64x_optxt_dstreg, tic64x_optxt_none },
+	{ tic64x_operand_const15, tic64x_operand_invalid }
+},
+{"ldb",		0x24,		0x17C,
+	TIC64X_OP_UNIT_D | TIC64X_OP_MEMACCESS | TIC64X_OP_MEMSZ_BYTE,
+	{ tic64x_optxt_memaccess, tic64x_optxt_dstreg, tic64x_optxt_none },
+	{ tic64x_operand_rcoffset, tic64x_operand_invalid }
+},
+{"ldbu",	0x1C,		0x7C,
+	TIC64X_OP_UNIT_D | TIC64X_OP_MEMACCESS | TIC64X_OP_MEMSZ_BYTE |
+	TIC64X_OP_MULTI_MNEMONIC | TIC64X_OP_CONST_SCALE,
+	{ tic64x_optxt_memrel15, tic64x_optxt_dstreg, tic64x_optxt_none },
+	{ tic64x_operand_const15, tic64x_operand_invalid }
+},
+{"ldbu",	0x14,		0x17C,
+	TIC64X_OP_UNIT_D | TIC64X_OP_MEMACCESS | TIC64X_OP_MEMSZ_BYTE,
+	{ tic64x_optxt_memaccess, tic64x_optxt_dstreg, tic64x_optxt_none },
+	{ tic64x_operand_rcoffset, tic64x_operand_invalid }
+},
 {"lddw",	0x164,		0x17C,
 	TIC64X_OP_UNIT_D | TIC64X_OP_UNITNO | TIC64X_OP_MEMACCESS |
 	TIC64X_OP_MEMSZ_DWORD | TIC64X_OP_MEMACC_SCALE,
