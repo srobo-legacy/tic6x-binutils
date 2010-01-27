@@ -751,6 +751,10 @@ tic64x_optest_memrel15(char *line, struct tic64x_insn *insn,
 
 	/* So, now some expression */
 	tic64x_parse_expr(line, &expr);
+
+	if (expr.X_add_number < 0)
+		return 0;	/* No subtractions */
+
 	/* Needs to be constant or symbol based */
 	return (expr.X_op == O_constant || expr.X_op == O_symbol);
 }
