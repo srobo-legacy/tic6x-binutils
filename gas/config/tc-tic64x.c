@@ -1185,7 +1185,7 @@ tic64x_opreader_memrel15(char *line, struct tic64x_insn *insn,
 		if (insn->templ->flags & TIC64X_OP_CONST_SCALE) {
 			shift = insn->templ->flags & TIC64X_OP_MEMSZ_MASK;
 			shift >>= TIC64X_OP_MEMSZ_SHIFT;
-			val <<= shift;
+			val >>= shift;
 		}
 
 		err = tic64x_set_operand(&insn->opcode, tic64x_operand_const15,
