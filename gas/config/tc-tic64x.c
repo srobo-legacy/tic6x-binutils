@@ -1031,13 +1031,6 @@ tic64x_opreader_memaccess(char *line, struct tic64x_insn *insn,
 		abort_setop_fail(insn, "tic64x_operand_addrmode", err);
 
 	offs_operand = find_operand_index(insn->templ, tic64x_operand_rcoffset);
-	offs_type = tic64x_operand_rcoffset;
-	if (offs_operand < 0) {
-		offs_operand = find_operand_index(insn->templ,
-						tic64x_operand_const15);
-		offs_type = tic64x_operand_const15;
-	}
-
 	if (offs_operand < 0)
 		as_fatal("memaccess with no r/c offset operand");
 
@@ -1099,26 +1092,7 @@ tic64x_opreader_memaccess(char *line, struct tic64x_insn *insn,
 			sc = 0;
 		}
 	} else {
-		if (offs_type == tic64x_operand_rcoffset) {
-			/* Don't support a circumstance where user is making
-			 * some relocatable/fixupable calculation in offset */
-			as_bad("Offset field not a constant");
-			return;
-		}
-
-		/* It's legitimate for someone to load/store with a relocatable
-		 * offset, plus there's a reloc type for this */
-
-		memcpy(&insn->operand_values[offs_operand].expr, &expr,
-							sizeof(expr));
-
-		/* Should be nothing else to do, so bail out here. There aren't
-		 * any const15 l/s insns with a scale bit, but if there were,
-		 * it'd blow up here */
-		if (insn->templ->flags & TIC64X_OP_MEMACC_SBIT)
-			as_fatal("Can't have insn with 15 bit scale as well "
-				"as a scale bit right now");
-
+		as_bad("Offset field not a constant");
 		return;
 	}
 
