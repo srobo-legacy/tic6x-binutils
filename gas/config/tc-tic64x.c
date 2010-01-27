@@ -92,6 +92,8 @@ static opreader tic64x_opreader_none;
 static optester tic64x_optest_none;
 static opreader tic64x_opreader_memaccess;
 static optester tic64x_optest_memaccess;
+static opreader tic64x_opreader_memrel15;
+static optester tic64x_optest_memrel15;
 static opreader tic64x_opreader_register;
 static optester tic64x_optest_register;
 static opreader tic64x_opreader_double_register;
@@ -141,6 +143,7 @@ struct {
 } tic64x_operand_readers[] = {
 {tic64x_optxt_none,	tic64x_opreader_none,	tic64x_optest_none},
 {tic64x_optxt_memaccess,tic64x_opreader_memaccess,tic64x_optest_memaccess},
+{tic64x_optxt_memrel15,	tic64x_opreader_memrel15,tic64x_optest_memrel15},
 {tic64x_optxt_dstreg,	tic64x_opreader_register,tic64x_optest_register},
 {tic64x_optxt_srcreg1,	tic64x_opreader_register,tic64x_optest_register},
 {tic64x_optxt_srcreg2,	tic64x_opreader_register,tic64x_optest_register},
@@ -714,6 +717,45 @@ tic64x_optest_memaccess(char *line, struct tic64x_insn *insn ATTRIBUTE_UNUSED,
 }
 
 int
+tic64x_optest_memrel15(char *line, struct tic64x_insn *insn,
+				enum tic64x_text_operand op ATTRIBUTE_UNUSED)
+{
+	expressionS expr;
+
+	/* Unit D2 only */
+	if (insn->unit != 'D' || insn->unit_num != 2)
+		return 0;
+
+	/* Need to be able to distinguish between this and memaccess */
+	if (*line++ != '*' || *line++ != '+' || *line++ != 'B' || *line++ !='1')
+		return 0;
+
+	/* That checks the operand starts with "*+B1"... which is mandatory
+	 * for memrel15. Register has to be B14 or B15. */
+
+	if (*line != '5' && *line != '4')
+		return 0;
+
+	line++;
+
+	/* Hopefully no-one puts whitespace between the base reg and offset,
+	 * but just in case */
+	while (ISSPACE(*line))
+		line++;
+
+	if (*line++ != '[')
+		return 0;
+
+	while (ISSPACE(*line))
+		line++;
+
+	/* So, now some expression */
+	tic64x_parse_expr(line, &expr);
+	/* Needs to be constant or symbol based */
+	return (expr.X_op == O_constant || expr.X_op == O_symbol);
+}
+
+int
 tic64x_optest_constant(char *line, struct tic64x_insn *insn ATTRIBUTE_UNUSED,
 				enum tic64x_text_operand op ATTRIBUTE_UNUSED)
 {
@@ -1101,6 +1143,86 @@ tic64x_opreader_memaccess(char *line, struct tic64x_insn *insn,
 		abort_setop_fail(insn, "tic64x_operand_r/c", err);
 
 	insn->operand_values[offs_operand].resolved = 1;
+
+	return;
+}
+
+void
+tic64x_opreader_memrel15(char *line, struct tic64x_insn *insn,
+				enum tic64x_text_operand type ATTRIBUTE_UNUSED)
+{
+	expressionS expr;
+	const char *err;
+	int y, shift, val, index;
+
+	index = find_operand_index(insn->templ, tic64x_operand_const15);
+	if (index < 0)
+		as_fatal("memrel15 operand with no corresponding const15 "
+								"field");
+
+	/* Need to be able to distinguish between this and memaccess */
+	if (*line++ != '*' || *line++ != '+' || *line++ != 'B' ||
+							*line++ != '1') {
+		as_bad("Malformed memrel15 operand");
+		return;
+	}
+
+	if (*line == '4') {
+		y = 0;
+	} else if (*line == '5') {
+		y = 1;
+	} else {
+		as_bad("memrel15 operand must use B14 or B15 base register");
+		return;
+	}
+	err = tic64x_set_operand(&insn->opcode, tic64x_operand_y, y);
+	if (err)
+		as_fatal("Error setting y bit in memrel15 operand: %s", err);
+
+	line++;
+
+	/* Hopefully no-one puts whitespace between the base reg and offset,
+	 * but just in case */
+	while (ISSPACE(*line))
+		line++;
+
+	if (*line++ != '[') {
+		as_bad("Unexpected character when looking for '['");
+		return;
+	}
+
+	while (ISSPACE(*line))
+		line++;
+
+	tic64x_parse_expr(line, &expr);
+	if (expr.X_op == O_constant) {
+		/* We're good, can set it now */
+
+		if (expr.X_add_number < 0) {
+			as_bad("Negative offset to base register not supported "
+				"for this instruction form");
+			return;
+		}
+
+		val = expr.X_add_number;
+		if (insn->templ->flags & TIC64X_OP_CONST_SCALE) {
+			shift = insn->templ->flags & TIC64X_OP_MEMSZ_MASK;
+			shift >>= TIC64X_OP_MEMSZ_SHIFT;
+			val <<= shift;
+		}
+
+		err = tic64x_set_operand(&insn->opcode, tic64x_operand_const15,
+									val);
+		if (err)
+			as_fatal("Error setting const15 operand: %s\n", err);
+
+		insn->operand_values[index].resolved = 1;
+	} else if (expr.X_op == O_symbol) {
+		/* Going to have to emit a relocation */
+		memcpy(&insn->operand_values[index].expr, &expr, sizeof(expr));
+	} else {
+		as_bad("Unsupported expression type");
+	}
 
 	return;
 }
