@@ -697,7 +697,8 @@ struct tic64x_op_template tic64x_opcodes[] = {
 	{ tic64x_operand_const15, tic64x_operand_invalid }
 },
 {"ldb",		0x24,		0x17C,
-	TIC64X_OP_UNIT_D | TIC64X_OP_MEMACCESS | TIC64X_OP_MEMSZ_BYTE,
+	TIC64X_OP_UNIT_D | TIC64X_OP_MEMACCESS | TIC64X_OP_MEMSZ_BYTE |
+	TIC64X_OP_UNITNO,
 	{ tic64x_optxt_memaccess, tic64x_optxt_dstreg, tic64x_optxt_none },
 	{ tic64x_operand_rcoffset, tic64x_operand_invalid }
 },
@@ -709,7 +710,8 @@ struct tic64x_op_template tic64x_opcodes[] = {
 	{ tic64x_operand_const15, tic64x_operand_invalid }
 },
 {"ldbu",	0x14,		0x17C,
-	TIC64X_OP_UNIT_D | TIC64X_OP_MEMACCESS | TIC64X_OP_MEMSZ_BYTE,
+	TIC64X_OP_UNIT_D | TIC64X_OP_MEMACCESS | TIC64X_OP_MEMSZ_BYTE |
+	TIC64X_OP_UNITNO,
 	{ tic64x_optxt_memaccess, tic64x_optxt_dstreg, tic64x_optxt_none },
 	{ tic64x_operand_rcoffset, tic64x_operand_invalid }
 },
