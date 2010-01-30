@@ -721,7 +721,7 @@ struct tic64x_op_template tic64x_opcodes[] = {
 	{ tic64x_optxt_memaccess, tic64x_optxt_dwdst, tic64x_optxt_none},
 	{ tic64x_operand_dwdst5, tic64x_operand_rcoffset }
 },
-{"ldh",		0x4C,		0x17C,
+{"ldh",		0x4C,		0x7C,
 	TIC64X_OP_UNIT_D | TIC64X_OP_MEMACCESS | TIC64X_OP_MEMSZ_HWORD |
 	TIC64X_OP_MULTI_MNEMONIC | TIC64X_OP_CONST_SCALE |
 	TIC64X_OP_FIXED_UNITNO | TIC64X_OP_FIXED_UNIT2,
@@ -734,7 +734,7 @@ struct tic64x_op_template tic64x_opcodes[] = {
 	{ tic64x_optxt_memaccess, tic64x_optxt_dstreg, tic64x_optxt_none },
 	{ tic64x_operand_rcoffset, tic64x_operand_invalid }
 },
-{"ldhu",	0xC,		0x17C,
+{"ldhu",	0xC,		0x7C,
 	TIC64X_OP_UNIT_D | TIC64X_OP_MEMACCESS | TIC64X_OP_MEMSZ_HWORD |
 	TIC64X_OP_MULTI_MNEMONIC | TIC64X_OP_CONST_SCALE |
 	TIC64X_OP_FIXED_UNITNO | TIC64X_OP_FIXED_UNIT2,
@@ -752,6 +752,12 @@ struct tic64x_op_template tic64x_opcodes[] = {
 	TIC64X_OP_MEMACCESS | TIC64X_OP_MEMSZ_DWORD,
 	{ tic64x_optxt_memaccess, tic64x_optxt_dwdst, tic64x_optxt_none },
 	{ tic64x_operand_dwdst4, tic64x_operand_rcoffset }
+},
+{"ldnw",	0x134,		0x17C,
+	TIC64X_OP_UNIT_D | TIC64X_OP_MEMACCESS | TIC64X_OP_MEMSZ_WORD |
+	TIC64X_OP_UNITNO | TIC64X_OP_CONST_SCALE,
+	{ tic64x_optxt_memaccess, tic64x_optxt_dstreg, tic64x_optxt_none },
+	{ tic64x_operand_rcoffset, tic64x_operand_invalid }
 },
 {"mvk",		0x28,		0x7C,
 	TIC64X_OP_UNIT_S | TIC64X_OP_MULTI_MNEMONIC,
