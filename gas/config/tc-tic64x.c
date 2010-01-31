@@ -21,10 +21,9 @@
 			"operand type " type " (internal error)",	\
 					insn->templ->mnemonic);
 
-#define abort_setop_fail(insn, type, err) 				\
+#define abort_setop_fail(insn, type) 					\
 		as_fatal("Couldn't set operand " type " for "		\
-			"instruction %s: %s", insn->templ->mnemonic,	\
-			err);
+			"instruction %s", insn->templ->mnemonic);
 
 struct tic64x_insn {
 	struct tic64x_op_template *templ;
@@ -433,11 +432,10 @@ tc_gen_reloc(asection *section ATTRIBUTE_UNUSED, fixS *fixP)
 void
 md_apply_fix(fixS *fixP, valueT *valP, segT seg ATTRIBUTE_UNUSED)
 {
-	const char *err;
 	char *loc;
 	uint32_t opcode;
 	enum tic64x_operand_type type;
-	int size, shift;
+	int size, shift, ret;
 
 	/* This line from tic54 :| */
 	loc = fixP->fx_where + fixP->fx_frag->fr_literal;
@@ -490,11 +488,10 @@ as_fatal("FIXME: relocations of const15s need to know memory access size");
 	*valP &= ((1 << size) - 1);
 
 	opcode = bfd_get_32(stdoutput, loc);
-	err = tic64x_set_operand(&opcode, type, (shift) ? *valP >> 2 : *valP);
+	ret = tic64x_set_operand(&opcode, type, (shift) ? *valP >> 2 : *valP);
 	bfd_put_32(stdoutput, opcode, loc);
 
-	if (err)
-		as_bad("Relocation error: %s", err);
+	/* XXX FIXME: Ensure that too-large relocs are handled somehow. Test. */
 
 	if (fixP->fx_addsy == NULL)
 		fixP->fx_done = 1;
@@ -804,11 +801,10 @@ tic64x_opreader_memaccess(char *line, struct tic64x_insn *insn,
 			enum tic64x_text_operand type ATTRIBUTE_UNUSED)
 {
 	expressionS expr;
-	const char *err;
 	char *regname, *offs;
 	struct tic64x_register *reg, *offsetreg;
 	int off_reg, pos_neg, pre_post, nomod_modify, has_offset, i, tmp, sc;
-	int offs_operand, offs_size;
+	int offs_operand, offs_size, err;
 	char c;
 
 	off_reg = -1;
@@ -1011,7 +1007,7 @@ tic64x_opreader_memaccess(char *line, struct tic64x_insn *insn,
 	err = tic64x_set_operand(&insn->opcode, tic64x_operand_basereg,
 							reg->num & 0x1F);
 	if (err)
-		abort_setop_fail(insn, "tic64x_operand_basereg", err);
+		abort_setop_fail(insn, "tic64x_operand_basereg");
 
 	/* Addressing mode - ditch any fields that haven't been set or are zero.
 	 * We rely on earlier checks (XXX not written yet...) to ensure it's
@@ -1028,7 +1024,7 @@ tic64x_opreader_memaccess(char *line, struct tic64x_insn *insn,
 
 	err = tic64x_set_operand(&insn->opcode, tic64x_operand_addrmode, tmp);
 	if (err)
-		abort_setop_fail(insn, "tic64x_operand_addrmode", err);
+		abort_setop_fail(insn, "tic64x_operand_addrmode");
 
 	offs_operand = find_operand_index(insn->templ, tic64x_operand_rcoffset);
 	if (offs_operand < 0)
@@ -1111,14 +1107,13 @@ tic64x_opreader_memaccess(char *line, struct tic64x_insn *insn,
 						tic64x_operand_scale,
 						c);
 			if (err)
-				abort_setop_fail(insn, "tic64x_operand_scale",
-									err);
+				abort_setop_fail(insn, "tic64x_operand_scale");
 		}
 	}
 
 	err = tic64x_set_operand(&insn->opcode, tic64x_operand_rcoffset, tmp);
 	if (err)
-		abort_setop_fail(insn, "tic64x_operand_r/c", err);
+		abort_setop_fail(insn, "tic64x_operand_r/c");
 
 	insn->operand_values[offs_operand].resolved = 1;
 
@@ -1130,8 +1125,7 @@ tic64x_opreader_memrel15(char *line, struct tic64x_insn *insn,
 				enum tic64x_text_operand type ATTRIBUTE_UNUSED)
 {
 	expressionS expr;
-	const char *err;
-	int y, shift, val, index;
+	int y, shift, val, index, err;
 
 	index = find_operand_index(insn->templ, tic64x_operand_const15);
 	if (index < 0)
@@ -1155,7 +1149,7 @@ tic64x_opreader_memrel15(char *line, struct tic64x_insn *insn,
 	}
 	err = tic64x_set_operand(&insn->opcode, tic64x_operand_y, y);
 	if (err)
-		as_fatal("Error setting y bit in memrel15 operand: %s", err);
+		as_fatal("Error setting y bit in memrel15 operand");
 
 	line++;
 
@@ -1197,8 +1191,10 @@ tic64x_opreader_memrel15(char *line, struct tic64x_insn *insn,
 
 		err = tic64x_set_operand(&insn->opcode, tic64x_operand_const15,
 									val);
-		if (err)
-			as_fatal("Error setting const15 operand: %s\n", err);
+		if (err) {
+			as_bad("Memory offset exceeds size of 15bit field");
+			return;
+		}
 
 		insn->operand_values[index].resolved = 1;
 	} else if (expr.X_op == O_symbol) {
@@ -1215,10 +1211,9 @@ void
 tic64x_opreader_register(char *line, struct tic64x_insn *insn,
 				enum tic64x_text_operand type)
 {
-	const char *err;
 	struct tic64x_register *reg;
 	enum tic64x_operand_type t2;
-	int tmp;
+	int tmp, err;
 
 	/* Expect only a single piece of text, should be register */
 	reg = tic64x_sym_to_reg(line);
@@ -1252,7 +1247,7 @@ tic64x_opreader_register(char *line, struct tic64x_insn *insn,
 
 	err = tic64x_set_operand(&insn->opcode, t2, reg->num & 0x1F);
 	if (err)
-		abort_setop_fail(insn, "{register}", err);
+		abort_setop_fail(insn, "{register}");
 
 	/* Now set some more interesting fields - if working on destination reg,
 	 * set the side of processor we're working on. Also set xpath field */
@@ -1306,7 +1301,7 @@ tic64x_opreader_register(char *line, struct tic64x_insn *insn,
 
 		err = tic64x_set_operand(&insn->opcode, tic64x_operand_x, tmp);
 		if (err)
-			abort_setop_fail(insn, "tic64x_operand_x", err);
+			abort_setop_fail(insn, "tic64x_operand_x");
 	}
 
 	return;
@@ -1316,10 +1311,9 @@ void tic64x_opreader_double_register(char *line, struct tic64x_insn *insn,
 			enum tic64x_text_operand optype)
 {
 	struct tic64x_register *reg1, *reg2;
-	const char *err;
 	char *rtext;
 	enum tic64x_operand_type type;
-	int tmp, i, side;
+	int tmp, i, side, err;
 	char c;
 
 	/* Double register is of the form "A0:A1", or whatever symbolic names
@@ -1414,7 +1408,7 @@ void tic64x_opreader_double_register(char *line, struct tic64x_insn *insn,
 
 	err = tic64x_set_operand(&insn->opcode, type, tmp);
 	if (err)
-		abort_setop_fail(insn, "dwreg", err);
+		abort_setop_fail(insn, "dwreg");
 
 	if (insn->templ->flags & TIC64X_OP_NOSIDE)
 		abort_no_operand(insn, "tic64x_operand_s");
@@ -1446,9 +1440,8 @@ tic64x_opreader_constant(char *line, struct tic64x_insn *insn,
 			enum tic64x_text_operand type)
 {
 	expressionS expr;
-	const char *err;
 	enum tic64x_operand_type realtype;
-	int i, j, shift;
+	int i, j, shift, err;
 
 	/* Pre-lookup the operand index we expect... */
 	if (type == tic64x_optxt_nops) {
@@ -1487,11 +1480,12 @@ tic64x_opreader_constant(char *line, struct tic64x_insn *insn,
 
 		err = tic64x_set_operand(&insn->opcode, realtype,
 						expr.X_add_number << shift);
-		if (err) {
-			/* Don't abort this time - user is allowed to enter
-			 * a constant that's too large, it's not an internal
-			 * error if that occurs */
-			as_bad("Error setting constant operand: %s", err);
+
+		/* Trying to set operand that's too big: that's an error, unless
+		 * it's an instruction that expects this and that has set the
+		 * no range check flag */
+		if (err && !(insn->templ->flags & TIC64X_OP_NO_RANGE_CHK)) {
+			as_bad("Constant operand exceeds permitted size");
 			return;
 		}
 

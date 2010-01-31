@@ -66,28 +66,28 @@ struct tic64x_operand_pos tic64x_operand_positions [] = {
 {	29,	3	}	/* creg */
 };
 
-const char *
+/* Returns zero on success, nonzero if too large for field. Always actually
+ * sets operand, as some code doesn't care about data loss here */
+int
 tic64x_set_operand(uint32_t *op, enum tic64x_operand_type type, int value)
 {
+	int err;
 
+	err = 0;
 	if (value < 0) {
 		if (-value >= (1 << tic64x_operand_positions[type].size)) {
-			return "Operand too large for position";
+			err = 1;
 		}
 	} else {
 		if (value >= (1 << tic64x_operand_positions[type].size)) {
-			return "Operand too large for position";
+			err = 1;
 		}
 	}
-
-	if (tic64x_operand_positions[type].position +
-				tic64x_operand_positions[type].size >32)
-		return "Operand type falls off end of opcode";
 
 	value &= ((1 << tic64x_operand_positions[type].size) - 1);
 	value <<= tic64x_operand_positions[type].position;
 	*op |= value;
-	return NULL;
+	return err;
 }
 
 static int
