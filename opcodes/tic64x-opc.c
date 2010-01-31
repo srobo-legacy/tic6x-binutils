@@ -1030,12 +1030,12 @@ struct tic64x_op_template tic64x_opcodes[] = {
 /* XXX - see page 329 of spec, I don't know which way round the "h" bit of
  * the opcode goes for these two. Needs testing against a reference. */
 {"mvkh",	0x68,		0x7C,
-	TIC64X_OP_UNIT_S | TIC64X_OP_USE_TOP_HWORD,
+	TIC64X_OP_UNIT_S | TIC64X_OP_USE_TOP_HWORD | TIC64X_OP_NO_RANGE_CHK,
 	{ tic64x_optxt_uconstant, tic64x_optxt_dstreg, tic64x_optxt_none },
 	{ tic64x_operand_const16, tic64x_operand_invalid }
 },
 {"mvklh",	0x28,		0x7C,
-	TIC64X_OP_UNIT_S,
+	TIC64X_OP_UNIT_S | TIC64X_OP_NO_RANGE_CHK,
 	{ tic64x_optxt_uconstant, tic64x_optxt_dstreg, tic64x_optxt_none },
 	{ tic64x_operand_const16, tic64x_operand_invalid }
 },

@@ -153,6 +153,10 @@ struct tic64x_op_template {
 #define TIC64X_OP_USE_TOP_HWORD	0x100000/* Some insns only use the top 16 bits
 					 * of the constant operand - such as
 					 * mvkh */
+#define TIC64X_OP_NO_RANGE_CHK	0x200000/* Don't range check constant when
+					 * inserting into opcode - for some
+					 * things like mvkh and mvkl, this is
+					 * entirely valid */
 
 
 #define TIC64X_MAX_TXT_OPERANDS	3
