@@ -1004,6 +1004,8 @@ struct tic64x_op_template tic64x_opcodes[] = {
 	{ tic64x_optxt_srcreg1, tic64x_optxt_srcreg2, tic64x_optxt_dwdst },
 	{ tic64x_operand_dwdst5, tic64x_operand_invalid }
 },
+/* XXX mvc not implemented here */
+/* XXX also mvd */
 {"mvk",		0x28,		0x7C,
 	TIC64X_OP_UNIT_S | TIC64X_OP_MULTI_MNEMONIC,
 	{ tic64x_optxt_sconstant, tic64x_optxt_dstreg, tic64x_optxt_none},
@@ -1024,6 +1026,18 @@ struct tic64x_op_template tic64x_opcodes[] = {
 	TIC64X_OP_UNIT_D,
 	{tic64x_optxt_sconstant, tic64x_optxt_dstreg, tic64x_optxt_none},
 	{ tic64x_operand_const5, tic64x_operand_invalid }
+},
+/* XXX - see page 329 of spec, I don't know which way round the "h" bit of
+ * the opcode goes for these two. Needs testing against a reference. */
+{"mvkh",	0x68,		0x7C,
+	TIC64X_OP_UNIT_S | TIC64X_OP_USE_TOP_HWORD,
+	{ tic64x_optxt_uconstant, tic64x_optxt_dstreg, tic64x_optxt_none },
+	{ tic64x_operand_const16, tic64x_operand_invalid }
+},
+{"mvklh",	0x28,		0x7C,
+	TIC64X_OP_UNIT_S,
+	{ tic64x_optxt_uconstant, tic64x_optxt_dstreg, tic64x_optxt_none },
+	{ tic64x_operand_const16, tic64x_operand_invalid }
 },
 {"or",		0x8B0,		0xFFC,
 	TIC64X_OP_UNIT_D | TIC64X_OP_XPATH_SRC2 | TIC64X_OP_MULTI_MNEMONIC,
