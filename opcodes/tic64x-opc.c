@@ -1383,6 +1383,137 @@ struct tic64x_op_template tic64x_opcodes[] = {
 	{ tic64x_optxt_srcreg1, tic64x_optxt_srcreg2, tic64x_optxt_dstreg },
 	{ tic64x_operand_invalid, tic64x_operand_invalid }
 },
+{"smpyh",	0x100,		0xFFC,
+	TIC64X_OP_UNIT_M | TIC64X_OP_XPATH_SRC2,
+	{ tic64x_optxt_srcreg1, tic64x_optxt_srcreg2, tic64x_optxt_dstreg },
+	{ tic64x_operand_invalid, tic64x_operand_invalid }
+},
+{"smpyhl",	0x500,		0xFFC,
+	TIC64X_OP_UNIT_M | TIC64X_OP_XPATH_SRC2,
+	{ tic64x_optxt_srcreg1, tic64x_optxt_srcreg2, tic64x_optxt_dstreg },
+	{ tic64x_operand_invalid, tic64x_operand_invalid }
+},
+{"smpylh",	0x900,		0xFFC,
+	TIC64X_OP_UNIT_M | TIC64X_OP_XPATH_SRC2,
+	{ tic64x_optxt_srcreg1, tic64x_optxt_srcreg2, tic64x_optxt_dstreg },
+	{ tic64x_operand_invalid, tic64x_operand_invalid }
+},
+{"smpy2",	0x70,		0xFFC,
+	TIC64X_OP_UNIT_M | TIC64X_OP_XPATH_SRC2,
+	{ tic64x_optxt_srcreg1, tic64x_optxt_srcreg2, tic64x_optxt_dwdst },
+	{ tic64x_operand_dwdst5, tic64x_operand_invalid }
+},
+{"smpy32",	0x10000670,	0xF0000FFC,
+	TIC64X_OP_UNIT_M | TIC64X_OP_XPATH_SRC2 | TIC64X_OP_NOCOND,
+	{ tic64x_optxt_srcreg2, tic64x_optxt_srcreg1, tic64x_optxt_dstreg },
+	{ tic64x_operand_invalid, tic64x_operand_invalid }
+},
+{"spack2",	0xCB0,		0xFFC,
+	TIC64X_OP_UNIT_S | TIC64X_OP_XPATH_SRC2,
+	{ tic64x_optxt_srcreg1, tic64x_optxt_srcreg2, tic64x_optxt_dstreg },
+	{ tic64x_operand_invalid, tic64x_operand_invalid }
+},
+{"spacku4",	0xD30,		0xFFC,
+	TIC64X_OP_UNIT_S | TIC64X_OP_XPATH_SRC2,
+	{ tic64x_optxt_srcreg1, tic64x_optxt_srcreg2, tic64x_optxt_dstreg },
+	{ tic64x_operand_invalid, tic64x_operand_invalid }
+},
+/* XXX No spkernel, spkernelr, sploop, splood, sploopw, spmask, spmaskr
+ * instructions implemented. Thisi project isn't aimed at getting all the c6x's
+ * firepower working immediately. */
+{"sshl",	0x8E0,		0xFFC,
+	TIC64X_OP_UNIT_S | TIC64X_OP_XPATH_SRC2 | TIC64X_OP_MULTI_MNEMONIC,
+	{ tic64x_optxt_srcreg2, tic64x_optxt_srcreg1, tic64x_optxt_dstreg },
+	{ tic64x_operand_invalid, tic64x_operand_invalid }
+},
+{"sshl",	0x8A0,		0xFFC,
+	TIC64X_OP_UNIT_S | TIC64X_OP_XPATH_SRC2,
+	{ tic64x_optxt_srcreg2, tic64x_optxt_uconstant, tic64x_optxt_dstreg },
+	{ tic64x_operand_const5, tic64x_operand_invalid }
+},
+{"sshvl",	0x730,		0xFFC,
+	TIC64X_OP_UNIT_M | TIC64X_OP_XPATH_SRC2,
+	{ tic64x_optxt_srcreg2, tic64x_optxt_srcreg1, tic64x_optxt_dstreg },
+	{ tic64x_operand_invalid, tic64x_operand_invalid }
+},
+{"sshvr",	0x770,		0xFFC,
+	TIC64X_OP_UNIT_M | TIC64X_OP_XPATH_SRC2,
+	{ tic64x_optxt_srcreg2, tic64x_optxt_srcreg1, tic64x_optxt_dstreg },
+	{ tic64x_operand_invalid, tic64x_operand_invalid }
+},
+{"ssub",	0x1F8,		0xFFC,
+	TIC64X_OP_UNIT_L | TIC64X_OP_XPATH_SRC2 | TIC64X_OP_MULTI_MNEMONIC,
+	{ tic64x_optxt_srcreg1, tic64x_optxt_srcreg2, tic64x_optxt_dstreg },
+	{ tic64x_operand_invalid, tic64x_operand_invalid }
+},
+{"ssub",	0x3F8,		0xFFC,
+	TIC64X_OP_UNIT_L | TIC64X_OP_XPATH_SRC1,
+	{ tic64x_optxt_srcreg1, tic64x_optxt_srcreg2, tic64x_optxt_dstreg },
+	{ tic64x_operand_invalid, tic64x_operand_invalid }
+},
+{"ssub",	0x1D8,		0xFFC,
+	TIC64X_OP_UNIT_L | TIC64X_OP_XPATH_SRC2,
+	{ tic64x_optxt_sconstant, tic64x_optxt_srcreg2, tic64x_optxt_dstreg },
+	{ tic64x_operand_const5, tic64x_operand_invalid }
+},
+{"ssub",	0x598,		0xFFC,
+	TIC64X_OP_UNIT_L,
+	{ tic64x_optxt_sconstant, tic64x_optxt_dwsrc, tic64x_optxt_dwdst },
+	{ tic64x_operand_const5, tic64x_operand_dwdst5 }
+},
+{"ssub2",	0xC98,		0xFFC,
+	TIC64X_OP_UNIT_L | TIC64X_OP_XPATH_SRC2,
+	{ tic64x_optxt_srcreg1, tic64x_optxt_srcreg2, tic64x_optxt_dstreg },
+	{ tic64x_operand_invalid, tic64x_operand_invalid }
+},
+{"stb",		0x3C,		0x7C,
+	TIC64X_OP_UNIT_D | TIC64X_OP_MEMACCESS | TIC64X_OP_MEMSZ_BYTE |
+	TIC64X_OP_MULTI_MNEMONIC | TIC64X_OP_CONST_SCALE |
+	TIC64X_OP_FIXED_UNITNO | TIC64X_OP_FIXED_UNIT2,
+	{ tic64x_optxt_dstreg, tic64x_optxt_memrel15,  tic64x_optxt_none },
+	{ tic64x_operand_const15, tic64x_operand_invalid }
+},
+{"stb",		0x34,		0x17C,
+	TIC64X_OP_UNIT_D | TIC64X_OP_UNITNO | TIC64X_OP_MEMACCESS |
+	TIC64X_OP_MEMSZ_BYTE,
+	{ tic64x_optxt_dstreg, tic64x_optxt_memaccess, tic64x_optxt_none },
+	{ tic64x_operand_rcoffset, tic64x_operand_invalid }
+},
+/* XXX - spec doesn't have src explicitly as a dword */
+/* It also states two opcode maps, sans opcodes, to describe the offsetR/const
+ * offset situation, which differs from other opcodes documentation, while
+ * doing apparently exactly the same thing */
+{"stdw",	0x144,		0x17C,
+	TIC64X_OP_UNIT_D | TIC64X_OP_UNITNO | TIC64X_OP_MEMACCESS |
+	TIC64X_OP_MEMSZ_DWORD | TIC64X_OP_CONST_SCALE,
+	{ tic64x_optxt_dwdst, tic64x_optxt_memaccess, tic64x_optxt_none },
+	{ tic64x_operand_rcoffset, tic64x_operand_dwdst5 }
+},
+{"sth",		0x5C,		0x7C,
+	TIC64X_OP_UNIT_D | TIC64X_OP_MEMACCESS | TIC64X_OP_MEMSZ_HWORD |
+	TIC64X_OP_MULTI_MNEMONIC | TIC64X_OP_CONST_SCALE |
+	TIC64X_OP_FIXED_UNITNO | TIC64X_OP_FIXED_UNIT2,
+	{ tic64x_optxt_dstreg, tic64x_optxt_memrel15,  tic64x_optxt_none },
+	{ tic64x_operand_const15, tic64x_operand_invalid }
+},
+{"sth",		0x54,		0x17C,
+	TIC64X_OP_UNIT_D | TIC64X_OP_UNITNO | TIC64X_OP_MEMACCESS |
+	TIC64X_OP_MEMSZ_HWORD | TIC64X_OP_CONST_SCALE,
+	{ tic64x_optxt_dstreg, tic64x_optxt_memaccess, tic64x_optxt_none },
+	{ tic64x_operand_rcoffset, tic64x_operand_invalid }
+},
+{"stndw",	0x174,		0x17C,
+	TIC64X_OP_UNIT_D | TIC64X_OP_UNITNO | TIC64X_OP_MEMACCESS |
+	TIC64X_OP_MEMSZ_DWORD | TIC64X_OP_MEMACC_SBIT,
+	{ tic64x_optxt_dwdst, tic64x_optxt_memaccess, tic64x_optxt_none },
+	{ tic64x_operand_rcoffset, tic64x_operand_dwdst4 }
+},
+{"stnw",	0x154,		0x17C,
+	TIC64X_OP_UNIT_D | TIC64X_OP_UNITNO | TIC64X_OP_MEMACCESS |
+	TIC64X_OP_MEMSZ_WORD | TIC64X_OP_CONST_SCALE,
+	{ tic64x_optxt_dstreg, tic64x_optxt_memaccess, tic64x_optxt_none },
+	{ tic64x_operand_rcoffset, tic64x_operand_invalid }
+},
 {"stw",		0x74,		0x17C,
 	TIC64X_OP_UNIT_D | TIC64X_OP_UNITNO |
 	TIC64X_OP_MEMACCESS | TIC64X_OP_MEMSZ_WORD | TIC64X_OP_MULTI_MNEMONIC,
