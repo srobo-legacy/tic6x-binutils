@@ -1048,6 +1048,46 @@ struct tic64x_op_template tic64x_opcodes[] = {
 	{ tic64x_operand_const16, tic64x_operand_invalid }
 },
 #endif
+{"neg",		0x5A0,		0x3EFFC,
+	TIC64X_OP_UNIT_S | TIC64X_OP_MULTI_MNEMONIC | TIC64X_OP_XPATH_SRC2,
+	{ tic64x_optxt_srcreg2, tic64x_optxt_dstreg, tic64x_optxt_none },
+	{ tic64x_operand_invalid, tic64x_operand_invalid }
+},
+{"neg",		0xD8,		0x3EFFC,
+	TIC64X_OP_UNIT_L | TIC64X_OP_XPATH_SRC2,
+	{ tic64x_optxt_srcreg2, tic64x_optxt_dstreg, tic64x_optxt_none },
+	{ tic64x_operand_invalid, tic64x_operand_invalid }
+},
+{"neg",		0x490,		0x3EFFC,
+	TIC64X_OP_UNIT_L,
+	{ tic64x_optxt_dwsrc, tic64x_optxt_dwdst, tic64x_optxt_none },
+	{ tic64x_operand_dwdst5, tic64x_operand_invalid }
+},
+{"nop",		0x0,		0x21FFE,
+	TIC64X_OP_NOCOND | TIC64X_OP_NOSIDE,
+	{ tic64x_optxt_uconstant, tic64x_optxt_none, tic64x_optxt_none },
+	{ tic64x_operand_const4, tic64x_operand_invalid }
+},
+{"norm",	0xC78,		0x3EFFC,
+	TIC64X_OP_UNIT_L | TIC64X_OP_MULTI_MNEMONIC | TIC64X_OP_XPATH_SRC2,
+	{ tic64x_optxt_srcreg2, tic64x_optxt_dstreg, tic64x_optxt_none },
+	{ tic64x_operand_invalid, tic64x_operand_invalid }
+},
+{"norm",	0xC18,		0x3EFFC,
+	TIC64X_OP_UNIT_L,
+	{ tic64x_optxt_dwsrc, tic64x_optxt_dstreg, tic64x_optxt_none },
+	{ tic64x_operand_invalid, tic64x_operand_invalid }
+},
+{"not",		0x3EDD8,	0x3EFFC,
+	TIC64X_OP_UNIT_L | TIC64X_OP_XPATH_SRC2 | TIC64X_OP_MULTI_MNEMONIC,
+	{ tic64x_optxt_srcreg2, tic64x_optxt_dstreg, tic64x_optxt_none },
+	{ tic64x_operand_invalid, tic64x_operand_invalid }
+},
+{"not",		0x3E2A0,	0x3EFFC,
+	TIC64X_OP_UNIT_S | TIC64X_OP_XPATH_SRC2,
+	{ tic64x_optxt_srcreg2, tic64x_optxt_dstreg, tic64x_optxt_none },
+	{ tic64x_operand_invalid, tic64x_operand_invalid }
+},
 {"or",		0x8B0,		0xFFC,
 	TIC64X_OP_UNIT_D | TIC64X_OP_XPATH_SRC2 | TIC64X_OP_MULTI_MNEMONIC,
 	{ tic64x_optxt_srcreg1, tic64x_optxt_srcreg2, tic64x_optxt_dstreg },
