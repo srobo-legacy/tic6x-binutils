@@ -1120,12 +1120,12 @@ struct tic64x_op_template tic64x_opcodes[] = {
 },
 {"pack2",	0x18,		0xFFC,
 	TIC64X_OP_UNIT_L | TIC64X_OP_XPATH_SRC2 | TIC64X_OP_MULTI_MNEMONIC,
-	{ tic64x_optxt_srcreg1, tic64x_optxt_srcreg2, tic64x_optxt_dstreg},
+	{ tic64x_optxt_srcreg1, tic64x_optxt_srcreg2, tic64x_optxt_dstreg },
 	{ tic64x_operand_invalid, tic64x_operand_invalid }
 },
 {"pack2",	0xFF0,		0xFFC,
 	TIC64X_OP_UNIT_S | TIC64X_OP_XPATH_SRC2,
-	{ tic64x_optxt_srcreg1, tic64x_optxt_srcreg2, tic64x_optxt_dstreg},
+	{ tic64x_optxt_srcreg1, tic64x_optxt_srcreg2, tic64x_optxt_dstreg },
 	{ tic64x_operand_invalid, tic64x_operand_invalid }
 },
 {"sadd",	0x278,		0xFFC,
