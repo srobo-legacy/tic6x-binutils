@@ -1039,6 +1039,15 @@ struct tic64x_op_template tic64x_opcodes[] = {
 	{ tic64x_optxt_uconstant, tic64x_optxt_dstreg, tic64x_optxt_none },
 	{ tic64x_operand_const16, tic64x_operand_invalid }
 },
+/* XXX XXX XXX - how are we supposed to distinguish mvkl from mvklh insn? */
+/* Not implemented, I say datasheet bug */
+#if 0
+{"mvkl",	0x28,		0x7C,
+	TIC64X_OP_UNIT_S | TIC64X_OP_NO_RANGE_CHK,
+	{ tic64x_optxt_uconstant, tic64x_optxt_dstreg, tic64x_optxt_none },
+	{ tic64x_operand_const16, tic64x_operand_invalid }
+},
+#endif
 {"or",		0x8B0,		0xFFC,
 	TIC64X_OP_UNIT_D | TIC64X_OP_XPATH_SRC2 | TIC64X_OP_MULTI_MNEMONIC,
 	{ tic64x_optxt_srcreg1, tic64x_optxt_srcreg2, tic64x_optxt_dstreg },
