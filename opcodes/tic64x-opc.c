@@ -759,6 +759,20 @@ struct tic64x_op_template tic64x_opcodes[] = {
 	{ tic64x_optxt_memaccess, tic64x_optxt_dstreg, tic64x_optxt_none },
 	{ tic64x_operand_rcoffset, tic64x_operand_invalid }
 },
+{"ldw",		0x6C,		0x7C,
+	TIC64X_OP_UNIT_D | TIC64X_OP_MEMACCESS | TIC64X_OP_MEMSZ_WORD |
+	TIC64X_OP_MULTI_MNEMONIC | TIC64X_OP_CONST_SCALE |
+	TIC64X_OP_FIXED_UNITNO | TIC64X_OP_FIXED_UNIT2,
+	{ tic64x_optxt_memrel15, tic64x_optxt_dstreg, tic64x_optxt_none },
+	{ tic64x_operand_const15, tic64x_operand_invalid }
+},
+{"ldw",		0x64,		0x17C,
+	TIC64X_OP_UNIT_D | TIC64X_OP_MEMACCESS | TIC64X_OP_MEMSZ_WORD |
+	TIC64X_OP_UNITNO | TIC64X_OP_CONST_SCALE,
+	{ tic64x_optxt_memaccess, tic64x_optxt_dstreg, tic64x_optxt_none },
+	{ tic64x_operand_rcoffset, tic64x_operand_invalid }
+},
+/* LL counts as a "weird" instruction, and needn't be supported for now */
 {"mvk",		0x28,		0x7C,
 	TIC64X_OP_UNIT_S | TIC64X_OP_MULTI_MNEMONIC,
 	{ tic64x_optxt_sconstant, tic64x_optxt_dstreg, tic64x_optxt_none},
