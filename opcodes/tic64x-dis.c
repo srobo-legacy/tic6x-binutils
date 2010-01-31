@@ -809,6 +809,8 @@ print_op_constant(struct tic64x_op_template *t, uint32_t opcode,
 			memsz -= 1;
 
 		val <<= memsz;
+	} else if (t->flags & TIC64X_OP_USE_TOP_HWORD) {
+		val <<= 16;
 	}
 
 	/* Print all operands as hex, limit to 32 bits of FFFF... */

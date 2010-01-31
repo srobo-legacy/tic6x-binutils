@@ -150,6 +150,9 @@ struct tic64x_op_template {
 #define TIC64X_OP_BITFIELD	0x80000	/* Instruction contains a bitfield
 					 * operand, making this four text
 					 * operands */
+#define TIC64X_OP_USE_TOP_HWORD	0x100000/* Some insns only use the top 16 bits
+					 * of the constant operand - such as
+					 * mvkh */
 
 
 #define TIC64X_MAX_TXT_OPERANDS	3

@@ -1468,11 +1468,14 @@ tic64x_opreader_constant(char *line, struct tic64x_insn *insn,
 		}
 	}
 
-	shift = 0;
 	/* Do we need to shift at all? */
 	if (insn->templ->flags & TIC64X_OP_CONST_SCALE) {
 		shift = insn->templ->flags & TIC64X_OP_MEMSZ_MASK;
 		shift >>= TIC64X_OP_MEMSZ_SHIFT;
+	} else if (insn->templ->flags & TIC64X_OP_USE_TOP_HWORD) {
+		shift = 16;
+	} else {
+		shift = 0;
 	}
 
 	tic64x_parse_expr(line, &expr);
