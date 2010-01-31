@@ -1378,6 +1378,11 @@ struct tic64x_op_template tic64x_opcodes[] = {
 	{ tic64x_operand_const5, tic64x_operand_invalid }
 },
 /* XXX not implementing SL as it's atomic, we don't care that much */
+{"smpy",	0xD00,		0xFFC,
+	TIC64X_OP_UNIT_M | TIC64X_OP_XPATH_SRC2,
+	{ tic64x_optxt_srcreg1, tic64x_optxt_srcreg2, tic64x_optxt_dstreg },
+	{ tic64x_operand_invalid, tic64x_operand_invalid }
+},
 {"stw",		0x74,		0x17C,
 	TIC64X_OP_UNIT_D | TIC64X_OP_UNITNO |
 	TIC64X_OP_MEMACCESS | TIC64X_OP_MEMSZ_WORD | TIC64X_OP_MULTI_MNEMONIC,
