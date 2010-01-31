@@ -975,7 +975,7 @@ struct tic64x_op_template tic64x_opcodes[] = {
 	{ tic64x_operand_dwdst5, tic64x_operand_invalid }
 },
 {"mpy2ir",	0x100003F0,	0xF0000FFC,
-	TIC64X_OP_UNIT_M | TIC64X_OP_XPATH_SRC2,
+	TIC64X_OP_UNIT_M | TIC64X_OP_XPATH_SRC2 | TIC64X_OP_NOCOND,
 	{ tic64x_optxt_srcreg1, tic64x_optxt_srcreg2, tic64x_optxt_dwdst },
 	{ tic64x_operand_dwdst5, tic64x_operand_invalid }
 },
