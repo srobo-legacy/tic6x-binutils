@@ -1713,6 +1713,8 @@ md_assemble(char *line)
 		as_warn("Replacing \"mv\" instruction with add 0; schedule your"
 			" own instructions");
 		mvfail = 1; /* Horror */
+	} else if (!strcmp(mnemonic, "pack2")) {
+		as_fatal("tic64x-gas FIXME: pack2 requires hackery to work");
 	}
 
 
