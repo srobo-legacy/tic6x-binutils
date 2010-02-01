@@ -1589,9 +1589,159 @@ struct tic64x_op_template tic64x_opcodes[] = {
 	{ tic64x_optxt_srcreg1, tic64x_optxt_srcreg2, tic64x_optxt_dstreg},
 	{ tic64x_operand_invalid, tic64x_operand_invalid }
 },
+{"subab",	0x18C0,		0x1FFC,
+	TIC64X_OP_UNIT_D | TIC64X_OP_MULTI_MNEMONIC,
+	{ tic64x_optxt_srcreg2, tic64x_optxt_srcreg1, tic64x_optxt_dstreg},
+	{ tic64x_operand_invalid, tic64x_operand_invalid }
+},
+{"subab",	0x19C0,		0x1FFC,
+	TIC64X_OP_UNIT_D,
+	{ tic64x_optxt_srcreg2, tic64x_optxt_uconstant, tic64x_optxt_dstreg},
+	{ tic64x_operand_const5, tic64x_operand_invalid }
+},
 {"subabs4",	0xB58,		0xFFC,
 	TIC64X_OP_UNIT_L | TIC64X_OP_XPATH_SRC2,
 	{ tic64x_optxt_srcreg1, tic64x_optxt_srcreg2, tic64x_optxt_dstreg},
+	{ tic64x_operand_invalid, tic64x_operand_invalid }
+},
+{"subah",	0x1AC0,		0x1FFC,
+	TIC64X_OP_UNIT_D | TIC64X_OP_MULTI_MNEMONIC,
+	{ tic64x_optxt_srcreg2, tic64x_optxt_srcreg1, tic64x_optxt_dstreg },
+	{ tic64x_operand_invalid, tic64x_operand_invalid }
+},
+{"subah",	0x1BC0,		0x1FFC,
+	TIC64X_OP_UNIT_D,
+	{ tic64x_optxt_srcreg2, tic64x_optxt_uconstant, tic64x_optxt_dstreg },
+	{ tic64x_operand_const5, tic64x_operand_invalid }
+},
+{"subaw",	0x1CC0,		0x1FFC,
+	TIC64X_OP_UNIT_D | TIC64X_OP_MULTI_MNEMONIC,
+	{ tic64x_optxt_srcreg2, tic64x_optxt_srcreg1, tic64x_optxt_dstreg },
+	{ tic64x_operand_invalid, tic64x_operand_invalid }
+},
+{"subaw",	0x1DC0,		0x1FFC,
+	TIC64X_OP_UNIT_D,
+	{ tic64x_optxt_srcreg2, tic64x_optxt_uconstant, tic64x_optxt_dstreg },
+	{ tic64x_operand_const5, tic64x_operand_invalid }
+},
+{"subc",	0x978,		0xFFC,
+	TIC64X_OP_UNIT_L | TIC64X_OP_XPATH_SRC2,
+	{ tic64x_optxt_srcreg1, tic64x_optxt_srcreg2, tic64x_optxt_dstreg },
+	{ tic64x_operand_invalid, tic64x_operand_invalid }
+},
+/* XXX XXX XXX - spec p471 says at the start, this can take the form where the
+ * destination is one register, or a pair. However the opcode map only features
+ * dword destinations. I'm going to trust the opcode map, but this needs tests*/
+{"subu",	0x5F8,		0xFFC,
+	TIC64X_OP_UNIT_L | TIC64X_OP_XPATH_SRC2 | TIC64X_OP_MULTI_MNEMONIC,
+	{ tic64x_optxt_srcreg1, tic64x_optxt_srcreg2, tic64x_optxt_dwdst },
+	{ tic64x_operand_dwdst5, tic64x_operand_invalid }
+},
+{"subu",	0x7F8,		0xFFC,
+	TIC64X_OP_UNIT_L | TIC64X_OP_XPATH_SRC1,
+	{ tic64x_optxt_srcreg1, tic64x_optxt_srcreg2, tic64x_optxt_dwdst },
+	{ tic64x_operand_dwdst5, tic64x_operand_invalid }
+},
+{"sub2",	0x98,		0xFFC,
+	TIC64X_OP_UNIT_L | TIC64X_OP_XPATH_SRC2 | TIC64X_OP_MULTI_MNEMONIC,
+	{ tic64x_optxt_srcreg1, tic64x_optxt_srcreg2, tic64x_optxt_dstreg },
+	{ tic64x_operand_invalid, tic64x_operand_invalid }
+},
+{"sub2",	0x460,		0xFFC,
+	TIC64X_OP_UNIT_S | TIC64X_OP_XPATH_SRC2,
+	{ tic64x_optxt_srcreg1, tic64x_optxt_srcreg2, tic64x_optxt_dstreg },
+	{ tic64x_operand_invalid, tic64x_operand_invalid }
+},
+{"sub2",	0x970,		0xFFC,
+	TIC64X_OP_UNIT_D | TIC64X_OP_XPATH_SRC2,
+	{ tic64x_optxt_srcreg1, tic64x_optxt_srcreg2, tic64x_optxt_dstreg },
+	{ tic64x_operand_invalid, tic64x_operand_invalid }
+},
+{"sub4",	0xCD8,		0xFFC,
+	TIC64X_OP_UNIT_L | TIC64X_OP_XPATH_SRC2,
+	{ tic64x_optxt_srcreg1, tic64x_optxt_srcreg2, tic64x_optxt_dstreg },
+	{ tic64x_operand_invalid, tic64x_operand_invalid }
+},
+/* Swap2 opcodes are pseudoops, and are actually packlh2 / the like, with
+ * some swapped operand orders. */
+/* XXX XXX XXX - src2 and src1 need to be replicated in both slots. Need to
+ * introduce a flag to do this.. */
+{"swap2",	0x378,		0xFFC,
+	TIC64X_OP_UNIT_L | TIC64X_OP_XPATH_SRC2 | TIC64X_OP_MULTI_MNEMONIC,
+	{ tic64x_optxt_srcreg2, tic64x_optxt_dstreg, tic64x_optxt_none },
+	{ tic64x_operand_invalid, tic64x_operand_invalid }
+},
+{"swap2",	0x420,		0xFFC,
+	TIC64X_OP_UNIT_S | TIC64X_OP_XPATH_SRC2,
+	{ tic64x_optxt_srcreg2, tic64x_optxt_dstreg, tic64x_optxt_none },
+	{ tic64x_operand_invalid, tic64x_operand_invalid }
+},
+/* Datasheet should say src2 where it says src, otehrwise fine */
+{"swap4",	0x358,		0x3EFFC,
+	TIC64X_OP_UNIT_L | TIC64X_OP_XPATH_SRC2,
+	{ tic64x_optxt_srcreg2, tic64x_optxt_dstreg, tic64x_optxt_none },
+	{ tic64x_operand_invalid, tic64x_operand_invalid }
+},
+/* XXX SWE, SWENR opcodes not implemented, not interesting right now */
+{"unpkhu4",	0x6358,		0x3EFFC,
+	TIC64X_OP_UNIT_L | TIC64X_OP_XPATH_SRC2 | TIC64X_OP_MULTI_MNEMONIC,
+	{ tic64x_optxt_srcreg2, tic64x_optxt_dstreg, tic64x_optxt_none },
+	{ tic64x_operand_invalid, tic64x_operand_invalid }
+},
+{"unpkhu4",	0x6F20,		0x3EFFC,
+	TIC64X_OP_UNIT_L | TIC64X_OP_XPATH_SRC2,
+	{ tic64x_optxt_srcreg2, tic64x_optxt_dstreg, tic64x_optxt_none },
+	{ tic64x_operand_invalid, tic64x_operand_invalid }
+},
+{"unpklu4",	0x4358,		0x3EFFC,
+	TIC64X_OP_UNIT_L | TIC64X_OP_XPATH_SRC2,
+	{ tic64x_optxt_srcreg2, tic64x_optxt_dstreg, tic64x_optxt_none },
+	{ tic64x_operand_invalid, tic64x_operand_invalid }
+},
+{"unpklu4",	0x4F20,		0x3EFFC,
+	TIC64X_OP_UNIT_S | TIC64X_OP_XPATH_SRC2,
+	{ tic64x_optxt_srcreg2, tic64x_optxt_dstreg, tic64x_optxt_none },
+	{ tic64x_operand_invalid, tic64x_operand_invalid }
+},
+{"xor",		0xDF8,		0xFFC,
+	TIC64X_OP_UNIT_L | TIC64X_OP_XPATH_SRC2 | TIC64X_OP_MULTI_MNEMONIC,
+	{ tic64x_optxt_srcreg1, tic64x_optxt_srcreg2, tic64x_optxt_dstreg },
+	{ tic64x_operand_invalid, tic64x_operand_invalid }
+},
+{"xor",		0xDD8,		0xFFC,
+	TIC64X_OP_UNIT_L | TIC64X_OP_XPATH_SRC2,
+	{ tic64x_optxt_sconstant, tic64x_optxt_srcreg2, tic64x_optxt_dstreg },
+	{ tic64x_operand_const5, tic64x_operand_invalid }
+},
+{"xor",		0x2E0,		0xFFC,
+	TIC64X_OP_UNIT_S | TIC64X_OP_XPATH_SRC2,
+	{ tic64x_optxt_srcreg1, tic64x_optxt_srcreg2, tic64x_optxt_dstreg },
+	{ tic64x_operand_invalid, tic64x_operand_invalid }
+},
+{"xor",		0x2A0,		0xFFC,
+	TIC64X_OP_UNIT_S | TIC64X_OP_XPATH_SRC2,
+	{ tic64x_optxt_sconstant, tic64x_optxt_srcreg2, tic64x_optxt_dstreg },
+	{ tic64x_operand_const5, tic64x_operand_invalid }
+},
+{"xor",		0xBB0,		0xFFC,
+	TIC64X_OP_UNIT_D | TIC64X_OP_XPATH_SRC2,
+	{ tic64x_optxt_srcreg1, tic64x_optxt_srcreg2, tic64x_optxt_dstreg },
+	{ tic64x_operand_invalid, tic64x_operand_invalid }
+},
+{"xor",		0xBF0,		0xFFC,
+	TIC64X_OP_UNIT_D | TIC64X_OP_XPATH_SRC2,
+	{ tic64x_optxt_sconstant, tic64x_optxt_srcreg2, tic64x_optxt_dstreg },
+	{ tic64x_operand_const5, tic64x_operand_invalid }
+},
+/* XXX xormpy is a galois field insn, not interesting for now */
+{"xpnd2",	0x320F0,	0x3EFFC,
+	TIC64X_OP_UNIT_M | TIC64X_OP_XPATH_SRC2,
+	{ tic64x_optxt_srcreg2, tic64x_optxt_dstreg, tic64x_optxt_none },
+	{ tic64x_operand_invalid, tic64x_operand_invalid }
+},
+{"xpnd4",	0x300F0,	0x3EFFC,
+	TIC64X_OP_UNIT_M | TIC64X_OP_XPATH_SRC2,
+	{ tic64x_optxt_srcreg2, tic64x_optxt_dstreg, tic64x_optxt_none },
 	{ tic64x_operand_invalid, tic64x_operand_invalid }
 },
 /* XXX XXX XXX XXX XXX XXX XXX XXX XXX */
