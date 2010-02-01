@@ -1568,7 +1568,7 @@ struct tic64x_op_template tic64x_opcodes[] = {
 	{ tic64x_operand_const5, tic64x_operand_invalid }
 },
 /* TI comment p 459 says operands are swapped here */
-/* Also, first (only) instance of instruction with no cond */
+/* ... and somehow this has a z bit, but no cond register. Datasheet bug? */
 {"sub",		0xD70,		0xFFC,
 	TIC64X_OP_UNIT_S | TIC64X_OP_NOCOND | TIC64X_OP_XPATH_SRC1,
 	{ tic64x_optxt_srcreg2, tic64x_optxt_srcreg1, tic64x_optxt_dstreg},
