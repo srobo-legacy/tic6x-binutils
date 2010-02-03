@@ -169,6 +169,7 @@ static fragS *read_insns_frags[8];
 static void tic64x_output_insn_packet(void);
 static int read_execution_unit(char **curline, struct tic64x_insn *insn);
 static int guess_insn_type(struct tic64x_insn *insn, char **operands);
+static int parse_operands(char **operands, struct tic64x_insn *insn);
 
 int
 md_parse_option(int c, char *arg)
@@ -1920,24 +1921,8 @@ md_assemble(char *line)
 	if (validation_and_conditions(insn))
 		return;
 
-	for (i = 0; i < TIC64X_MAX_TXT_OPERANDS && operands[i]; i++) {
-		/* We have some text, lookup what kind of operand we expect,
-		 * and call its parser / handler / whatever */
-		optype = insn->templ->textops[i];
-		for (j = 0; tic64x_operand_readers[j].reader != NULL; j++) {
-			if (tic64x_operand_readers[j].type == optype)
-				break;
-		}
-
-		if (tic64x_operand_readers[j].reader) {
-			tic64x_operand_readers[j].reader(operands[i], insn,
-					tic64x_operand_readers[j].type);
-		} else {
-			as_bad("\"%s\" has unrecognised operand %d",
-				insn->templ->mnemonic, i);
-		}
-	}
-
+	if (parse_operands(operands, insn))
+		return;
 	/* If this is the start of a new insn packet, dump the contents of
 	 * the previous packet and start a new one. Include some sanity
 	 * checks */
