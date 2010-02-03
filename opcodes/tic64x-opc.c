@@ -1694,7 +1694,7 @@ struct tic64x_op_template tic64x_opcodes[] = {
 	{ tic64x_operand_invalid, tic64x_operand_invalid }
 },
 {"unpklu4",	0x4358,		0x3EFFC,
-	TIC64X_OP_UNIT_L | TIC64X_OP_XPATH_SRC2,
+	TIC64X_OP_UNIT_L | TIC64X_OP_XPATH_SRC2 | TIC64X_OP_MULTI_MNEMONIC,
 	{ tic64x_optxt_srcreg2, tic64x_optxt_dstreg, tic64x_optxt_none },
 	{ tic64x_operand_invalid, tic64x_operand_invalid }
 },
