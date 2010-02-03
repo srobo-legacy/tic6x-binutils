@@ -741,9 +741,10 @@ tic64x_optest_memrel15(char *line, struct tic64x_insn *insn,
 	while (ISSPACE(*line))
 		line++;
 
-	if (*line++ != '[')
+	if (*line != '[' && *line != '(')
 		return 0;
 
+	line++;
 	while (ISSPACE(*line))
 		line++;
 
@@ -805,7 +806,7 @@ tic64x_opreader_memaccess(char *line, struct tic64x_insn *insn,
 	struct tic64x_register *reg, *offsetreg;
 	int off_reg, pos_neg, pre_post, nomod_modify, has_offset, i, tmp, sc;
 	int offs_operand, offs_size, err;
-	char c;
+	char c, bracket;
 
 	off_reg = -1;
 	pos_neg = -1;
@@ -912,9 +913,11 @@ tic64x_opreader_memaccess(char *line, struct tic64x_insn *insn,
 
 	/* Look for offset register of constant */
 	offsetreg = NULL;
+	bracket = '\0';
 	if (*line == '[' || *line == '(') {
 		has_offset = 1;
 		c = (*line++ == '[') ? ']' : ')';
+		bracket = c;
 		offs = line;
 
 		while (*line != c && !is_end_of_line[(int)*line])
@@ -1043,6 +1046,15 @@ tic64x_opreader_memaccess(char *line, struct tic64x_insn *insn,
 	} else if (has_offset && expr.X_op == O_constant) {
 		offs_size = tic64x_operand_positions[tic64x_operand_rcoffset].size;
 		tmp = expr.X_add_number;
+
+		if (bracket == '[') {
+			/* Programmer provides pre-scaled value within square
+			 * brackets - unscale it to meet our expectations */
+			i = insn->templ->flags & TIC64X_OP_MEMSZ_MASK;
+			i >>= TIC64X_OP_MEMSZ_SHIFT;
+			tmp <<= i;
+		}
+
 		if (tmp < 0) {
 			as_bad("tic64x-pedantic-mode: can't add/subtract a "
 				"negative constant from base register, use "
@@ -1126,6 +1138,7 @@ tic64x_opreader_memrel15(char *line, struct tic64x_insn *insn,
 {
 	expressionS expr;
 	int y, shift, val, index, err;
+	char bracket;
 
 	index = find_operand_index(insn->templ, tic64x_operand_const15);
 	if (index < 0)
@@ -1158,11 +1171,12 @@ tic64x_opreader_memrel15(char *line, struct tic64x_insn *insn,
 	while (ISSPACE(*line))
 		line++;
 
-	if (*line++ != '[') {
+	if (*line != '[' || *line != '(') {
 		as_bad("Unexpected character when looking for '['");
 		return;
 	}
 
+	bracket = *line++;
 	while (ISSPACE(*line))
 		line++;
 
@@ -1177,6 +1191,13 @@ tic64x_opreader_memrel15(char *line, struct tic64x_insn *insn,
 		}
 
 		val = expr.X_add_number;
+		if (bracket == '[') {
+			/* User has pre-scaled this operand for us */
+			shift = insn->templ->flags & TIC64X_OP_MEMSZ_MASK;
+			shift >>= TIC64X_OP_MEMSZ_SHIFT;
+			val <<= shift;
+		}
+
 		if (insn->templ->flags & TIC64X_OP_CONST_SCALE) {
 			shift = insn->templ->flags & TIC64X_OP_MEMSZ_MASK;
 			shift >>= TIC64X_OP_MEMSZ_SHIFT;
