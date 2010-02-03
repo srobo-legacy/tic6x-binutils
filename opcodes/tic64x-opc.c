@@ -1819,9 +1819,9 @@ struct tic64x_compact_table tic64x_compact_formats[] = {
 {0xA,		0x3E,	bad_scaledown, scaleup_sbs7},	/* sbs7 */
 {0xC00A,	0xC03E,	bad_scaledown, bad_scaleup},	/* sbu8 */
 #if 0
-Face: This opcode form is indistinguishable from S3. We're not likely to
+/* Face: This opcode form is indistinguishable from S3. We're not likely to
 see it any time soon, so ignore for now. Seeing how presumably the silicon
-itself can't tell the difference, I assume a datasheet bug
+itself can't tell the difference, I assume a datasheet bug */
 {0x1A,		0x3E,	bad_scaledown, bad_scaleup},	/* scs10 */
 #endif
 {0x2A,		0x2E,	bad_scaledown, bad_scaleup},	/* sbs7c */
