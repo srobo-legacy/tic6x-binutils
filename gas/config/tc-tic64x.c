@@ -47,6 +47,13 @@ struct tic64x_insn {
 		expressionS expr;
 		int resolved;
 	} operand_values[TIC64X_MAX_OPERANDS];
+
+	/* Hack for ti's mv instruction failery - can't be resolved in initial
+	 * pass, we need to inspect other parallel ops later and make a decision
+	 * there */
+	int mvfail;
+	char *mvfail_op1;
+	char *mvfail_op2;
 };
 
 typedef int (optester) (char *line, struct tic64x_insn *insn,
@@ -169,6 +176,9 @@ static fragS *read_insns_frags[8];
 static void tic64x_output_insn_packet(void);
 static int read_execution_unit(char **curline, struct tic64x_insn *insn);
 static int guess_insn_type(struct tic64x_insn *insn, char **operands);
+static void generate_d_mv(struct tic64x_insn *insn);
+static void generate_l_mv(struct tic64x_insn *insn, int isdw);
+static void generate_s_mv(struct tic64x_insn *insn);
 static int parse_operands(char **operands, struct tic64x_insn *insn);
 
 int
@@ -1853,10 +1863,8 @@ md_assemble(char *line)
 	char *operands[TIC64X_MAX_TXT_OPERANDS+1];
 	struct tic64x_insn *insn;
 	char *mnemonic;
-	enum tic64x_text_operand optype;
-	int i, j, mvfail, bfieldfail, ret;
+	int i, bfieldfail, ret;
 
-	mvfail = 0;
 	bfieldfail = 0;
 	insn = malloc(sizeof(*insn));
 	memset(insn, 0, sizeof(*insn));
@@ -1876,21 +1884,12 @@ md_assemble(char *line)
 	if (!strcmp(mnemonic, "ret")) {
 		strcpy(mnemonic, "b");
 	} else if (!strcmp(mnemonic, "mv")) {
-		/* XXX kludge: TI define a "mv" pseudo-op to describe writing
-		 * the contents of one register to another. Their assembler
-		 * apparently will read this, look at what's currently scheduled
-		 * and select the most appropriate instruction that doesn't lead
-		 * to a stall. This is entirely beyond what gas is supposed to
-		 * do so hack it instead */
-		mnemonic = "add";
-		as_warn("Replacing \"mv\" instruction with add 0; schedule your"
-			" own instructions");
-		mvfail = 1; /* Horror */
+		insn->mvfail = 1; /* Horror */
 	}
 
 	/* Is this an instruction we've heard of? */
 	insn->templ = hash_find(tic64x_ops, mnemonic);
-	if (!insn->templ) {
+	if (!insn->templ && !insn->mvfail) {
 		as_bad("Unrecognised mnemonic %s", mnemonic);
 		free(insn);
 		return;
@@ -1918,10 +1917,14 @@ md_assemble(char *line)
 		line++;
 	}
 
-	if (mvfail) {
-		/* We replaced mv with add, fiddle with operands */
-		operands[2] = operands[1];
-		operands[1] = "0";
+	if (insn->mvfail) {
+		/* Evil: store operands for later inspection, branch away */
+		insn->mvfail_op1 = strdup(operands[0]);
+		insn->mvfail_op2 = strdup(operands[1]);
+
+		/* And because we need to handle it being 'mv' elsewhere,
+		 * a goto. */
+		goto wrapup;
 	}
 
 	/* Horror: if we have multiple operations for this mnemonic,
@@ -1951,6 +1954,7 @@ md_assemble(char *line)
 
 	if (parse_operands(operands, insn))
 		return;
+wrapup:
 	/* If this is the start of a new insn packet, dump the contents of
 	 * the previous packet and start a new one. Include some sanity
 	 * checks */
@@ -1974,7 +1978,7 @@ md_assemble(char *line)
 	read_insns_frags[read_insns_index] = frag_now;
 	read_insns[read_insns_index++] = insn;
 
-	if (insn->templ->flags & TIC64X_OP_BITFIELD) {
+	if (insn->templ && insn->templ->flags & TIC64X_OP_BITFIELD) {
 		free(operands[1]);
 	}
 
@@ -1990,12 +1994,245 @@ md_after_pass_hook()
 }
 
 void
+generate_l_mv(struct tic64x_insn *insn, int isdw)
+{
+	char buffer[4];
+	char *operands[TIC64X_MAX_TXT_OPERANDS];
+
+	if (isdw) {
+		insn->templ = hash_find(tic64x_ops, "add");
+		while (insn->templ->opcode != 0x58 &&
+					!strcmp("add", insn->templ->mnemonic)) {
+			insn->templ++;
+		}
+
+		if (insn->templ->opcode != 0x58)
+			as_fatal("L unit add operand has disappeared");
+
+		sprintf(buffer, "0");
+		operands[0] = insn->mvfail_op1;
+		operands[1] = buffer;
+		operands[2] = insn->mvfail_op2;
+		parse_operands(operands, insn);
+	} else {
+		insn->templ = hash_find(tic64x_ops, "or");
+		while (insn->templ->opcode != 0x8F0 &&
+					!strcmp("or", insn->templ->mnemonic)) {
+			insn->templ++;
+		}
+
+		if (insn->templ->opcode != 0x8F0)
+			as_fatal("L unit or operation has disappeared");
+
+		sprintf(buffer, "0");
+		operands[0] = buffer;
+		operands[1] = insn->mvfail_op1;
+		operands[2] = insn->mvfail_op2;
+		parse_operands(operands, insn);
+		/* munge operands */
+	}
+
+}
+
+void
+generate_d_mv(struct tic64x_insn *insn)
+{
+	char buffer[4];
+	char *operands[TIC64X_MAX_TXT_OPERANDS];
+
+	insn->templ = hash_find(tic64x_ops, "add");
+	while (insn->templ->opcode != 0xAF0 &&
+					!strcmp("add", insn->templ->mnemonic)) {
+		insn->templ++;
+	}
+
+	if (insn->templ->opcode != 0xAF0)
+		as_fatal("D unit or operation has disappeared");
+
+	sprintf(buffer, "0");
+	operands[0] = buffer;
+	operands[1] = insn->mvfail_op1;
+	operands[2] = insn->mvfail_op2;
+	parse_operands(operands, insn);
+}
+
+void
+generate_s_mv(struct tic64x_insn *insn)
+{
+	char buffer[4];
+	char *operands[TIC64X_MAX_TXT_OPERANDS];
+
+	insn->templ = hash_find(tic64x_ops, "add");
+	while (insn->templ->opcode != 0x1A0 &&
+					!strcmp("add", insn->templ->mnemonic)) {
+		insn->templ++;
+	}
+
+	if (insn->templ->opcode != 0x1A0)
+		as_fatal("S unit or operation has disappeared");
+
+	sprintf(buffer, "0");
+	operands[0] = buffer;
+	operands[1] = insn->mvfail_op1;
+	operands[2] = insn->mvfail_op2;
+	parse_operands(operands, insn);
+}
+
+void
 tic64x_output_insn_packet()
 {
 	struct tic64x_insn *insn;
 	fragS *frag;
 	char *out;
-	int i;
+	int i, err, isdw, isxpath;
+	char m[2], l[2], s[2], d[2];
+
+	err = 0;
+	memset(m, 0, sizeof(m));
+	memset(l, 0, sizeof(l));
+	memset(s, 0, sizeof(s));
+	memset(d, 0, sizeof(d));
+
+	/* We may need to make some decisions based on what units have been
+	 * used so far - collect details on which ones those are. Also report
+	 * an error if there's more than one execution unit being used in the
+	 * same execution packet */
+	for (i = 0; i < read_insns_index; i++) {
+		insn = read_insns[i];
+		if (insn->unit != 0 && insn->unit_num != 0) {
+#define USEUNIT(a, i, c) do {						\
+				if ((a)[(i)-1] != 0) {			\
+					as_bad("Using unit %C%d more than once"\
+						"in instruction packet",\
+						(c), (i));		\
+					err++;				\
+				} else {				\
+					(a)[(i)-1]++;			\
+				}					\
+			} while (0);
+
+			switch (insn->unit) {
+			case 'M':
+				USEUNIT(m, insn->unit_num, 'M');
+				break;
+			case 'L':
+				USEUNIT(l, insn->unit_num, 'L');
+				break;
+			case 'S':
+				USEUNIT(s, insn->unit_num, 'S');
+				break;
+			case 'D':
+				USEUNIT(d, insn->unit_num, 'D');
+				break;
+			default:
+				as_fatal("Unrecognised execution unit in "
+					"%s %d", __FILE__, __LINE__);
+#undef USEUNIT
+			}
+		} else if (insn->unit_num != 0 || insn->unit != 0) {
+			as_fatal("Reading insn packet units, found one "
+				"specifier but not the other");
+		}
+	}
+
+	/* Patch up mnemonics, actually implement 'mv's. Inject any other TI
+	 * "Pseudo-op" failery here */
+	for (i = 0; i < read_insns_index; i++) {
+		insn = read_insns[i];
+		if (insn->mvfail) {
+			/* So it's a mv; we want to put it in whatever l/d/s
+			 * slot is free, but we need to work out what
+			 * requirements it has.... first, did the user give it
+			 * a unit specifier, then, does it need an xpath and
+			 * what side it has to be on */
+
+			/* Any special requirements? */
+			isdw = 0;
+			isxpath = 0;
+			if (tic64x_optest_double_register(insn->mvfail_op1,
+						insn, tic64x_optxt_dwsrc)) {
+				isdw = 1;
+			} else if (insn->mvfail_op1[0] != insn->mvfail_op2[0]) {
+				isxpath = 1;
+			}
+
+			if (insn->unit_num == 0 && insn->unit == 0) {
+				/* No unit specified, guess */
+				/* Side determined by destination reg */
+				if (insn->mvfail_op2[0] == 'A') {
+					insn->unit_num = 1;
+				} else if (insn->mvfail_op2[1] == 'B') {
+					insn->unit_num = 2;
+				} else {
+					as_bad("Invalid destination operand "
+						"for mv");
+					return;
+				}
+
+
+#define USEUNIT(u, n, a) do {						\
+				(u)[(n)] = 1;				\
+				insn->unit = a;				\
+				insn->unit_num = n+1;			\
+			} while (0);
+
+#define GRABPATH(u, a) do {						\
+				if ((u)[0] == 0) {			\
+					USEUNIT((u), 0, (a))		\
+				} else if ((u)[1] == 0) {		\
+					USEUNIT((u), 1, (a))		\
+				}					\
+			} while (0);
+
+				if (!isdw && !isxpath) {
+					GRABPATH(d, 'D');
+				}
+
+				if (!isdw && insn->unit == 0) {
+					GRABPATH(s, 'S');
+				}
+
+				if (insn->unit == 0) {
+					GRABPATH(l, 'L');
+				}
+
+				if (insn->unit == 0) {
+					as_bad("Can't schedule mv in remaining "
+						"slots");
+					return;
+				}
+#undef GRABPATH
+#undef USEUNIT
+			}
+
+			if (insn->unit_num != 0 && insn->unit != 0) {
+				/* Mkay */
+				switch (insn->unit) {
+				case 'L':
+					generate_l_mv(insn, isdw);
+					break;
+				case 'S':
+					generate_s_mv(insn);
+					break;
+				case 'D':
+					generate_d_mv(insn);
+					break;
+				case 'M':
+					as_bad("Can't generate mv instruction "
+						"in multiply unit");
+					return;
+				default:
+					as_fatal("Invalid unit encountered, "
+						"%s %d\n", __FILE__, __LINE__);
+				}
+				free(insn->mvfail_op1);
+				free(insn->mvfail_op2);
+			} else if (insn->unit_num != 0 || insn->unit != 0) {
+				as_fatal("Patching up mv, have partial unit "
+					"specifier, not complete");
+			}
+		}
+	}
 
 	/* Emit insns, with correct p-bits this time */
 	for (i = 0; i < read_insns_index; i++) {
