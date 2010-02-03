@@ -167,6 +167,7 @@ static struct tic64x_insn *read_insns[8];
 static char *read_insns_loc[8];
 static fragS *read_insns_frags[8];
 static void tic64x_output_insn_packet(void);
+static int read_execution_unit(char **curline, struct tic64x_insn *insn);
 
 int
 md_parse_option(int c, char *arg)
@@ -1694,6 +1695,69 @@ validation_and_conditions(struct tic64x_insn *insn)
 	return 0;
 }
 
+int
+read_execution_unit(char **curline, struct tic64x_insn *insn)
+{
+	char *line;
+
+	line = *curline;
+	/* Expect ".xn" where x is {D,L,S,M}, and n is {1,2}. Can be followed
+	 * by 'T' specifier saying which memory data path is being used */
+	if (*line++ != '.') {
+		/* No execution unit may be fine */
+		return 0;
+	}
+
+	/* Stuff from here on should be an execution unit, so error if it's
+	 * wrong */
+	insn->unit = *line++;
+	if (insn->unit != 'D' && insn->unit != 'L' && insn->unit != 'S' &&
+							insn->unit != 'M') {
+		as_bad("Unrecognised execution unit %C after \"%s\"",
+					insn->unit, insn->templ->mnemonic);
+		return -1;
+	}
+
+	/* I will scream if someone says "what if it isn't ascii" */
+	insn->unit_num = *line++ - 0x30;
+	if (insn->unit_num != 1 && insn->unit_num != 2) {
+		as_bad("Bad execution unit number %d after \"%s\"",
+					insn->unit_num, insn->templ->mnemonic);
+		return -1;
+	}
+
+	/* We might find either T1 or T2 at end of unit specifier, indicating
+	 * which data path the loaded/stored data will travel through */
+	if (*line == 'T') {
+		line++;
+		insn->mem_unit_num = *line++ - 0x30;
+		if (insn->mem_unit_num != 1 && insn->mem_unit_num != 2) {
+			as_bad("%d not a valid unit number for memory data path"
+					" in \"%s\"", insn->mem_unit_num,
+							insn->templ->mnemonic);
+			return -1;
+		}
+	} else {
+		insn->mem_unit_num = -1;
+	}
+
+	/* There's also an 'X' suffix used to indicate we're using the cross
+	 * path. */
+	if (*line == 'X') {
+		line++;
+		insn->uses_xpath = 1;
+	} else {
+		insn->uses_xpath = 0;
+	}
+
+	/* Nom any leading spaces */
+	while (ISSPACE(*line))
+		line++;
+
+	*curline = line;
+	return 1;
+}
+
 void
 md_assemble(char *line)
 {
@@ -1702,7 +1766,7 @@ md_assemble(char *line)
 	struct tic64x_op_template *multi;
 	char *mnemonic;
 	enum tic64x_text_operand optype;
-	int i, j, mvfail, bfieldfail;
+	int i, j, mvfail, bfieldfail, ret;
 
 	mvfail = 0;
 	bfieldfail = 0;
@@ -1744,61 +1808,14 @@ md_assemble(char *line)
 		return;
 	}
 
-	/* Expect ".xn" where x is {D,L,S,M}, and n is {1,2}. Can be followed
-	 * by 'T' specifier saying which memory data path is being used */
-	if (*line++ != '.') {
-		as_bad("Expected execution unit specifier after \"%s\"",
-							insn->templ->mnemonic);
-		free(insn);
+	ret = read_execution_unit(&line, insn);
+	if (ret < 0) {
 		return;
+	} else if (ret == 0) {
+		as_warn("You haven't specified an execution unit for "
+			"instruction %s: this is supposed to be supported, but "
+			"expect something to explode, imminently", mnemonic);
 	}
-
-	insn->unit = *line++;
-	if (insn->unit != 'D' && insn->unit != 'L' && insn->unit != 'S' &&
-							insn->unit != 'M') {
-		as_bad("Unrecognised execution unit %C after \"%s\"",
-					insn->unit, insn->templ->mnemonic);
-		free(insn);
-		return;
-	}
-
-	/* I will scream if someone says "what if it isn't ascii" */
-	insn->unit_num = *line++ - 0x30;
-	if (insn->unit_num != 1 && insn->unit_num != 2) {
-		as_bad("Bad execution unit number %d after \"%s\"",
-					insn->unit_num, insn->templ->mnemonic);
-		free(insn);
-		return;
-	}
-
-	/* We might find either T1 or T2 at end of unit specifier, indicating
-	 * which data path the loaded/stored data will travel through */
-	if (*line == 'T') {
-		line++;
-		insn->mem_unit_num = *line++ - 0x30;
-		if (insn->mem_unit_num != 1 && insn->mem_unit_num != 2) {
-			as_bad("%d not a valid unit number for memory data path"
-					" in \"%s\"", insn->mem_unit_num,
-							insn->templ->mnemonic);
-			free(insn);
-			return;
-		}
-	} else {
-		insn->mem_unit_num = -1;
-	}
-
-	/* There's also an 'X' suffix used to indicate we're using the cross
-	 * path. */
-	if (*line == 'X') {
-		line++;
-		insn->uses_xpath = 1;
-	} else {
-		insn->uses_xpath = 0;
-	}
-
-	/* Nom any leading spaces */
-	while (ISSPACE(*line))
-		line++;
 
 	/* Turn string of operands into array of string pointers */
 	memset(operands, 0, sizeof(operands));
