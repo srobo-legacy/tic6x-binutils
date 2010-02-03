@@ -522,7 +522,7 @@ print_op_memaccess(struct tic64x_op_template *t, uint32_t opcode,
 	if (*offsetstr == 0) {
 		snprintf(buffer, len, "*%s%s%s%s", pre, regchar, regno, post);
 	} else {
-		snprintf(buffer, len, "*%s%s%s%s[%s]", pre, regchar, regno,
+		snprintf(buffer, len, "*%s%s%s%s(%s)", pre, regchar, regno,
 							post, offsetstr);
 	}
 	return;
@@ -547,7 +547,7 @@ print_op_memrel15(struct tic64x_op_template *t, uint32_t opcode,
 		offset <<= scale;
 	}
 
-	snprintf(buffer, len, "*+B%d[%X]", regno, offset);
+	snprintf(buffer, len, "*+B%d(%X)", regno, offset);
 	return;
 }
 
