@@ -2081,6 +2081,7 @@ generate_s_mv(struct tic64x_insn *insn)
 void
 tic64x_output_insn_packet()
 {
+	struct tic64x_register *src2, *dst;
 	struct tic64x_insn *insn;
 	fragS *frag;
 	char *out;
@@ -2146,29 +2147,29 @@ tic64x_output_insn_packet()
 			 * a unit specifier, then, does it need an xpath and
 			 * what side it has to be on */
 
+			src2 = tic64x_sym_to_reg(insn->mvfail_op1);
+			dst = tic64x_sym_to_reg(insn->mvfail_op2);
 			/* Any special requirements? */
 			isdw = 0;
 			isxpath = 0;
 			if (tic64x_optest_double_register(insn->mvfail_op1,
 						insn, tic64x_optxt_dwsrc)) {
 				isdw = 1;
-			} else if (insn->mvfail_op1[0] != insn->mvfail_op2[0]) {
+			} else if (((src2->num & TIC64X_REG_UNIT2) &&
+						!(dst->num & TIC64X_REG_UNIT2))
+				|| (!(src2->num & TIC64X_REG_UNIT2) &&
+						(dst->num & TIC64X_REG_UNIT2))){
 				isxpath = 1;
 			}
 
 			if (insn->unit_num == 0 && insn->unit == 0) {
 				/* No unit specified, guess */
 				/* Side determined by destination reg */
-				if (insn->mvfail_op2[0] == 'A') {
-					insn->unit_num = 1;
-				} else if (insn->mvfail_op2[1] == 'B') {
+				if (dst->num & TIC64X_REG_UNIT2) {
 					insn->unit_num = 2;
 				} else {
-					as_bad("Invalid destination operand "
-						"for mv");
-					return;
+					insn->unit_num = 1;
 				}
-
 
 #define USEUNIT(u, n, a) do {						\
 				(u)[(n)] = 1;				\
