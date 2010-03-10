@@ -8,6 +8,12 @@
 #include "struc-symbol.h"
 #include "libbfd.h"
 
+#define OPTEST_MATCH		1
+#define OPTEST_NOMATCH		0
+#define OPTEST_WRONGREGSIDE	-1
+#define OPTEST_WRONGUNIT	-2
+#define OPTEST_NOSUBTRACT	-3
+
 #define UNUSED(x) ((x) = (x))
 
 #define TXTOPERAND_CAN_XPATH(insn, type) 				\
@@ -671,7 +677,7 @@ tic64x_optest_register(char *line, struct tic64x_insn *insn,
 
 	reg = tic64x_sym_to_reg(line);
 	if (!reg)
-		return 0;
+		return OPTEST_NOMATCH;
 
 	if (((reg->num & TIC64X_REG_UNIT2) && insn->unit_num == 1) ||
 	    (!(reg->num & TIC64X_REG_UNIT2) && insn->unit_num == 2)) {
@@ -681,20 +687,20 @@ tic64x_optest_register(char *line, struct tic64x_insn *insn,
 		/* Is xpath on, and does it match our register */
 		if (TXTOPERAND_CAN_XPATH(insn, type)) {
 			/* Xpath on, matches us, we're valid. */
-			return 1;
+			return OPTEST_MATCH;
 		/* We're also excused if we're dest/src of a load/store */
 		} else if (insn->mem_unit_num != -1 &&
 		(((reg->num & TIC64X_REG_UNIT2) && insn->mem_unit_num == 2) ||
 		(!(reg->num & TIC64X_REG_UNIT2) && insn->mem_unit_num == 1))) {
-			return 1;
+			return OPTEST_MATCH;
 		} else {
 			/* Wrong side, no excuse, doesn't match */
-			return 0;
+			return OPTEST_WRONGREGSIDE;
 		}
 	}
 
 	/* On right side, it's good */
-	return 1;
+	return OPTEST_MATCH;
 }
 
 int
@@ -1585,7 +1591,7 @@ tic64x_compare_operands(struct tic64x_insn *insn,
 		if (ops[i] == NULL)
 			/* Wherever in loop we are, we haven't errored out, so
 			 * it looks like this matches */
-			return 1;
+			return OPTEST_MATCH;
 
 		type = templ->textops[i];
 		for (j = 0; tic64x_operand_readers[j].test; j++) {
@@ -1603,14 +1609,14 @@ tic64x_compare_operands(struct tic64x_insn *insn,
 						templ->mnemonic);
 		}
 
-		if (ret == 0)
-			return 0;
+		if (ret != OPTEST_MATCH)
+			return ret;
 
 		/* Otherwise, move along to next operand */
 	}
 
 	/* If we ran out of operands, they must have all matched */
-	return 1;
+	return OPTEST_MATCH;
 }
 
 
@@ -1774,7 +1780,7 @@ int
 guess_insn_type(struct tic64x_insn *insn, char **operands)
 {
 	struct tic64x_op_template *multi;
-	int i, j;
+	int i, j, ret;
 
 	/* For each insn, test length and probe each operand */
 	/* Count number of text operands... */
@@ -1791,6 +1797,7 @@ guess_insn_type(struct tic64x_insn *insn, char **operands)
 	/* Loop through each insn template - warning, pointer abuse.
 	 * assumes that templ pointed into tic64x_opcodes, and that
 	 * the first one is marked with the MULTI_MNEMONIC flag */
+	ret = OPTEST_NOMATCH;
 	for (multi = insn->templ; !strcmp(multi->mnemonic,
 				insn->templ->mnemonic); multi++) {
 		for (j = 0; j < TIC64X_MAX_TXT_OPERANDS; j++)
@@ -1815,13 +1822,34 @@ guess_insn_type(struct tic64x_insn *insn, char **operands)
 		/* No such luck - probe each operand to see if it's
 		 * what we expect it to be. So ugly it has to go in
 		 * a different function */
-		if (tic64x_compare_operands(insn, multi, operands))
+		ret = tic64x_compare_operands(insn, multi, operands);
+		if (ret != OPTEST_NOMATCH)
 			break;
 	}
 
-	if (strcmp(multi->mnemonic, insn->templ->mnemonic)) {
-		as_bad("Unrecognised instruction format for \"%s\"",
-					insn->templ->mnemonic);
+	if (ret != OPTEST_MATCH) { // was mnemonic strcmp
+		const char *reason;
+		switch (ret) {
+		case OPTEST_NOMATCH:
+			reason = "Unrecognised instruction format for \"%s\"";
+			break;
+		case OPTEST_WRONGREGSIDE:
+			reason = "Register operand on wrong side of processor "
+				"in \"%s\"";
+			break;
+		case OPTEST_WRONGUNIT:
+			reason = "Instruction \"%s\" of this form cannot run "
+				"on specified side of processor / unit";
+			break;
+		case OPTEST_NOSUBTRACT:
+			reason = "Cannot have negative operand to \"%s\"";
+			break;
+		default:
+			as_fatal("Failed to recognize fail reason in "
+				"guess_insn_type");
+		}
+	
+		as_bad(reason, insn->templ->mnemonic);
 		return 1;
 	}
 
