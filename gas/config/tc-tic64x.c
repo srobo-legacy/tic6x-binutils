@@ -2116,6 +2116,11 @@ tic64x_output_insn_packet()
 	memset(s, 0, sizeof(s));
 	memset(d, 0, sizeof(d));
 
+	/* If there were errors, don't attempt to output, state is probably
+	 * not going to be valid. Leaky. */
+	if (had_errors())
+		return;
+
 	/* We may need to make some decisions based on what units have been
 	 * used so far - collect details on which ones those are. Also report
 	 * an error if there's more than one execution unit being used in the
