@@ -1001,12 +1001,6 @@ tic64x_opreader_memaccess(char *line, struct tic64x_insn *insn,
 	/* There are a million and one ways this operand could have been
 	 * constructed - try and make sense of all this */
 	if (has_offset) {
-		if (nomod_modify == -1 || pos_neg == -1) {
-			as_bad("Offset present, but no + or - address mode "
-				"specified when reading address register");
-			return;
-		}
-
 		/* Can't have + and - /after/ the base register */
 		if (nomod_modify == TIC64X_ADDRMODE_NOMODIFY &&
 				pre_post == TIC64X_ADDRMODE_POST) {
