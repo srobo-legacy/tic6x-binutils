@@ -1281,7 +1281,7 @@ struct tic64x_op_template tic64x_opcodes[] = {
 {"shl",		0xCA0,		0xFFC,
 	TIC64X_OP_UNIT_S | TIC64X_OP_XPATH_SRC2,
 	{ tic64x_optxt_srcreg2, tic64x_optxt_uconstant, tic64x_optxt_dstreg },
-	{ tic64x_operand_invalid, tic64x_operand_invalid }
+	{ tic64x_operand_const5, tic64x_operand_invalid }
 },
 {"shl",		0xC20,		0xFFC,
 	TIC64X_OP_UNIT_S,
