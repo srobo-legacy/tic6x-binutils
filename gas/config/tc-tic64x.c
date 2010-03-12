@@ -556,12 +556,8 @@ type_to_rtype(struct tic64x_insn *insn, enum tic64x_operand_type type)
 		/* One operand type, but semantics are different for mvk
 		 * and mvkh/mvklh (according to docs) */
 
-		/* XXX - there's a "mvk insn low half register" reloc, and
-		 * also a "signed 16 bit offset for mvk". Which afais, are
-		 * the same thing. For c62x c67x perhaps? Use signed 16
-		 * reloc, as it best describes mvk */
-
-		if (!strcmp("mvk", insn->templ->mnemonic))
+		if (!strcmp("mvk", insn->templ->mnemonic) ||
+			!strcmp("mvkl", insn->templ->mnemonic))
 			return BFD_RELOC_TIC64X_S16;
 		else if (!strcmp("mvkh", insn->templ->mnemonic) ||
 			!strcmp("mvklh", insn->templ->mnemonic))
