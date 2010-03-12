@@ -96,6 +96,7 @@ struct tic64x_register *tic64x_line_had_cond_reg;
 static char *tic64x_parse_expr(char *s, expressionS *exp);
 static void tic64x_asg(int x);
 static void tic64x_noop(int x);
+static void tic64x_comm(int x);
 static void tic64x_sect(int x);
 static void tic64x_fail(int x);
 static struct tic64x_register *tic64x_sym_to_reg(char *name);
@@ -129,6 +130,7 @@ const pseudo_typeS md_pseudo_table[] =
 	{"asg", 	tic64x_asg,		0},
 	{"bss",		tic64x_fail,		0},
 	{"byte",	tic64x_fail,		0},
+	{"comm",	tic64x_comm,		0},
 	{"copy",	tic64x_fail,		0},
 	{"def",		tic64x_fail,		0},
 	{"include",	tic64x_fail,		0},
@@ -266,6 +268,13 @@ tic64x_noop(int x ATTRIBUTE_UNUSED)
 
 	ignore_rest_of_line();
 	return;
+}
+
+static void
+tic64x_comm(int x ATTRIBUTE_UNUSED)
+{
+
+	s_lcomm(1); // Alignment required
 }
 
 static void
