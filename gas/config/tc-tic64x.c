@@ -135,6 +135,7 @@ const pseudo_typeS md_pseudo_table[] =
 	{"mlib",	tic64x_fail,		0},
 	{"ref",		tic64x_fail,		0},
 	{"sect",	tic64x_sect,		0},
+	{"section",	tic64x_sect,		0},
 	{"set",		tic64x_fail,		0},
 	{"size",	tic64x_noop,		0},
 	{"string",	tic64x_fail,		0},
@@ -321,24 +322,33 @@ static void
 tic64x_sect(int x ATTRIBUTE_UNUSED)
 {
 
-	char *name, *sect;
-	int len;
+	char *name, *mod, *sect;
+	int len, sz;
 	char c;
 
 	if (*input_line_pointer == '"') {
 		name = demand_copy_C_string(&len);
-		demand_empty_rest_of_line();
 		name = strdup(name);
 	} else {
 		name = input_line_pointer;
 		c = get_symbol_end();
+		sz = input_line_pointer - name;
 		name = strdup(name);
+		name[sz] = '\0';
 		*input_line_pointer = c;
+	}
+
+	if (*input_line_pointer == ',') {
+		input_line_pointer++;
+		mod = strdup(input_line_pointer);
+		ignore_rest_of_line();
+	} else {
+		mod = NULL;
 		demand_empty_rest_of_line();
 	}
 
-	sect = malloc(strlen(name) + 5);
-	sprintf(sect, "%s,\"x\"\n", name);
+	sect = malloc(strlen(name) + ((mod) ? strlen(mod) + 5 : 5));
+	sprintf(sect, "%s,%s\n", name, (mod) ? mod : "\"x\"");
 	free(name);
 
 	/* Knobble subsections. obj_coff doesn't support them, its pretty
