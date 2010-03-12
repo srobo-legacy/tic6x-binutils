@@ -125,16 +125,13 @@ static void tic64x_output_insn(struct tic64x_insn *insn, char *out, fragS *f,
  * see spru186 for a full reference */
 const pseudo_typeS md_pseudo_table[] =
 {
-	{"align",	tic64x_fail,		0},
 	{"ascii",	tic64x_fail,		0},
 	{"asciz",	tic64x_fail,		0},
 	{"asg", 	tic64x_asg,		0},
 	{"bss",		tic64x_fail,		0},
 	{"byte",	tic64x_fail,		0},
 	{"copy",	tic64x_fail,		0},
-	{"data",	tic64x_fail,		0},
 	{"def",		tic64x_fail,		0},
-/*	{"global",	tic64x_fail,		0}, */
 	{"include",	tic64x_fail,		0},
 	{"mlib",	tic64x_fail,		0},
 	{"ref",		tic64x_fail,		0},
