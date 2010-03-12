@@ -95,6 +95,7 @@ struct tic64x_register *tic64x_line_had_cond_reg;
 
 static char *tic64x_parse_expr(char *s, expressionS *exp);
 static void tic64x_asg(int x);
+static void tic64x_noop(int x);
 static void tic64x_sect(int x);
 static void tic64x_fail(int x);
 static struct tic64x_register *tic64x_sym_to_reg(char *name);
@@ -137,8 +138,10 @@ const pseudo_typeS md_pseudo_table[] =
 	{"ref",		tic64x_fail,		0},
 	{"sect",	tic64x_sect,		0},
 	{"set",		tic64x_fail,		0},
+	{"size",	tic64x_noop,		0},
 	{"string",	tic64x_fail,		0},
 	{"text",	tic64x_fail,		0},
+	{"type",	tic64x_noop,		0},
 	{"usect",	tic64x_fail,		0},
 	{"word",	tic64x_fail,		0},
 	{NULL, 		NULL,			0}
@@ -255,6 +258,14 @@ tic64x_fail(int x ATTRIBUTE_UNUSED)
 {
 
 	as_fatal("Encountered supported but unimplemented pseudo-op");
+	return;
+}
+
+static void
+tic64x_noop(int x ATTRIBUTE_UNUSED)
+{
+
+	ignore_rest_of_line();
 	return;
 }
 
