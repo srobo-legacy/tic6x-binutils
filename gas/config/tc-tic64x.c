@@ -126,8 +126,6 @@ static void tic64x_output_insn(struct tic64x_insn *insn, char *out, fragS *f,
  * see spru186 for a full reference */
 const pseudo_typeS md_pseudo_table[] =
 {
-	{"ascii",	tic64x_fail,		0},
-	{"asciz",	tic64x_fail,		0},
 	{"asg", 	tic64x_asg,		0},
 	{"bss",		tic64x_fail,		0},
 	{"byte",	tic64x_fail,		0},
