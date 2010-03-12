@@ -332,7 +332,7 @@ static void
 tic64x_sect(int x ATTRIBUTE_UNUSED)
 {
 
-	char *name, *mod, *sect;
+	char *name, *mod, *sect, *tmp;
 	int len, sz;
 	char c;
 
@@ -350,8 +350,13 @@ tic64x_sect(int x ATTRIBUTE_UNUSED)
 
 	if (*input_line_pointer == ',') {
 		input_line_pointer++;
-		mod = strdup(input_line_pointer);
+		mod = input_line_pointer;
 		ignore_rest_of_line();
+		sz = input_line_pointer - mod;
+		sz--; /* Zap end of line. this is feeling very hacky... */
+		tmp = malloc(sz + 1);
+		memcpy(tmp, mod, sz);
+		mod = tmp;
 	} else {
 		mod = NULL;
 		demand_empty_rest_of_line();
