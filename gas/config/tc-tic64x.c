@@ -275,6 +275,7 @@ tic64x_comm(int x ATTRIBUTE_UNUSED)
 {
 
 	s_lcomm(1); // Alignment required
+	ignore_rest_of_line();
 }
 
 static void
