@@ -2171,6 +2171,26 @@ tic64x_output_insn_packet()
 			 * a unit specifier, then, does it need an xpath and
 			 * what side it has to be on */
 
+			/* But first, a hack. */
+			int side;
+			if (insn->mvfail_op2[0] == 'B')
+				side = 2;
+			else
+				side = 1;
+
+			if (side != insn->unit_num) {
+				as_warn("llvm failery 1, fixing a mv");
+				insn->unit_num = side;
+				tic64x_set_operand(&insn->opcode,
+						tic64x_operand_s,
+						(side == 1) ? 0 : 1);
+				if (insn->mvfail_op2[0] != insn->mvfail_op1[0]){
+					insn->uses_xpath = 1;
+				} else {
+					insn->uses_xpath = 0;
+				}
+			}
+
 			src2 = tic64x_sym_to_reg(insn->mvfail_op1);
 			dst = tic64x_sym_to_reg(insn->mvfail_op2);
 			/* Any special requirements? */
