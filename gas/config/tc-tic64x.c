@@ -355,7 +355,8 @@ tic64x_sect(int x ATTRIBUTE_UNUSED)
 		sz = input_line_pointer - mod;
 		sz--; /* Zap end of line. this is feeling very hacky... */
 		tmp = malloc(sz + 1);
-		memcpy(tmp, mod, sz);
+		strncpy(tmp, mod, sz);
+		tmp[sz] = 0;
 		mod = tmp;
 	} else {
 		mod = NULL;
