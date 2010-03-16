@@ -2211,7 +2211,9 @@ tic64x_output_insn_packet()
 				side = 1;
 
 			if (side != insn->unit_num) {
+#if 0
 				as_warn("llvm failery 1, fixing a mv");
+#endif
 				insn->unit_num = side;
 				tic64x_set_operand(&insn->opcode,
 						tic64x_operand_s,
