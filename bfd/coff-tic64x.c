@@ -63,36 +63,36 @@ tic64x_set_section_contents(bfd *b, sec_ptr section, const PTR location,
 }
 
 reloc_howto_type tic64x_howto_table[] = {
-	HOWTO(R_C60BASE, 0, 4, 32, FALSE, 0, complain_overflow_bitfield,
+	HOWTO(R_C60BASE, 0, 2, 32, FALSE, 0, complain_overflow_bitfield,
 		NULL, "RBASE", FALSE, 0xFFFFFFFF, 0xFFFFFFFF, FALSE),
 
-	HOWTO(R_C60DIR15, 0, 4, 15, FALSE, 8, complain_overflow_bitfield,
+	HOWTO(R_C60DIR15, 0, 2, 15, FALSE, 8, complain_overflow_bitfield,
 		NULL, "RDIR15", FALSE, 0x7FFF, 0x7FFF, FALSE),
 
 	/* 21 bits pcrels: must be branch, shr by 2, pcrel_offset stored in
 	 * offset slot... */
-	HOWTO(R_C60PCR21, 2, 4, 21, TRUE, 7, complain_overflow_bitfield,
+	HOWTO(R_C60PCR21, 2, 2, 21, TRUE, 7, complain_overflow_bitfield,
 		NULL, "RPCR21", FALSE, 0x1FFFFF, 0x1FFFFF, TRUE),
 
 	/* similar */
-	HOWTO(R_C60PCR10, 2, 4, 10, TRUE, 13, complain_overflow_bitfield,
+	HOWTO(R_C60PCR10, 2, 2, 10, TRUE, 13, complain_overflow_bitfield,
 		NULL, "RPCR10", FALSE, 0x3FF, 0x3FF, TRUE),
 
-	HOWTO(R_C60LO16, 0, 4, 16, FALSE, 7, complain_overflow_bitfield,
+	HOWTO(R_C60LO16, 0, 2, 16, FALSE, 7, complain_overflow_bitfield,
 		NULL, "RLO16", FALSE, 0xFFFF, 0xFFFF, FALSE),
 
-	HOWTO(R_C60HI16, 16, 4, 16, FALSE, 7, complain_overflow_bitfield,
+	HOWTO(R_C60HI16, 16, 2, 16, FALSE, 7, complain_overflow_bitfield,
 		NULL, "RHI16", FALSE, 0xFFFF0000, 0xFFFF, FALSE),
 
 /* I don't know what this section offset is supposed to be... */
 
-	HOWTO(R_C60S16, 0, 4, 16, FALSE, 7, complain_overflow_bitfield,
+	HOWTO(R_C60S16, 0, 2, 16, FALSE, 7, complain_overflow_bitfield,
 		NULL, "RS16", FALSE, 0xFFFF, 0xFFFF, FALSE),
 
-	HOWTO(R_C60PCR7, 2, 4, 7, TRUE, 16, complain_overflow_bitfield,
+	HOWTO(R_C60PCR7, 2, 2, 7, TRUE, 16, complain_overflow_bitfield,
 		NULL, "RPCR7", FALSE, 0x7F, 0x7F, TRUE),
 
-	HOWTO(R_C60PCR12, 2, 4, 12, TRUE, 16, complain_overflow_bitfield,
+	HOWTO(R_C60PCR12, 2, 2, 12, TRUE, 16, complain_overflow_bitfield,
 		NULL, "RPCR12", FALSE, 0xFFF, 0xFFF, TRUE)
 };
 
