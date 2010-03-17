@@ -45,11 +45,21 @@ bfd_coff_backend_data *dummy_backend_1 = &ticoff1_swap_table;
 static void
 rtype2howto(arelent *internal, struct internal_reloc *dst)
 {
+	int i;
 
-	internal = NULL;
-	dst = NULL;
-	fprintf(stderr, "jmorse: implement rtype2howto\n");
-	exit(1);
+	for (i = 0; i < sizeof (tic64x_howto_table) /
+			sizeof (tic64x_howto_table[0]);
+						i++) {
+		if (tic64x_howto_table[i].type == dst->r_type) {
+			internal->howto = &tic64x_howto_table[i];
+			return;
+		}
+	}
+
+	(*_bfd_error_handler) (_("Unrecognized reloc type 0x%x"),
+						(unsigned int) dst->r_type);
+	internal->howto = NULL;
+	return;
 }
 
 static bfd_boolean
