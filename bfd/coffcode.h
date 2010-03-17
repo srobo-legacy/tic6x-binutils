@@ -5546,7 +5546,7 @@ static bfd_coff_backend_data ticoff2_swap_table =
   coff_SWAP_lineno_out, coff_SWAP_reloc_out,
   coff_SWAP_filehdr_out, coff_SWAP_aouthdr_out,
   coff_SWAP_scnhdr_out,
-  FILHSZ, AOUTSZ, SCNHSZ, SYMESZ, AUXESZ, RELSZ, LINESZ, FILNMLEN,
+  FILHSZ, AOUTSZ, SCNHSZ, SYMESZ, AUXESZ, RELSZ_V0, LINESZ, FILNMLEN,
 #ifdef COFF_LONG_FILENAMES
   TRUE,
 #else
