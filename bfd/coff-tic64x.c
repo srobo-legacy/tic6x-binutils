@@ -129,7 +129,7 @@ tic64x_coff_reloc_type_lookup(bfd *abfd ATTRIBUTE_UNUSED,
 static void
 rtype2howto(arelent *internal, struct internal_reloc *dst)
 {
-	int i;
+	unsigned int i;
 
 	for (i = 0; i < sizeof (tic64x_howto_table) /
 			sizeof (tic64x_howto_table[0]);
