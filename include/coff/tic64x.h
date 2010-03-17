@@ -27,6 +27,7 @@
 /* c6000 uses 10 byte relocation struct (although its named v0): */
 #undef RELOC
 #undef RELSZ
+#define external_reloc external_reloc_v0
 #define RELOC struct external_reloc_v0
 #define RELSZ RELSZ_V0
 
