@@ -42,26 +42,6 @@ reloc_howto_type *tic64x_coff_reloc_name_lookup (bfd *abfd, const char *name);
 bfd_coff_backend_data *dummy_backend_0 = &ticoff0_swap_table;
 bfd_coff_backend_data *dummy_backend_1 = &ticoff1_swap_table;
 
-static void
-rtype2howto(arelent *internal, struct internal_reloc *dst)
-{
-	int i;
-
-	for (i = 0; i < sizeof (tic64x_howto_table) /
-			sizeof (tic64x_howto_table[0]);
-						i++) {
-		if (tic64x_howto_table[i].type == dst->r_type) {
-			internal->howto = &tic64x_howto_table[i];
-			return;
-		}
-	}
-
-	(*_bfd_error_handler) (_("Unrecognized reloc type 0x%x"),
-						(unsigned int) dst->r_type);
-	internal->howto = NULL;
-	return;
-}
-
 static bfd_boolean
 tic64x_set_arch_mach(bfd *b, enum bfd_architecture arch, unsigned long machine)
 {
@@ -144,6 +124,26 @@ tic64x_coff_reloc_type_lookup(bfd *abfd ATTRIBUTE_UNUSED,
 	default:
 		return NULL;
 	}
+}
+
+static void
+rtype2howto(arelent *internal, struct internal_reloc *dst)
+{
+	int i;
+
+	for (i = 0; i < sizeof (tic64x_howto_table) /
+			sizeof (tic64x_howto_table[0]);
+						i++) {
+		if (tic64x_howto_table[i].type == dst->r_type) {
+			internal->howto = &tic64x_howto_table[i];
+			return;
+		}
+	}
+
+	(*_bfd_error_handler) (_("Unrecognized reloc type 0x%x"),
+						(unsigned int) dst->r_type);
+	internal->howto = NULL;
+	return;
 }
 
 reloc_howto_type *
