@@ -129,10 +129,12 @@ const pseudo_typeS md_pseudo_table[] =
 {
 	{"asg", 	tic64x_asg,		0},
 	{"bss",		tic64x_fail,		0},
-	{"byte",	tic64x_fail,		0},
+	{"byte",	cons,			1},
 	{"comm",	tic64x_comm,		0},
 	{"copy",	tic64x_fail,		0},
 	{"def",		tic64x_fail,		0},
+	{"dword",	cons,			8},
+	{"hword",	cons,			2},
 	{"include",	tic64x_fail,		0},
 	{"mlib",	tic64x_fail,		0},
 	{"ref",		tic64x_fail,		0},
@@ -144,7 +146,7 @@ const pseudo_typeS md_pseudo_table[] =
 	{"text",	tic64x_fail,		0},
 	{"type",	tic64x_noop,		0},
 	{"usect",	tic64x_fail,		0},
-	{"word",	tic64x_fail,		0},
+	{"word",	cons, 			4},
 	{NULL, 		NULL,			0}
 };
 
