@@ -143,7 +143,7 @@ const pseudo_typeS md_pseudo_table[] =
 	{"set",		tic64x_fail,		0},
 	{"size",	tic64x_noop,		0},
 	{"string",	tic64x_fail,		0},
-	{"text",	tic64x_fail,		0},
+	{"text",	s_text,			0},
 	{"type",	tic64x_noop,		0},
 	{"usect",	tic64x_fail,		0},
 	{"word",	cons, 			4},
