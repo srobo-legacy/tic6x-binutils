@@ -32,9 +32,9 @@
 void tic64x_start_line_hook(void);
 #define md_start_line_hook() tic64x_start_line_hook()
 
-/* To catch the last insn in the file and give it the correct parallel bit,
- * need to know when the next insn packet starts, or when the file ends. For
- * file ending, use afterpass hook */
+/* We detect the end of an instruction packet in the start_line_hook right now,
+ * but that can't detect the end of file and flush the current packet, so do
+ * that with the after_pass hook. */
 void md_after_pass_hook(void);
 #define md_after_pass_hook md_after_pass_hook
 
