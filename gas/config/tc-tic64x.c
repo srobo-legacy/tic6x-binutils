@@ -178,10 +178,13 @@ struct {
  * So - read insns in with md_assemble, store them in the following table,
  * and emit them when we know we're done with a packet. Requires using
  * md_after_pass_hook probably. */
-static int read_insns_index;
+static int read_insns_index = 0;
 static struct tic64x_insn *read_insns[8];
 static char *read_insns_loc[8];
 static fragS *read_insns_frags[8];
+static segT packet_seg;
+static int packet_subseg;
+
 static void tic64x_output_insn_packet(void);
 static int read_execution_unit(char **curline, struct tic64x_insn *insn);
 static int guess_insn_type(struct tic64x_insn *insn, char **operands);
@@ -644,7 +647,16 @@ tic64x_start_line_hook(void)
 		*line++ = ' ';
 		*line++ = ' ';
 		tic64x_line_had_parallel_prefix = 1;
+	} else if (*line == '*' || *line == ';' || *line == '#') {
+		/* This is a comment line */
+		tic64x_line_had_parallel_prefix = 0;
 	} else {
+		/* Not a comment, no parallel insn; output instruction */
+		/* packet */
+		tic64x_output_insn_packet();
+		memset(read_insns, 0, sizeof(read_insns));
+		memset(read_insns_loc, 0, sizeof(read_insns));
+		read_insns_index = 0;
 		tic64x_line_had_parallel_prefix = 0;
 	}
 
@@ -2012,6 +2024,11 @@ wrapup:
 	 * the previous packet and start a new one. Include some sanity
 	 * checks */
 
+	if (read_insns_index == 0) {
+		packet_seg = now_seg;
+		packet_subseg = now_subseg;
+	}
+
 	if (tic64x_line_had_parallel_prefix) {
 		/* Append this to the list */
 		if (read_insns_index >= 8) {
@@ -2019,11 +2036,6 @@ wrapup:
 				"instruction packet");
 			return;
 		}
-	} else {
-		tic64x_output_insn_packet();
-		memset(read_insns, 0, sizeof(read_insns));
-		memset(read_insns_loc, 0, sizeof(read_insns));
-		read_insns_index = 0;
 	}
 
 	frag_align(2 /* align to 4 */, 0, 0);
@@ -2146,6 +2158,15 @@ tic64x_output_insn_packet()
 	memset(l, 0, sizeof(l));
 	memset(s, 0, sizeof(s));
 	memset(d, 0, sizeof(d));
+
+	/* No instructions -> meh */
+	if (read_insns_index == 0)
+		return;
+
+	if (packet_seg != now_seg || packet_subseg != now_subseg) {
+		as_bad("Segment changed within instruction packet");
+		return;
+	}
 
 	/* If there were errors, don't attempt to output, state is probably
 	 * not going to be valid. Leaky. */
