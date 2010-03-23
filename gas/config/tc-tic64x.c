@@ -491,11 +491,17 @@ md_apply_fix(fixS *fixP, valueT *valP, segT seg ATTRIBUTE_UNUSED)
 	char *loc;
 	uint32_t opcode;
 	enum tic64x_operand_type type;
-	int size, shift, ret;
+	int size, shift, ret, value;
 
 	/* This line from tic54 :| */
 	loc = fixP->fx_where + fixP->fx_frag->fr_literal;
+	value = *valP;
 	shift = 0;
+
+	if (fixP->fx_pcrel && (S_GET_SEGMENT(fixP->fx_addsy) == seg ||
+			S_GET_SEGMENT(fixP->fx_addsy) == absolute_section)) {
+		value += md_pcrel_from_seg(fixP, seg);
+	}
 
 	switch(fixP->fx_r_type) {
 	case BFD_RELOC_TIC64X_BASE:
@@ -541,16 +547,18 @@ as_fatal("FIXME: relocations of const15s need to know memory access size");
 	if (shift)
 		size += 2;
 
-	*valP &= ((1 << size) - 1);
+	value &= ((1 << size) - 1);
 
 	opcode = bfd_get_32(stdoutput, loc);
-	ret = tic64x_set_operand(&opcode, type, (shift) ? *valP >> 2 : *valP);
+	ret = tic64x_set_operand(&opcode, type, (shift) ? value >> 2 : value);
 	bfd_put_32(stdoutput, opcode, loc);
 
 	/* XXX FIXME: Ensure that too-large relocs are handled somehow. Test. */
 
 	if (fixP->fx_addsy == NULL)
 		fixP->fx_done = 1;
+
+	*valP = value;
 
 	return;
 }
