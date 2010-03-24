@@ -3755,6 +3755,21 @@ ENUMDOC
   the opcode.
 
 ENUM
+  BFD_RELOC_TIC64X_BYTE
+ENUMDOC
+  "8-bit direct reference to symbols address"
+
+ENUM
+  BFD_RELOC_TIC64X_WORD
+ENUMDOC
+  "16-bit direct reference to symbols address"
+
+ENUM
+  BFD_RELOC_TIC64X_LONG
+ENUMDOC
+  "32-bit direct reference to symbols address"
+
+ENUM
   BFD_RELOC_TIC64X_BASE
 ENUMDOC
   "Data page pointer-based offset"

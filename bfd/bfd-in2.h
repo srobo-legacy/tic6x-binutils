@@ -3635,6 +3635,15 @@ significant 7 bits of a 23-bit extended address are placed into
 the opcode.  */
   BFD_RELOC_TIC54X_MS7_OF_23,
 
+/* "8-bit direct reference to symbols address"  */
+  BFD_RELOC_TIC64X_BYTE,
+
+/* "16-bit direct reference to symbols address"  */
+  BFD_RELOC_TIC64X_WORD,
+
+/* "32-bit direct reference to symbols address"  */
+  BFD_RELOC_TIC64X_LONG,
+
 /* "Data page pointer-based offset"  */
   BFD_RELOC_TIC64X_BASE,
 
