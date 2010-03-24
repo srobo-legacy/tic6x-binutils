@@ -238,7 +238,7 @@ print_insn(struct tic64x_op_template *templ, uint32_t opcode,
 {
 	const char *tchar, *memnum, *xpath;
 	int i, j, z, creg;
-	char unit, unit_no;
+	char unit, unit_no, dot;
 	char finalstr[16], finalstr2[17];
 
 	if (double_bar) {
@@ -360,7 +360,12 @@ print_insn(struct tic64x_op_template *templ, uint32_t opcode,
 	else
 		xpath = "";
 
-	snprintf(finalstr, 15, ".%C%C%s%s%s", unit, unit_no, tchar,
+	if (unit != ' ')
+		dot = '.';
+	else
+		dot = ' ';
+
+	snprintf(finalstr, 15, "%C%C%C%s%s%s", dot, unit, unit_no, tchar,
 							memnum, xpath);
 	info->fprintf_func(info->stream, "%-7s", finalstr);
 
