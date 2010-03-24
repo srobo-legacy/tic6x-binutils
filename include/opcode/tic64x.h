@@ -48,7 +48,9 @@ enum tic64x_operand_type {
 	tic64x_operand_y,			/* Memaccess srcs side bit */
 	tic64x_operand_z,			/* Conditional zero test */
 	tic64x_operand_creg,			/* Conditional reg num */
-	tic64x_operand_const32			/* 32 bit constant */
+	tic64x_operand_data8,
+	tic64x_operand_data16,
+	tic64x_operand_data32
 };
 
 /* Represent operand in text - simplifies how parser/disassembler works out
