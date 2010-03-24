@@ -1904,7 +1904,7 @@ guess_insn_type(struct tic64x_insn *insn, char **operands)
 		 * what we expect it to be. So ugly it has to go in
 		 * a different function */
 		ret = tic64x_compare_operands(insn, multi, operands);
-		if (ret != OPTEST_NOMATCH)
+		if (ret == OPTEST_MATCH)
 			break;
 	}
 
