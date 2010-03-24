@@ -556,8 +556,20 @@ as_fatal("FIXME: relocations of const15s need to know memory access size");
 		type = tic64x_operand_const12;
 		shift = 1;
 		break;
+	case BFD_RELOC_TIC64X_BYTE:
+		type = tic64x_operand_data8;
+		shift = 0;
+		break;
+	case BFD_RELOC_TIC64X_WORD:
+		type = tic64x_operand_data16;
+		shift = 0;
+		break;
+	case BFD_RELOC_TIC64X_LONG:
+		type = tic64x_operand_data32;
+		shift = 0;
+		break;
 	default:
-		as_fatal("Bad relocation type %X\n", fixP->fx_r_type);
+		as_fatal("Bad relocation type 0x%X\n", fixP->fx_r_type);
 		return;
 	}
 
