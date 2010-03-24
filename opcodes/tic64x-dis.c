@@ -243,9 +243,12 @@ print_insn(struct tic64x_op_template *templ, uint32_t opcode,
 		struct disassemble_info *info, int double_bar)
 {
 	const char *tchar, *memnum, *xpath;
-	int i, j, z, creg;
+	struct tic64x_disasm_priv *priv;
+	int i, j, z, creg, ret;
 	char unit, unit_no, dot;
 	char finalstr[16], finalstr2[17];
+
+	priv = info->private_data;
 
 	if (double_bar) {
 		info->fprintf_func(info->stream, "||");
@@ -379,19 +382,21 @@ print_insn(struct tic64x_op_template *templ, uint32_t opcode,
 	for (i = 0; i < TIC64X_MAX_TXT_OPERANDS; i++) {
 		for (j = 0; operand_printers[j].print != NULL; j++) {
 			if (operand_printers[j].type == templ->textops[i]) {
-				operand_printers[j].print(templ, opcode,
-							templ->textops[i],
-							finalstr, 15);
-				if (i == TIC64X_MAX_TXT_OPERANDS-1) {
+				 ret = operand_printers[j].print(templ, info,
+						opcode, templ->textops[i],
+						finalstr, 15);
+
+				if (ret == PRINT_ADDR) {
+					info->print_address_func(
+						priv->symbol_addr, info);
+				} else if (ret == PRINT_STRING &&
+					i == TIC64X_MAX_TXT_OPERANDS-1) {
 					info->fprintf_func(info->stream, "%s",
 								finalstr);
-				} else if (strlen(finalstr) != 0) {
-					snprintf(finalstr2, 16,
-								"%s,",
-								finalstr);
+				} else if (ret == PRINT_STRING) {
+					snprintf(finalstr2, 16, "%s,",finalstr);
 					info->fprintf_func(info->stream,
-								"%-15s",
-								finalstr2);
+							"%-15s", finalstr2);
 				}
 				break;
 			}
