@@ -376,13 +376,13 @@ struct tic64x_op_template tic64x_opcodes[] = {
 	TIC64X_OP_UNIT_S | TIC64X_OP_CONST_SCALE | TIC64X_OP_MEMSZ_WORD |
 	TIC64X_OP_CONST_PCREL | TIC64X_OP_MULTI_MNEMONIC,
 	{ tic64x_optxt_sconstant, tic64x_optxt_nops, tic64x_optxt_none },
-	{ tic64x_operand_const12, tic64x_operand_invalid }
+	{ tic64x_operand_const12, tic64x_operand_nops }
 },
 {"bnop",	0x800362,	0x0F800FFE,
 	TIC64X_OP_UNIT_S | TIC64X_OP_NOSIDE |
 	TIC64X_OP_FIXED_UNITNO | TIC64X_OP_FIXED_UNIT2,
 	{ tic64x_optxt_srcreg2, tic64x_optxt_nops, tic64x_optxt_none },
-	{ tic64x_operand_invalid, tic64x_operand_invalid }
+	{ tic64x_operand_nops, tic64x_operand_invalid }
 },
 {"bpos",	0x20,		0x1FFC,
 	TIC64X_OP_UNIT_S | TIC64X_OP_CONST_SCALE | TIC64X_OP_MEMSZ_WORD |
@@ -1064,8 +1064,8 @@ struct tic64x_op_template tic64x_opcodes[] = {
 },
 {"nop",		0x0,		0x21FFE,
 	TIC64X_OP_NOCOND | TIC64X_OP_NOSIDE | TIC64X_OP_ALL_UNITS,
-	{ tic64x_optxt_uconstant, tic64x_optxt_none, tic64x_optxt_none },
-	{ tic64x_operand_const4, tic64x_operand_invalid }
+	{ tic64x_optxt_nops, tic64x_optxt_none, tic64x_optxt_none },
+	{ tic64x_operand_nops, tic64x_operand_invalid }
 },
 {"norm",	0xC78,		0x3EFFC,
 	TIC64X_OP_UNIT_L | TIC64X_OP_MULTI_MNEMONIC | TIC64X_OP_XPATH_SRC2,
