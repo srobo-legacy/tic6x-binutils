@@ -160,6 +160,7 @@ struct tic64x_op_template {
 					 * inserting into opcode - for some
 					 * things like mvkh and mvkl, this is
 					 * entirely valid */
+#define TIC64X_OP_ALL_UNITS     0x400000/* Instruction can execute on any unit*/
 
 
 #define TIC64X_MAX_TXT_OPERANDS	3

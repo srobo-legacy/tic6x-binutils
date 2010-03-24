@@ -1705,7 +1705,8 @@ static int
 validation_and_conditions(struct tic64x_insn *insn)
 {
 
-	if (!(UNITCHAR_2_FLAG(insn->unit) & insn->templ->flags)) {
+	if (!(UNITCHAR_2_FLAG(insn->unit) & insn->templ->flags) &&
+		!(insn->templ->flags & TIC64X_OP_ALL_UNITS)) {
 		as_bad("Instruction \"%s\" can't go in unit %C. XXX - currently"
 			" have no way of representing instructions that go "
 			"in multiple units", insn->templ->mnemonic, insn->unit);

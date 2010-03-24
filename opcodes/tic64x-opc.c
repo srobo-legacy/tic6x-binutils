@@ -1063,7 +1063,7 @@ struct tic64x_op_template tic64x_opcodes[] = {
 	{ tic64x_operand_dwdst5, tic64x_operand_invalid }
 },
 {"nop",		0x0,		0x21FFE,
-	TIC64X_OP_NOCOND | TIC64X_OP_NOSIDE,
+	TIC64X_OP_NOCOND | TIC64X_OP_NOSIDE | TIC64X_OP_ALL_UNITS,
 	{ tic64x_optxt_uconstant, tic64x_optxt_none, tic64x_optxt_none },
 	{ tic64x_operand_const4, tic64x_operand_invalid }
 },
