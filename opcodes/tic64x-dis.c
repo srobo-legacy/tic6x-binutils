@@ -19,9 +19,14 @@ static void print_insn(struct tic64x_op_template *templ, uint32_t opcode,
 					struct disassemble_info *info,
 					int double_bar);
 
-typedef void (op_printer) (struct tic64x_op_template *t,
+typedef int (op_printer) (struct tic64x_op_template *t,
+				struct disassemble_info *i,
 				uint32_t opcode, enum tic64x_text_operand type,
 				char *buffer, int len);
+
+#define PRINT_FAIL 0
+#define PRINT_STRING 1
+#define PRINT_ADDR 2
 
 op_printer print_op_none;
 op_printer print_op_memaccess;
@@ -394,25 +399,26 @@ print_insn(struct tic64x_op_template *templ, uint32_t opcode,
 		if (operand_printers[j].print == NULL)
 			fprintf(stderr, "tic64x print_insn, couldn't find "
 					"printer for \"%s\" operand %d\n",
-							templ->mnemonic, i);
+					templ->mnemonic, i);
 	}
 }
 
-void
+int
 print_op_none(struct tic64x_op_template *t ATTRIBUTE_UNUSED,
+		struct disassemble_info *i ATTRIBUTE_UNUSED,
 		uint32_t opcode ATTRIBUTE_UNUSED,
 		enum tic64x_text_operand type ATTRIBUTE_UNUSED,
-		char *buffer, int len)
+		char *buffer ATTRIBUTE_UNUSED, int len ATTRIBUTE_UNUSED)
 {
 
-	snprintf(buffer, len, "%C", '\0');
-	return;
+	return PRINT_FAIL;
 }
 
-void
-print_op_memaccess(struct tic64x_op_template *t, uint32_t opcode,
-		enum tic64x_text_operand type ATTRIBUTE_UNUSED,
-		char *buffer, int len)
+int
+print_op_memaccess(struct tic64x_op_template *t,
+		struct disassemble_info *i ATTRIBUTE_UNUSED, uint32_t opcode,
+		enum tic64x_text_operand type ATTRIBUTE_UNUSED, char *buffer,
+		int len)
 {
 	const char *pre, *regchar, *post, *offs;
 	int addrmode, basereg, offset, scale, scalenum, y, s;
@@ -529,13 +535,14 @@ print_op_memaccess(struct tic64x_op_template *t, uint32_t opcode,
 		snprintf(buffer, len, "*%s%s%s%s(%s)", pre, regchar, regno,
 							post, offsetstr);
 	}
-	return;
+	return PRINT_STRING;
 }
 
-void
-print_op_memrel15(struct tic64x_op_template *t, uint32_t opcode,
-		enum tic64x_text_operand type ATTRIBUTE_UNUSED,
-		char *buffer, int len)
+int
+print_op_memrel15(struct tic64x_op_template *t,
+		struct disassemble_info *i ATTRIBUTE_UNUSED, uint32_t opcode,
+		enum tic64x_text_operand type ATTRIBUTE_UNUSED, char *buffer,
+		int len)
 {
 	int regno, offset, scale;
 
@@ -552,11 +559,12 @@ print_op_memrel15(struct tic64x_op_template *t, uint32_t opcode,
 	}
 
 	snprintf(buffer, len, "*+B%d(%X)", regno, offset);
-	return;
+	return PRINT_STRING;
 }
 
-void
-print_op_register(struct tic64x_op_template *t, uint32_t opcode,
+int
+print_op_register(struct tic64x_op_template *t,
+		struct disassemble_info *i ATTRIBUTE_UNUSED, uint32_t opcode,
 		enum tic64x_text_operand type, char *buffer, int len)
 {
 	enum tic64x_operand_type t2;
@@ -573,7 +581,7 @@ print_op_register(struct tic64x_op_template *t, uint32_t opcode,
 		fprintf(stderr, "tic64x print_op_register called with invalid "
 				"operand type\n");
 		snprintf(buffer, len, "%C", '\0');
-		return;
+		return PRINT_FAIL;
 	}
 
 	if ((t->flags & TIC64X_OP_NOSIDE) &&
@@ -581,7 +589,7 @@ print_op_register(struct tic64x_op_template *t, uint32_t opcode,
 		fprintf(stderr, "tic64x print_op_register: \"%s\" has no "
 					"side bit?", t->mnemonic);
 		snprintf(buffer, len, "%C", '\0');
-		return;
+		return PRINT_FAIL;
 	}
 
 	regnum = tic64x_get_operand(opcode, t2, 0);
@@ -667,11 +675,12 @@ print_op_register(struct tic64x_op_template *t, uint32_t opcode,
 	/* If there's a better way, lack of coffee prevents me seeing it */
 
 	snprintf(buffer, len, "%c%d", unitchar, regnum);
-	return;
+	return PRINT_STRING;
 }
 
-void
-print_op_dwreg(struct tic64x_op_template *t, uint32_t opcode,
+int
+print_op_dwreg(struct tic64x_op_template *t,
+		struct disassemble_info *info ATTRIBUTE_UNUSED, uint32_t opcode,
 		enum tic64x_text_operand type, char *buffer, int len)
 {
 	enum tic64x_operand_type t2;
@@ -699,7 +708,7 @@ print_op_dwreg(struct tic64x_op_template *t, uint32_t opcode,
 			fprintf(stderr, "tic64x print_op_dwreg: \"%s\" has no "
 				"matching dword reg operand\n", t->mnemonic);
 			snprintf(buffer, len, "%C", '\0');
-			return;
+			return PRINT_FAIL;
 		}
 	}
 
@@ -708,7 +717,7 @@ print_op_dwreg(struct tic64x_op_template *t, uint32_t opcode,
 		fprintf(stderr, "tic64x print_op_register: \"%s\" has no "
 					"side bit?", t->mnemonic);
 		snprintf(buffer, len, "%C", '\0');
-		return;
+		return PRINT_FAIL;
 	}
 
 	regnum = tic64x_get_operand(opcode, t2, 0);
@@ -758,11 +767,12 @@ print_op_dwreg(struct tic64x_op_template *t, uint32_t opcode,
 	}
 
 	snprintf(buffer, len, "%c%d:%c%d", unitchar, regnum+1, unitchar,regnum);
-	return;
+	return PRINT_STRING;
 }
 
-void
-print_op_constant(struct tic64x_op_template *t, uint32_t opcode,
+int
+print_op_constant(struct tic64x_op_template *t,
+		struct disassemble_info *info, uint32_t opcode,
 		enum tic64x_text_operand type, char *buffer, int len)
 {
 	enum tic64x_operand_type t2;
@@ -795,7 +805,7 @@ print_op_constant(struct tic64x_op_template *t, uint32_t opcode,
 		fprintf(stderr, "tic64x print_op_constant: \"%s\" has no "
 				"matching dword reg operand\n", t->mnemonic);
 		snprintf(buffer, len, "%C", '\0');
-		return;
+		return PRINT_FAIL;
 	}
 
 	val = tic64x_get_operand(opcode, t2,
