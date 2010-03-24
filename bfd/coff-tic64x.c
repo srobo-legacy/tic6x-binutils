@@ -129,6 +129,12 @@ tic64x_coff_reloc_type_lookup(bfd *abfd ATTRIBUTE_UNUSED,
 		return &tic64x_howto_table[7];
 	case BFD_RELOC_TIC64X_PCR12:
 		return &tic64x_howto_table[8];
+	case BFD_RELOC_TIC64X_BYTE:
+		return &tic64x_howto_table[9];
+	case BFD_RELOC_TIC64X_WORD:
+		return &tic64x_howto_table[10];
+	case BFD_RELOC_TIC64X_LONG:
+		return &tic64x_howto_table[11];
 	case BFD_RELOC_TIC64X_SECT:
 	default:
 		return NULL;
