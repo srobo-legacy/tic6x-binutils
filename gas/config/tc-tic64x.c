@@ -1566,7 +1566,7 @@ tic64x_opreader_constant(char *line, struct tic64x_insn *insn,
 	/* Pre-lookup the operand index we expect... */
 	if (type == tic64x_optxt_nops) {
 		realtype = tic64x_operand_nops;
-		i = -1;
+		i = find_operand_index(insn->templ, realtype);
 	} else {
 		for (j = 0; constant_types[j] != tic64x_operand_invalid; j++) {
 			if ((i = (find_operand_index(insn->templ,
@@ -1593,7 +1593,8 @@ tic64x_opreader_constant(char *line, struct tic64x_insn *insn,
 
 	tic64x_parse_expr(line, &expr);
 	if (expr.X_op == O_constant) {
-		if (type == tic64x_optxt_uconstant && expr.X_add_number < 0 &&
+		if ((type == tic64x_optxt_uconstant || type ==tic64x_optxt_nops)
+			&& expr.X_add_number < 0 &&
 			!(insn->templ->flags & TIC64X_OP_NO_RANGE_CHK)) {
 			as_bad("Negative operand, expected unsigned");
 			return;
@@ -1610,8 +1611,7 @@ tic64x_opreader_constant(char *line, struct tic64x_insn *insn,
 			return;
 		}
 
-		if (i != -1)
-			insn->operand_values[i].resolved = 1;
+		insn->operand_values[i].resolved = 1;
 	} else {
 		/* Not something useful right now, leave unresovled */
 		/*  Shifting will be handled by fixup/reloc code */
