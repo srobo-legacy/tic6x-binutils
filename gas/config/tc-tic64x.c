@@ -118,8 +118,7 @@ static opreader tic64x_opreader_bfield;
 static optester tic64x_optest_bfield;
 
 static int tic64x_compare_operands(struct tic64x_insn *insn,
-					struct tic64x_op_template *templ,
-							char **operands);
+			struct tic64x_op_template *templ, char **operands);
 static void tic64x_output_insn(struct tic64x_insn *insn, char *out, fragS *f,
 								int pcoffs);
 
