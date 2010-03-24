@@ -56,6 +56,7 @@ struct {
 struct tic64x_disasm_priv {
 	bfd_vma packet_start;
 	bfd_vma next_packet;
+	bfd_vma symbol_addr; /* Temporary storage for printing addresses */
 	uint32_t compact_header; /* Zero on not-compact, nz otherwise */
 	int no_pbar_next;	/* Don't print parallel bar in next insn */
 };
@@ -775,6 +776,8 @@ print_op_constant(struct tic64x_op_template *t,
 		struct disassemble_info *info, uint32_t opcode,
 		enum tic64x_text_operand type, char *buffer, int len)
 {
+	struct tic64x_disasm_priv *priv;
+	bfd_vma addr;
 	enum tic64x_operand_type t2;
 	int i, val, memsz;
 
@@ -827,7 +830,15 @@ print_op_constant(struct tic64x_op_template *t,
 		val <<= 16;
 	}
 
-	/* Print all operands as hex, limit to 32 bits of FFFF... */
-	snprintf(buffer, len, "0x%X", val & 0xFFFFFFFF);
-	return;
+	if (t->flags & TIC64X_OP_CONST_PCREL) {
+		/* Seeing how it's pcrel, we can attempt to print an address */
+		priv = info->private_data;
+		addr = priv->packet_start + val;
+		priv->symbol_addr = addr;
+		return PRINT_ADDR;
+	} else {
+		/* Print all operands as hex, limit to 32 bits of FFFF... */
+		snprintf(buffer, len, "0x%X", val & 0xFFFFFFFF);
+		return PRINT_STRING;
+	}
 }
