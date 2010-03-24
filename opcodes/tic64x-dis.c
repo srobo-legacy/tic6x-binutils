@@ -321,10 +321,9 @@ print_insn(struct tic64x_op_template *templ, uint32_t opcode,
 				unit_no = '1';
 			}
 		} else {
-			fprintf(stderr, "tic64x print_insn: instruction with "
-				"no fixed unit, but not side bit?\n");
-			unit_no = '?';
-			return;
+			// No fixed unit; no side bit; probably a nop
+			unit_no = ' ';
+			unit = ' ';
 		}
 	} else {
 		if (templ->flags & TIC64X_OP_FIXED_UNIT2) {
