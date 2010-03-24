@@ -63,7 +63,8 @@ struct tic64x_operand_pos tic64x_operand_positions [] = {
 {	1,	1	},	/* s */
 {	7,	1	},	/* y */
 {	28,	1	},	/* z */
-{	29,	3	}	/* creg */
+{	29,	3	},	/* creg */
+{	0,	32	}	/* tic64x_operand_const32 */
 };
 
 /* Returns zero on success, nonzero if too large for field. Always actually
