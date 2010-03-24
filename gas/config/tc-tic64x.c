@@ -258,6 +258,31 @@ tic64x_parse_expr(char *s, expressionS *exp)
 	return end;
 }
 
+void
+tic64x_cons_fix (fragS *frag, unsigned int offset, unsigned int len,
+							expressionS *exp)
+{
+	bfd_reloc_code_real_type r;
+
+	switch (len) {
+	case 1:
+		r = BFD_RELOC_TIC64X_BYTE;
+		break;
+	case 2:
+		r = BFD_RELOC_TIC64X_WORD;
+		break;
+	case 4:
+		r = BFD_RELOC_TIC64X_LONG;
+		break;
+	default:
+		as_bad("Unsupported data relocation size %d", len);
+		return;
+	}
+
+	fix_new_exp(frag, offset, len, exp, 0, r);
+	return;
+}
+
 static void
 tic64x_fail(int x ATTRIBUTE_UNUSED)
 {

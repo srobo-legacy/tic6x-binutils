@@ -42,5 +42,8 @@ void md_after_pass_hook(void);
 long md_pcrel_from_seg(fixS *fixP, segT segment);
 #define MD_PCREL_FROM_SECTION(FIX, SEC) md_pcrel_from_seg((FIX), (SEC))
 
+#define TC_CONS_FIX_NEW(FRAG,OFF,LEN,EXP) tic64x_cons_fix(FRAG, OFF, LEN, EXP)
+extern void tic64x_cons_fix (fragS *frag, unsigned int offset, unsigned int len,
+							expressionS *exp);
 
 #endif /* _TC_TIC64X_H_ */
