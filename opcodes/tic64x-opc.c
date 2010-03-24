@@ -343,6 +343,15 @@ struct tic64x_op_template tic64x_opcodes[] = {
 	{ tic64x_optxt_srcreg1, tic64x_optxt_srcreg2, tic64x_optxt_dstreg },
 	{ tic64x_operand_invalid, tic64x_operand_invalid }
 },
+/* This file is alphabetically ordered except for callp; unfortunately it's
+ * not possible to distinguish between it and "b" using just the lower bits,
+ * so we need to test the more specific pattern first. Bees */
+{"callp",	0x10000010,	0xF000007C,
+	TIC64X_OP_UNIT_S | TIC64X_OP_CONST_SCALE | TIC64X_OP_MEMSZ_WORD |
+	TIC64X_OP_CONST_PCREL | TIC64X_OP_NOCOND,
+	{ tic64x_optxt_sconstant, tic64x_optxt_none, tic64x_optxt_none },
+	{ tic64x_operand_const21, tic64x_operand_invalid }
+},
 {"b",		0x10,		0x7C,
 	TIC64X_OP_UNIT_S | TIC64X_OP_CONST_SCALE | TIC64X_OP_MEMSZ_WORD |
 	TIC64X_OP_CONST_PCREL | TIC64X_OP_MULTI_MNEMONIC,
@@ -389,14 +398,6 @@ struct tic64x_op_template tic64x_opcodes[] = {
 	TIC64X_OP_CONST_PCREL,
 	{ tic64x_optxt_sconstant, tic64x_optxt_dstreg, tic64x_optxt_none },
 	{ tic64x_operand_const10, tic64x_operand_invalid }
-},
-/* Note that callp uses a hackity top four bits, but never mind, the
- * rest conforms, aside from the return addr being put in {A,B}3. */
-{"callp",	0x10000010,	0xF000007C,
-	TIC64X_OP_UNIT_S | TIC64X_OP_CONST_SCALE | TIC64X_OP_MEMSZ_WORD |
-	TIC64X_OP_CONST_PCREL | TIC64X_OP_NOCOND,
-	{ tic64x_optxt_sconstant, tic64x_optxt_none, tic64x_optxt_none },
-	{ tic64x_operand_const21, tic64x_operand_invalid }
 },
 {"clr",		0xC8,		0xFC,
 	TIC64X_OP_UNIT_S | TIC64X_OP_MULTI_MNEMONIC | TIC64X_OP_BITFIELD,
