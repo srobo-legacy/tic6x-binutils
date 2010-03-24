@@ -93,7 +93,16 @@ reloc_howto_type tic64x_howto_table[] = {
 		NULL, "RPCR7", FALSE, 0x7F, 0x7F, TRUE),
 
 	HOWTO(R_C60PCR12, 2, 2, 12, TRUE, 16, complain_overflow_bitfield,
-		NULL, "RPCR12", FALSE, 0xFFF, 0xFFF, TRUE)
+		NULL, "RPCR12", FALSE, 0xFFF, 0xFFF, TRUE),
+
+	HOWTO(R_RELBYTE, 0, 2, 8, FALSE, 0, complain_overflow_bitfield,
+		NULL, "RELBYTE", FALSE, 0xFF, 0xFF, FALSE),
+
+	HOWTO(R_RELWORD, 0, 2, 16, FALSE, 0, complain_overflow_bitfield,
+		NULL, "RELWORD", FALSE, 0xFFFF, 0xFFFF, FALSE),
+
+	HOWTO(R_RELLONG, 0, 2, 32, FALSE, 0, complain_overflow_bitfield,
+		NULL, "RELLONG", FALSE, 0xFFFFFFFF, 0xFFFFFFFF, FALSE)
 };
 
 reloc_howto_type *

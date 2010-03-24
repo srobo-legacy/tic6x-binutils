@@ -11,6 +11,13 @@
 #define TICOFF_DEFAULT_MAGIC			TICOFF2MAGIC
 #define TI_TARGET_ID				TIC64X_TARGET_ID
 
+/* Exactly how i386 definitions are leaking in here, I don't know */
+#undef R_RELBYTE
+#undef R_RELWORD
+#undef R_RELLONG
+#define R_RELBYTE				0x0F
+#define R_RELWORD				0x10
+#define R_RELLONG				0x11
 #define R_C60BASE				0x50
 #define R_C60DIR15				0x51
 #define R_C60PCR21				0x52
