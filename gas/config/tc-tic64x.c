@@ -2295,6 +2295,13 @@ tic64x_output_insn_packet()
 
 			src2 = tic64x_sym_to_reg(insn->mvfail_op1);
 			dst = tic64x_sym_to_reg(insn->mvfail_op2);
+
+			if (!src2 || !dst) {
+				as_bad("Bad operands \"%s\" and \"%s\" to mv",
+					insn->mvfail_op1, insn->mvfail_op2);
+				return;
+			}
+
 			/* Any special requirements? */
 			isdw = 0;
 			isxpath = 0;
