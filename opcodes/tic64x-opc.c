@@ -1063,11 +1063,6 @@ struct tic64x_op_template tic64x_opcodes[] = {
 	{ tic64x_optxt_dwsrc, tic64x_optxt_dwdst, tic64x_optxt_none },
 	{ tic64x_operand_dwdst5, tic64x_operand_invalid }
 },
-{"nop",		0x0,		0x21FFE,
-	TIC64X_OP_NOCOND | TIC64X_OP_NOSIDE | TIC64X_OP_ALL_UNITS,
-	{ tic64x_optxt_nops, tic64x_optxt_none, tic64x_optxt_none },
-	{ tic64x_operand_nops, tic64x_operand_invalid }
-},
 {"norm",	0xC78,		0x3EFFC,
 	TIC64X_OP_UNIT_L | TIC64X_OP_MULTI_MNEMONIC | TIC64X_OP_XPATH_SRC2,
 	{ tic64x_optxt_srcreg2, tic64x_optxt_dstreg, tic64x_optxt_none },
@@ -1781,6 +1776,13 @@ struct tic64x_op_template tic64x_opcodes[] = {
 	TIC64X_OP_UNIT_S,
 	{ tic64x_optxt_dstreg, tic64x_optxt_none, tic64x_optxt_none},
 	{ tic64x_operand_invalid, tic64x_operand_invalid }
+},
+/* Nop needs to go at the end of the file, as the zero opcode matches all
+ * kinds of foo */
+{"nop",		0x0,		0x21FFE,
+	TIC64X_OP_NOCOND | TIC64X_OP_NOSIDE | TIC64X_OP_ALL_UNITS,
+	{ tic64x_optxt_nops, tic64x_optxt_none, tic64x_optxt_none },
+	{ tic64x_operand_nops, tic64x_operand_invalid }
 },
 {NULL, 		0,		0,		0,
 	{ tic64x_optxt_none, tic64x_optxt_none, tic64x_optxt_none },
