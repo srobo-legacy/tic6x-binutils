@@ -2017,14 +2017,20 @@ md_assemble(char *line)
 	/* Turn string of operands into array of string pointers */
 	memset(operands, 0, sizeof(operands));
 	operands[0] = line;
-	i = 1;
-	while (!is_end_of_line[(int)*line] && i < TIC64X_MAX_TXT_OPERANDS+1) {
-		if (*line == ',') {
-			*line = 0;
-			operands[i] = line + 1;
-			i++;
+	if (strlen(operands[0]) == 0) {
+		operands[0] = NULL;
+		/* No operands at all */
+	} else {
+		i = 1;
+		while (!is_end_of_line[(int)*line] &&
+						i < TIC64X_MAX_TXT_OPERANDS+1) {
+			if (*line == ',') {
+				*line = 0;
+				operands[i] = line + 1;
+				i++;
+			}
+			line++;
 		}
-		line++;
 	}
 
 	if (insn->mvfail) {
