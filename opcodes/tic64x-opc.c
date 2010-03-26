@@ -1682,7 +1682,16 @@ struct tic64x_op_template tic64x_opcodes[] = {
 	{ tic64x_optxt_srcreg2, tic64x_optxt_dstreg, tic64x_optxt_none },
 	{ tic64x_operand_invalid, tic64x_operand_invalid }
 },
-/* XXX SWE, SWENR opcodes not implemented, not interesting right now */
+{"swe",		0x10000000,	0xFFFFFFFC,
+	TIC64X_OP_ALL_UNITS | TIC64X_OP_NOSIDE, /* There is, but don't care */
+	{ tic64x_optxt_none, tic64x_optxt_none, tic64x_optxt_none },
+	{ tic64x_operand_invalid, tic64x_operand_invalid }
+},
+{"swnr",	0x10002000,	0xFFFFFFFC,
+	TIC64X_OP_ALL_UNITS | TIC64X_OP_NOSIDE, /* There is, but don't care */
+	{ tic64x_optxt_none, tic64x_optxt_none, tic64x_optxt_none },
+	{ tic64x_operand_invalid, tic64x_operand_invalid }
+},
 {"unpkhu4",	0x6358,		0x3EFFC,
 	TIC64X_OP_UNIT_L | TIC64X_OP_XPATH_SRC2 | TIC64X_OP_MULTI_MNEMONIC,
 	{ tic64x_optxt_srcreg2, tic64x_optxt_dstreg, tic64x_optxt_none },
