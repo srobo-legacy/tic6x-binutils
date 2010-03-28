@@ -369,6 +369,7 @@ case "${targ}" in
 
   c64x*-*-*coff* | tic64x*-*-*coff*)
     targ_defvec=tic64x_coff2_vec
+    targ_selvecs="tic64x_doff_vec"
     targ_underscore=yes
     ;;
 
