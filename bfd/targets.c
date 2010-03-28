@@ -806,6 +806,7 @@ extern const bfd_target tic54x_coff1_vec;
 extern const bfd_target tic54x_coff2_beh_vec;
 extern const bfd_target tic54x_coff2_vec;
 extern const bfd_target tic64x_coff2_vec;
+extern const bfd_target tic64x_doff_vec;
 extern const bfd_target tic80coff_vec;
 extern const bfd_target vaxbsd_vec;
 extern const bfd_target vaxnetbsd_vec;
@@ -1196,6 +1197,7 @@ static const bfd_target * const _bfd_target_vector[] =
 	&tic54x_coff2_beh_vec,
 	&tic54x_coff2_vec,
 	&tic64x_coff2_vec,
+	&tic64x_doff_vec,
 	&tic80coff_vec,
 	&vaxbsd_vec,
 	&vaxnetbsd_vec,
