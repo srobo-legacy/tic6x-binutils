@@ -21,7 +21,7 @@ doff_checksum(const void *data, unsigned int len)
 	sum = 0;
 	d = data;
 	for (l = len; l > 0; l -= sizeof(uint32_t))
-		sum += *d;
+		sum += *d++;
 
 	return sum;
 }
@@ -152,7 +152,7 @@ doff_object_p(bfd *abfd)
 	if (bfd_get_32(abfd, &d_hdr.byte_reshuffle) != DOFF_BYTE_RESHUFFLE)
 		goto wrong_format;
 
-	if (doff_checksum(&d_hdr, sizeof(d_hdr) - 4) != d_hdr.checksum) {
+	if (~doff_checksum(&d_hdr, sizeof(d_hdr))) {
 		/* XXX - no erorr code for "bad checksum" or the like? */
 		fprintf(stderr, "doff backend: file matches, bad checksum\n");
 		goto wrong_format;
