@@ -8,6 +8,8 @@
 #include "coff/tic64x.h"
 #include "libcoff.h"
 
+#include "doffcode.h"
+
 #undef F_LSYMS
 #define F_LSYMS		F_LSYMS_TICOFF
 /* XXX - dictated by coff/ti.h, but ti's docs say F_LSYMS remains 0x8 */
