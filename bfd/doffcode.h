@@ -4,6 +4,7 @@
 
 #include "sysdep.h"
 #include "bfd.h"
+#include "libdoff.h"
 /* inclusion protection please? #include "libbfd.h" */
 #include <coff/doff.h>
 
