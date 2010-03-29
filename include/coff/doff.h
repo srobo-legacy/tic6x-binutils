@@ -8,6 +8,7 @@ struct doff_filehdr {
 	uint32_t strtab_size;
 	uint32_t entry_point;
 	uint32_t byte_reshuffle;
+#define DOFF_BYTE_RESHUFFLE 0x00010203
 	uint32_t scn_name_sz;
 	uint16_t num_syms;
 	uint16_t max_str_len;
