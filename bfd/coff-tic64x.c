@@ -273,7 +273,7 @@ const bfd_target tic64x_doff_vec =
 	BFD_JUMP_TABLE_GENERIC(doff),
 	BFD_JUMP_TABLE_COPY(doff),
 	BFD_JUMP_TABLE_CORE(_bfd_nocore),
-	BFD_JUMP_TABLE_ARCHIVE(_bfd_archive_doff),
+	BFD_JUMP_TABLE_ARCHIVE(_bfd_noarchive),
 	BFD_JUMP_TABLE_SYMBOLS(doff),
 	BFD_JUMP_TABLE_RELOCS(doff),
 	BFD_JUMP_TABLE_WRITE(tic64x_doff),
