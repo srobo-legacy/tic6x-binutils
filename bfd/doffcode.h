@@ -127,7 +127,10 @@ doff_object_p(bfd *abfd)
 {
 	struct bfd_preserve preserve;
 	struct doff_filehdr d_hdr;
+	struct doff_tdata *tdata;
 	const bfd_target *target;
+	char *strings;
+	unsigned int string_table_sz;
 
 	preserve.marker = NULL;
 	target = abfd->xvec;
@@ -149,11 +152,61 @@ doff_object_p(bfd *abfd)
 	if (bfd_get_32(abfd, &d_hdr.byte_reshuffle) != DOFF_BYTE_RESHUFFLE)
 		goto wrong_format;
 
-	if (doff_checksum(&d_hdr, sizeof(d_hdr) - 4) != d_hdr.checksum)
+	if (doff_checksum(&d_hdr, sizeof(d_hdr) - 4) != d_hdr.checksum) {
 		/* XXX - no erorr code for "bad checksum" or the like? */
 		fprintf(stderr, "doff backend: file matches, bad checksum\n");
 		goto wrong_format;
 	}
+
+	/* That gives us some light assurance. It also ensures that the byte
+	 * ordering matches the target, whos get_32 we used. Now try parsing
+	 * rest of file */
+	if (!bfd_preserve_save(abfd, &preserve))
+		goto unwind;
+
+	/* Create something to store our info in */
+	if (!(target->_bfd_set_format[bfd_object](abfd)))
+		goto unwind;
+
+	preserve.marker = abfd->tdata.doff_obj_data;
+	tdata = abfd->tdata.doff_obj_data;
+
+	tdata->num_sections = bfd_get_32(abfd, &d_hdr.num_scns);
+	if (tdata->num_sections > 0x1000) {
+		fprintf(stderr, "doff backend: oversized section num\n");
+		goto wrong_format;
+	}
+
+	/* The string table follows the file header */
+	string_table_sz = bfd_get_32(abfd, &d_hdr.strtab_size);
+	if (string_table_sz > 0x00200000) {
+		/* Stupidly sized string table */
+		fprintf(stderr, "doff backend: oversized string table\n");
+		goto wrong_format;
+	}
+
+	strings = bfd_alloc(abfd, string_table_sz);
+	if (!strings) {
+		bfd_set_error(bfd_error_no_memory);
+		goto unwind;
+	}
+
+	if (bfd_bread(strings, string_table_sz, abfd) != string_table_sz) {
+		if (bfd_get_error() != bfd_error_system_call)
+			goto wrong_format;
+		else
+			goto unwind;
+	}
+
+	/* We have a big table of strings. The first is the originating file
+	 * name, followed by section names, followed by normal strings */
+	if (doff_parse_strings(abfd, tdata, strings, string_table_sz)) {
+		doff_free_strings(abfd, tdata);
+		bfd_release(abfd, strings);
+		goto wrong_format;
+	}
+	bfd_release(abfd, strings);
+
 	wrong_format:
 	bfd_set_error(bfd_error_wrong_format);
 
