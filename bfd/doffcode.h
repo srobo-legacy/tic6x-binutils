@@ -12,10 +12,37 @@
 static const bfd_target *
 doff_object_p(bfd *abfd)
 {
+	struct bfd_preserve preserve;
+	struct doff_filehdr d_hdr;
+	const bfd_target *target;
 
-	UNUSED(abfd);
-	fprintf(stderr, "Implement doff_object_p");
-	abort();
+	preserve.marker = NULL;
+	target = abfd->xvec;
+
+	if (bfd_bread(&d_hdr, sizeof(d_hdr), abfd) != sizeof(d_hdr)) {
+		if (bfd_get_error() != bfd_error_system_call)
+			goto wrong_format;
+		else
+			goto unwind;
+	}
+
+	/* At this point we're supposed to check what kind of file this is.
+	 * However, TI didn't deign it necessary to include a magic number in
+	 * their file format, so we have to make guesses and conjecture: using
+	 * the "byte reshuffle" field, we see it:
+	 *"identifies byte ordering of file; always set to BYTE_RESHUFFLE_VALUE"
+	 */
+
+	if (bfd_get_32(abfd, &d_hdr.byte_reshuffle) != DOFF_BYTE_RESHUFFLE)
+		goto wrong_format;
+
+	/* That gives us some light assurance. Try parsing rest of file */
+#error ENOTYET
+	wrong_format:
+	bfd_set_error(bfd_error_wrong_format);
+
+	unwind:
+	return NULL;
 }
 
 static bfd_boolean
