@@ -55,11 +55,26 @@ tic64x_set_arch_mach(bfd *b, enum bfd_architecture arch, unsigned long machine)
 }
 
 static bfd_boolean
+tic64x_doff_set_arch_mach(bfd *b, enum bfd_architecture arch, unsigned long m)
+{
+
+	return tic64x_set_arch_mach(b, arch, m);
+}
+
+static bfd_boolean
 tic64x_set_section_contents(bfd *b, sec_ptr section, const PTR location,
 		file_ptr offset, bfd_size_type bytes)
 {
 
 	return coff_set_section_contents(b, section, location, offset, bytes);
+}
+
+static bfd_boolean
+tic64x_doff_set_section_contents(bfd *b, sec_ptr section, const PTR location,
+		file_ptr offset, bfd_size_type bytes)
+{
+
+	return doff_set_section_contents(b, section, location, offset, bytes);
 }
 
 reloc_howto_type tic64x_howto_table[] = {
