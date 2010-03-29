@@ -9,6 +9,22 @@
 
 #define UNUSED(x) ((x) = (x))
 
+static uint32_t
+doff_checksum(const void *data, unsigned int len)
+{
+	const uint32_t *d;
+	uint32_t sum;
+	int l;
+
+	/* XXX - some assert we can fire if non-multiple-of-4-len given? */
+	sum = 0;
+	d = data;
+	for (l = len; l > 0; l -= sizeof(uint32_t))
+		sum += *d;
+
+	return sum;
+}
+
 static const bfd_target *
 doff_object_p(bfd *abfd)
 {
@@ -36,8 +52,11 @@ doff_object_p(bfd *abfd)
 	if (bfd_get_32(abfd, &d_hdr.byte_reshuffle) != DOFF_BYTE_RESHUFFLE)
 		goto wrong_format;
 
-	/* That gives us some light assurance. Try parsing rest of file */
-#error ENOTYET
+	if (doff_checksum(&d_hdr, sizeof(d_hdr) - 4) != d_hdr.checksum)
+		/* XXX - no erorr code for "bad checksum" or the like? */
+		fprintf(stderr, "doff backend: file matches, bad checksum\n");
+		goto wrong_format;
+	}
 	wrong_format:
 	bfd_set_error(bfd_error_wrong_format);
 
