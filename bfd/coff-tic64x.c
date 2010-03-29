@@ -283,5 +283,5 @@ const bfd_target tic64x_doff_vec =
 	BFD_JUMP_TABLE_LINK(doff),
 	BFD_JUMP_TABLE_DYNAMIC(_bfd_nodynamic),
 	NULL,
-	doff_backend_data
+	NULL /* XXX - custom backend data should _probably_ exist */
 };
