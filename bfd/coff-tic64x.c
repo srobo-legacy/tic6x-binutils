@@ -232,6 +232,9 @@ const bfd_target tic64x_coff2_vec =
 	&ticoff2_swap_table
 };
 
+/* NB: BFD typically puts targets of different formats into different files;
+ * however thats likely overkill because doff is quite similar to doff, uses
+ * the same relocations, and right now is only for tic64x */
 const bfd_target tic64x_doff_vec =
 {
 	"doff-c64x",
