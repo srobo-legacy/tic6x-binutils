@@ -6,7 +6,7 @@
 #include "bfd-in2.h"
 
 struct doff_section_data {
-	int stroffset;		/* Offset into str table... of name? */
+	int name_str_idx;	/* str table idx of name; can be -1 */
 	bfd_vma prog_addr;	/* "RUN" address */
 	bfd_vma load_addr;	/* "LOAD" address */
 	int size;		/* In bytes, or AU, or whatever */

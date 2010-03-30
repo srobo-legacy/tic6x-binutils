@@ -102,7 +102,7 @@ doff_internalise_sections(bfd *abfd, const void *sec_data,
 			struct doff_tdata *tdata)
 {
 	const struct doff_scnhdr *scn;
-	int i;
+	int i, j, stroffset;
 
 	scn = sec_data;
 	tdata->section_data = bfd_zalloc(abfd, tdata->num_sections *
@@ -116,8 +116,19 @@ doff_internalise_sections(bfd *abfd, const void *sec_data,
 		if (tdata->section_data[i] == NULL)
 			return TRUE;
 
-		tdata->section_data[i]->stroffset =
-					bfd_get_32(abfd, &scn->str_offset);
+		/* Find index of section name in str table */
+		stroffset = bfd_get_32(abfd, &scn->str_offset);
+		for (j = 0; j < tdata->num_strings; j++)
+			if (tdata->string_idx_table[j] == stroffset)
+				break;
+
+		if (j == tdata->num_strings)
+			/* Bad section name, but tollerate */
+			tdata->section_data[i]->name_str_idx = -1;
+		else
+			tdata->section_data[i]->name_str_idx = j;
+
+		/* Read other fields */
 		tdata->section_data[i]->prog_addr =
 					bfd_get_32(abfd, &scn->prog_addr);
 		tdata->section_data[i]->load_addr =
