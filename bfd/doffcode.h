@@ -271,6 +271,11 @@ doff_object_p(bfd *abfd)
 	}
 
 	doff_internalise_sections(abfd, data, tdata);
+	bfd_release(abfd, data);
+
+	bfd_set_start_address(abfd, bfd_get_32(abfd, &d_hdr.entry_point));
+	bfd_preserve_finish(abfd, &preserve);
+	return target;
 
 	wrong_format:
 	bfd_set_error(bfd_error_wrong_format);
