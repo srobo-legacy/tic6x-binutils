@@ -217,12 +217,6 @@ doff_object_p(bfd *abfd)
 	preserve.marker = abfd->tdata.doff_obj_data;
 	tdata = abfd->tdata.doff_obj_data;
 
-	tdata->num_sections = bfd_get_16(abfd, &d_hdr.num_scns);
-	if (tdata->num_sections > 0x1000) {
-		fprintf(stderr, "doff backend: oversized section num\n");
-		goto wrong_format;
-	}
-
 	/* The string table follows the file header */
 	size = bfd_get_32(abfd, &d_hdr.strtab_size);
 	if (size > 0x00200000) {
@@ -254,6 +248,12 @@ doff_object_p(bfd *abfd)
 	bfd_release(abfd, data);
 
 	/* Now read section table - it's immediately after string table */
+	tdata->num_sections = bfd_get_16(abfd, &d_hdr.num_scns);
+	if (tdata->num_sections > 0x1000) {
+		fprintf(stderr, "doff backend: oversized section num\n");
+		goto wrong_format;
+	}
+
 	if (bfd_seek(abfd, bfd_get_32(abfd, &d_hdr.strtab_size)+sizeof(d_hdr),
 								SEEK_SET))
 		goto wrong_format;
