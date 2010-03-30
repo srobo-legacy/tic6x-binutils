@@ -294,9 +294,11 @@ static bfd_boolean
 doff_close_and_cleanup(bfd *abfd)
 {
 
-	UNUSED(abfd);
-	fprintf(stderr, "Implement doff_close_and_cleanup");
-	abort();
+	/* bfd_release released tdata and everything allocated afterwards -
+	 * that includes string and section data. XXX - is this reentrant?
+	 * also, what about asymbols and asections? */
+	bfd_release(abfd, abfd->tdata.doff_obj_data);
+	return _bfd_generic_close_and_cleanup(abfd);
 }
 
 static bfd_boolean
