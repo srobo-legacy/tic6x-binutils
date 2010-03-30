@@ -22,6 +22,11 @@ struct doff_section_data {
 	int num_pkts;		/* Number of said packets */
 
 	asection *section;	/* BFD section */
+
+	struct doff_ipacket **insn_packets;
+				/* table of instruction packets */
+
+	uint8_t *raw_data;	/* raw section data, pointed to by ipackets */
 };
 
 struct doff_symbol {
