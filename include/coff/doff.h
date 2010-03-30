@@ -63,3 +63,53 @@ struct doff_scnhdr {
 	uint32_t first_pkt_offset;	/* Absolute offset into file of data */
 	int32_t num_pkts;		/* Self explanatory */
 };
+
+struct doff_symbol {
+	int32_t str_offset;		/* Bytes into string table */
+	int32_t value;			/* "Value" */
+	int16_t scn_num;		/* Self explanatory */
+	int16_t storage_class;		/* ??? */
+};
+
+struct doff_image_packet {
+	int32_t num_relocs;		/* Num relocs */
+	int32_t packet_sz;		/* Size in this packet */
+	int32_t checksum;		/* Image packet checksum */
+					/* Including relocs apparently */
+	/* Followed by the actual packet data. Then perhaps relocs? */
+};
+
+struct doff_reloc {
+	int32_t vaddr;			/* Vaddr of reloc */
+
+	/* Actual relocation data; lacking any real documentation, largely
+	 * copied from TIs implementation */
+	union {
+		struct {
+			uint8_t offset;        /* bit offset of rel fld      */
+			uint8_t fieldsz;       /* size of rel fld            */
+			uint8_t wordsz;        /* # bytes containing rel fld */
+			uint8_t dum1;
+			uint16_t dum2;
+			uint16_t type;
+		} r_field;
+
+		struct {
+			uint32_t spc;		/* Image packet relative PC */
+			uint16_t dum;
+			uint16_t type;		/* relocation type */
+		} r_spc;
+
+		struct {
+			uint32_t uval;		/* constant value */
+			uint16_t dum;
+			uint16_t type;		/* relocation type */
+		} r_uval;
+
+		struct {
+			int32_t sym_idx;	/* symbol table index */
+			uint16_t disp;		/* "extra addr encode data" */
+			uint16_t type;		/* reloc type */
+		} r_sym;
+	} reloc;
+};
