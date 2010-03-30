@@ -253,6 +253,11 @@ doff_object_p(bfd *abfd)
 			goto unwind;
 	}
 
+	if (~(doff_checksum(data, size) + checksums.strtable_checksum)) {
+		fprintf(stderr, "doff backend: bad string table checksum\n");
+		goto wrong_format;
+	}
+
 	/* We have a big table of strings. The first is the originating file
 	 * name, followed by section names, followed by normal strings */
 	if (doff_internalise_strings(abfd, tdata, data, size)) {
