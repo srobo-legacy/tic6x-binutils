@@ -257,6 +257,7 @@ BFD32_BACKENDS = \
 	coff-z80.lo \
 	coff-z8k.lo \
 	cofflink.lo \
+	doff.lo \
 	dwarf1.lo \
 	ecoff.lo \
 	ecofflink.lo \
@@ -703,7 +704,7 @@ SOURCE_HFILES = \
 	elf-bfd.h elf-hppa.h elf32-hppa.h \
 	elf64-hppa.h elfcode.h elfcore.h \
 	freebsd.h genlink.h go32stub.h \
-	libaout.h libbfd.h libcoff.h libecoff.h libhppa.h libieee.h doffcode.h \
+	libaout.h libbfd.h libcoff.h libecoff.h libhppa.h libieee.h libdoff.h \
 	libnlm.h liboasys.h libpei.h libxcoff.h mach-o.h \
 	netbsd.h nlm-target.h nlmcode.h nlmswap.h ns32k.h \
 	pef.h pef-traceback.h peicode.h som.h version.h \
