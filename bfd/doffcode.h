@@ -30,10 +30,8 @@ static bfd_boolean
 doff_internalise_strings(bfd *abfd, struct doff_tdata *tdata,
 			const char *strings, unsigned int len)
 {
-	const char *orig_strings;
 	int bytes_left, i, sz, tmp;
 
-	orig_strings = strings;
 	bytes_left = len;
 
 	/* We have a bunch of strings that are used in file - There's nothing
@@ -51,7 +49,7 @@ doff_internalise_strings(bfd *abfd, struct doff_tdata *tdata,
 
 		tdata->string_table[i] = bfd_alloc(abfd, tmp);
 		strncpy(tdata->string_table[i], strings, tmp);
-		tdata->string_idx_table[i] = (int)(orig_strings - strings);
+		tdata->string_idx_table[i] = len - bytes_left;
 		strings += tmp;
 		bytes_left -= tmp;
 
