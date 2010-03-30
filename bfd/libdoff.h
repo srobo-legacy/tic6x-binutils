@@ -17,6 +17,11 @@ struct doff_section_data {
 	asection *section;	/* BFD section */
 };
 
+struct doff_symbol {
+	asymbol bfd_symbol;
+	/* Still don't know what we require here yet */
+};
+
 struct doff_tdata {
 	int num_sections;
 	struct doff_section_data **section_data;
