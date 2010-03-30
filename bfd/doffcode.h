@@ -130,7 +130,7 @@ doff_object_p(bfd *abfd)
 	struct doff_tdata *tdata;
 	const bfd_target *target;
 	void *data;
-	unsigned int string_table_sz;
+	unsigned int size;
 
 	preserve.marker = NULL;
 	target = abfd->xvec;
@@ -178,20 +178,20 @@ doff_object_p(bfd *abfd)
 	}
 
 	/* The string table follows the file header */
-	string_table_sz = bfd_get_32(abfd, &d_hdr.strtab_size);
-	if (string_table_sz > 0x00200000) {
+	size = bfd_get_32(abfd, &d_hdr.strtab_size);
+	if (size > 0x00200000) {
 		/* Stupidly sized string table */
 		fprintf(stderr, "doff backend: oversized string table\n");
 		goto wrong_format;
 	}
 
-	data = bfd_alloc(abfd, string_table_sz);
+	data = bfd_alloc(abfd, size);
 	if (!data) {
 		bfd_set_error(bfd_error_no_memory);
 		goto unwind;
 	}
 
-	if (bfd_bread(data, string_table_sz, abfd) != string_table_sz) {
+	if (bfd_bread(data, size, abfd) != size) {
 		if (bfd_get_error() != bfd_error_system_call)
 			goto wrong_format;
 		else
@@ -200,7 +200,7 @@ doff_object_p(bfd *abfd)
 
 	/* We have a big table of strings. The first is the originating file
 	 * name, followed by section names, followed by normal strings */
-	if (doff_internalise_strings(abfd, tdata, data, string_table_sz)) {
+	if (doff_internalise_strings(abfd, tdata, data, size)) {
 		doff_free_strings(abfd, tdata);
 		bfd_release(abfd, data);
 		goto wrong_format;
