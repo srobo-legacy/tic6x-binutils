@@ -337,10 +337,8 @@ static bfd_boolean
 doff_new_section_hook(bfd *abfd, sec_ptr section)
 {
 
-	UNUSED(abfd);
-	UNUSED(section);
-	fprintf(stderr, "Implement doff_new_section_hook");
-	abort();
+	/* I can't currently imagine what to do with this, come back later */
+	return _bfd_generic_new_section_hook(abfd, section);
 }
 
 static bfd_boolean
