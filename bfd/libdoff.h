@@ -8,13 +8,16 @@ struct doff_section_data {
 	bfd_vma prog_addr;	/* "RUN" address */
 	bfd_vma load_addr;	/* "LOAD" address */
 	int size;		/* In bytes, or AU, or whatever */
+	int flags;		/* flags; see no definitions right now */
+	int pkt_start;		/* offset into file where pkt data starts */
+	int num_pkts;		/* Number of said packets */
 };
 
 struct doff_tdata {
 	char *source_filename;
 
 	int num_sections;
-	struct doff_section_data *section_data;
+	struct doff_section_data **section_data;
 
 	int num_scn_names;
 	int max_num_scn_names;
