@@ -29,7 +29,7 @@ struct doff_section_data {
 	void *raw_data;		/* raw section data, pointed to by ipackets */
 };
 
-struct doff_symbol {
+struct doff_symbol_internal {
 	asymbol bfd_symbol;
 	/* Still don't know what we require here yet */
 };

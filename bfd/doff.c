@@ -512,9 +512,9 @@ doff_canonicalize_symtab(bfd *abfd, struct bfd_symbol **symbol)
 struct bfd_symbol *
 doff_make_empty_symbol(bfd *abfd)
 {
-	struct doff_symbol *symbol;
+	struct doff_symbol_internal *symbol;
 
-	symbol = bfd_zalloc(abfd, sizeof(struct doff_symbol));
+	symbol = bfd_zalloc(abfd, sizeof(struct doff_symbol_internal));
 	return &symbol->bfd_symbol;
 }
 
