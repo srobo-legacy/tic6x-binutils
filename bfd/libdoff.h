@@ -14,18 +14,13 @@ struct doff_section_data {
 };
 
 struct doff_tdata {
-	char *source_filename;
-
 	int num_sections;
 	struct doff_section_data **section_data;
-
-	int num_scn_names;
-	int max_num_scn_names;
-	char **scn_names;
 
 	int num_strings;
 	int max_num_strings;
 	char **string_table;
+	int *string_idx_table;
 };
 
 #endif /* _BFD_LIBDOFF_H_ */

@@ -30,46 +30,20 @@ static bfd_boolean
 doff_internalise_strings(bfd *abfd, struct doff_tdata *tdata,
 			const char *strings, unsigned int len)
 {
-	int bytes_left, i, tmp;
+	const char *orig_strings;
+	int bytes_left, i, sz, tmp;
 
+	orig_strings = strings;
 	bytes_left = len;
 
-	/* First string is the source file name */
-	tmp = strlen(strings) + 1;
-	if (tmp > bytes_left)
-		return TRUE;
+	/* We have a bunch of strings that are used in file - There's nothing
+	 * saying how many of them there are, so take a guess and realloc if we
+	 * run out of slots */
 
-	tdata->source_filename = bfd_alloc(abfd, tmp);
-	strncpy(tdata->source_filename, strings, tmp);
-	strings += tmp;
-	bytes_left -= tmp;
-
-	/* Following this is a set of strings naming each section */
-	tdata->scn_names = bfd_alloc(abfd, sizeof(char*) * tdata->num_sections);
-	tdata->num_scn_names = tdata->num_sections;
-	tdata->max_num_scn_names = tdata->num_sections;
-	memset(tdata->scn_names, 0, sizeof(char *) * tdata->num_sections);
-
-	for (i = 0; i < tdata->num_sections; i++) {
-		tmp = strlen(strings) + 1;
-		if (tmp > bytes_left)
-			break;
-
-		tdata->scn_names[i] = bfd_alloc(abfd, tmp);
-		strncpy(tdata->scn_names[i], strings, tmp);
-		strings += tmp;
-		bytes_left -= tmp;
-	}
-
-	if (bytes_left < 0)
-		return TRUE;
-
-	/* Finally, we have a bunch of strings that are actually used in file.
-	 * There's nothing saying how many of them there are, so take a guess
-	 * and realloc if we run out of slots */
-
-	tdata->max_num_strings = bytes_left / 10;
-	tdata->string_table = bfd_alloc(abfd, bytes_left / 10);
+	sz = bytes_left / 10;
+	tdata->max_num_strings = sz;
+	tdata->string_table = bfd_alloc(abfd, sz * sizeof(char *));
+	tdata->string_idx_table = bfd_alloc(abfd, sz * sizeof(int));
 	for (i = 0; bytes_left > 0; i++) {
 		tmp = strlen(strings) + 1;
 		if (tmp > bytes_left)
@@ -77,13 +51,19 @@ doff_internalise_strings(bfd *abfd, struct doff_tdata *tdata,
 
 		tdata->string_table[i] = bfd_alloc(abfd, tmp);
 		strncpy(tdata->string_table[i], strings, tmp);
+		tdata->string_idx_table[i] = (int)(orig_strings - strings);
 		strings += tmp;
 		bytes_left -= tmp;
 
 		if (i >= tdata->max_num_strings) {
-			tdata->max_num_strings += 100;
-			tdata->string_table = bfd_realloc(tdata->string_table,
-				tdata->max_num_strings * sizeof(char *));
+			sz += 100;
+			tdata->max_num_strings = sz;
+			tdata->string_table =
+				bfd_realloc(tdata->string_table,
+						sz * sizeof(char *));
+			tdata->string_idx_table =
+				bfd_realloc(tdata->string_idx_table,
+						sz * sizeof(int));
 		}
 	}
 
@@ -99,26 +79,21 @@ doff_free_strings(bfd *abfd, struct doff_tdata *tdata)
 {
 	int i;
 
-	if (tdata->source_filename != NULL)
-		bfd_release(abfd, tdata->source_filename);
-
-	if (tdata->scn_names)
-		for (i = 0; i < tdata->num_sections; i++)
-			if (tdata->scn_names[i])
-				bfd_release(abfd, tdata->scn_names[i]);
-
 	if (tdata->num_strings && tdata->string_table)
 		for (i = 0; i < tdata->num_strings; i++)
 			if (tdata->string_table[i])
 				bfd_release(abfd, tdata->string_table[i]);
 
-	tdata->source_filename = NULL;
-	tdata->num_scn_names = 0;
-	tdata->max_num_scn_names = 0;
-	tdata->scn_names = NULL;
+	if (tdata->string_table)
+		bfd_release(abfd, tdata->string_table);
+
+	if (tdata->string_idx_table)
+		bfd_release(abfd, tdata->string_idx_table);
+
 	tdata->num_strings = 0;
 	tdata->max_num_strings = 0;
 	tdata->string_table = NULL;
+	tdata->string_idx_table = NULL;
 	return;
 }
 
