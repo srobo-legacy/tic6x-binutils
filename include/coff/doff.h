@@ -35,6 +35,14 @@ struct doff_filehdr {
 	uint32_t checksum;		/* Sum of previous values as uint32s */
 };
 
+struct doff_checksum_rec {
+	uint32_t timestamp;
+	uint32_t section_checksum;
+	uint32_t strtable_checksum;
+	uint32_t symbol_checksum;
+	uint32_t self_checksum;
+};
+
 struct doff_scnhdr {
 	int32_t str_offset;		/* Offset in string table of name */
 	int32_t prog_addr;		/* Program start or "RUN" address */
