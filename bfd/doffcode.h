@@ -72,6 +72,16 @@ doff_internalise_strings(bfd *abfd, struct doff_tdata *tdata,
 	return FALSE;
 }
 
+static void
+doff_load_raw_sect_data(bfd *abfd, struct doff_section_data *sect)
+{
+
+	UNUSED(abfd);
+	UNUSED(sect);
+	fprintf(stderr, "Implement doff_load_raw_sect_data");
+	abort();
+}
+
 static bfd_boolean
 doff_internalise_sections(bfd *abfd, const void *sec_data,
 			struct doff_tdata *tdata)
