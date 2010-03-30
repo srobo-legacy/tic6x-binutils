@@ -4,6 +4,10 @@
 
 #include <stdint.h>
 
+/* XXX - because someone at TI was on crack when this was designed, different
+ * fields are in different places depending on whether the file is big endian
+ * or little endian. Which is ridiculous, but the standard. Ugh */
+
 struct doff_filehdr {
 	uint32_t strtab_size;		/* Entire strtable size */
 	uint32_t entry_point;		/* Self explanatory */
