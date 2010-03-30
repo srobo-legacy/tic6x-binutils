@@ -256,7 +256,7 @@ doff_object_p(bfd *abfd)
 	bfd_release(abfd, data);
 
 	/* Now read section table - it's immediately after string table */
-	if (!bfd_seek(abfd, bfd_get_32(abfd, &d_hdr.strtab_size)+sizeof(d_hdr),
+	if (bfd_seek(abfd, bfd_get_32(abfd, &d_hdr.strtab_size)+sizeof(d_hdr),
 								SEEK_SET))
 		goto wrong_format;
 
@@ -267,7 +267,7 @@ doff_object_p(bfd *abfd)
 		goto unwind;
 	}
 
-	if (!bfd_bread(data, size, abfd) != size) {
+	if (bfd_bread(data, size, abfd) != size) {
 		if (bfd_get_error() != bfd_error_system_call)
 			goto wrong_format;
 		else
