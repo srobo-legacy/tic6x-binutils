@@ -218,9 +218,11 @@ static bfd_boolean
 doff_mkobject(bfd *abfd)
 {
 
-	UNUSED(abfd);
-	fprintf(stderr, "Implement doff_mkobject");
-	abort();
+	abfd->tdata.doff_obj_data = bfd_zalloc(abfd, sizeof(struct doff_tdata));
+	if (abfd->tdata.doff_obj_data == NULL)
+		return FALSE;
+
+	return TRUE;
 }
 
 static bfd_boolean
