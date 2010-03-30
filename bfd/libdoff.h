@@ -16,7 +16,7 @@ struct doff_section_data {
 	int name_str_idx;	/* str table idx of name; can be -1 */
 	bfd_vma prog_addr;	/* "RUN" address */
 	bfd_vma load_addr;	/* "LOAD" address */
-	int size;		/* In bytes, or AU, or whatever */
+	unsigned int size;	/* In bytes, or AU, or whatever */
 	int flags;		/* flags; see no definitions right now */
 	int pkt_start;		/* offset into file where pkt data starts */
 	int num_pkts;		/* Number of said packets */
