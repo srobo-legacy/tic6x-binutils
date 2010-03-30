@@ -484,10 +484,10 @@ doff_canonicalize_symtab(bfd *abfd, struct bfd_symbol **symbol)
 static struct bfd_symbol *
 doff_make_empty_symbol(bfd *abfd)
 {
+	struct doff_symbol *symbol;
 
-	UNUSED(abfd);
-	fprintf(stderr, "Implement doff_make_empty_symbol");
-	abort();
+	symbol = bfd_zalloc(abfd, sizeof(struct doff_symbol));
+	return &symbol->bfd_symbol;
 }
 
 static void
