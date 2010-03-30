@@ -72,29 +72,6 @@ doff_internalise_strings(bfd *abfd, struct doff_tdata *tdata,
 	return FALSE;
 }
 
-static void
-doff_free_strings(bfd *abfd, struct doff_tdata *tdata)
-{
-	int i;
-
-	if (tdata->num_strings && tdata->string_table)
-		for (i = 0; i < tdata->num_strings; i++)
-			if (tdata->string_table[i])
-				bfd_release(abfd, tdata->string_table[i]);
-
-	if (tdata->string_table)
-		bfd_release(abfd, tdata->string_table);
-
-	if (tdata->string_idx_table)
-		bfd_release(abfd, tdata->string_idx_table);
-
-	tdata->num_strings = 0;
-	tdata->max_num_strings = 0;
-	tdata->string_table = NULL;
-	tdata->string_idx_table = NULL;
-	return;
-}
-
 static bfd_boolean
 doff_internalise_sections(bfd *abfd, const void *sec_data,
 			struct doff_tdata *tdata)
@@ -143,27 +120,6 @@ doff_internalise_sections(bfd *abfd, const void *sec_data,
 	}
 
 	return FALSE;
-}
-
-static void
-doff_free_sections(bfd *abfd, struct doff_tdata *tdata)
-{
-	int i;
-
-	if (tdata->section_data) {
-		for (i = 0; i < tdata->num_sections; i++) {
-			if (tdata->section_data[i]) {
-				/* XXX - destroy bfd section? */
-				bfd_release(abfd, tdata->section_data[i]);
-			}
-		}
-	}
-
-	if (tdata->section_data)
-		bfd_release(abfd, tdata->section_data);
-
-	tdata->num_sections = 0;
-	return;
 }
 
 static const bfd_target *
@@ -259,7 +215,6 @@ doff_object_p(bfd *abfd)
 	/* We have a big table of strings. The first is the originating file
 	 * name, followed by section names, followed by normal strings */
 	if (doff_internalise_strings(abfd, tdata, data, size)) {
-		doff_free_strings(abfd, tdata);
 		bfd_release(abfd, data);
 		goto wrong_format;
 	}
@@ -302,8 +257,11 @@ doff_object_p(bfd *abfd)
 
 	unwind:
 	if (preserve.marker != NULL) {
-		doff_free_strings(abfd, tdata);
-		doff_free_sections(abfd, tdata);
+		/* As it happens, bfd_releasing the marker, aka the tdata,
+		 * will also release anything else allocated after that; so all
+		 * the string data, all the section data, is automagically
+		 * released by this call.
+		 * XXX - do we need to kill/release asection records? */
 		bfd_preserve_restore(abfd, &preserve);
 	}
 	return NULL;
