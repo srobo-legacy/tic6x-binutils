@@ -73,7 +73,7 @@ doff_internalise_strings(bfd *abfd, struct doff_tdata *tdata,
 	return FALSE;
 }
 
-static void
+static bfd_boolean
 doff_load_raw_sect_data(bfd *abfd, struct doff_section_data *sect)
 {
 
@@ -84,6 +84,27 @@ doff_load_raw_sect_data(bfd *abfd, struct doff_section_data *sect)
 	 * It's not written down, but I speculate this is only the case for
 	 * stuff that actually get loaded onto the processor -> ie, debug data
 	 * doesn't get packet headers */
+
+	if (!(sect->flags & DOFF_SCN_FLAG_DOWNLOAD)) {
+		/* Doesn't get downloaded to target, so I speculate has no
+		 * instruction packet */
+		BFD_ASSERT(sect->num_pkts == 0);
+		sect->raw_data = bfd_alloc(abfd, sect->size);
+		if (!sect->raw_data)
+			return TRUE;
+
+		if (bfd_seek(abfd, sect->pkt_start, SEEK_SET)) {
+			bfd_set_error(bfd_error_file_truncated);
+			return TRUE;
+		}
+
+		sect->insn_packets = NULL;
+		if (bfd_bread(sect->raw_data, sect->size, abfd) != sect->size)
+			return TRUE;
+
+		return bfd_set_section_contents(abfd, sect->section,
+				sect->raw_data, sect->pkt_start, sect->size);
+	}
 }
 
 static bfd_boolean
