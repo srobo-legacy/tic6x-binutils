@@ -122,6 +122,37 @@ doff_free_strings(bfd *abfd, struct doff_tdata *tdata)
 	return;
 }
 
+static void
+doff_internalise_sections(bfd *abfd, const void *sec_data,
+			struct doff_tdata *tdata)
+{
+	const struct doff_scnhdr *scn;
+	int i;
+
+	scn = sec_data;
+	tdata->section_data = bfd_alloc(abfd, tdata->num_sections *
+					sizeof(struct doff_section_data));
+
+	for (i = 0; i < tdata->num_sections; i++) {
+		tdata->section_data[i]->stroffset =
+					bfd_get_32(abfd, &scn->str_offset);
+		tdata->section_data[i]->prog_addr =
+					bfd_get_32(abfd, &scn->prog_addr);
+		tdata->section_data[i]->load_addr =
+					bfd_get_32(abfd, &scn->load_addr);
+		tdata->section_data[i]->size =
+					bfd_get_32(abfd, &scn->size);
+		tdata->section_data[i]->flags =
+					bfd_get_16(abfd, &scn->flags);
+		tdata->section_data[i]->pkt_start =
+				bfd_get_32(abfd, &scn->first_pkt_offset);
+		tdata->section_data[i]->num_pkts =
+				bfd_get_32(abfd, &scn->num_pkts);
+	}
+
+	return;
+}
+
 static const bfd_target *
 doff_object_p(bfd *abfd)
 {
