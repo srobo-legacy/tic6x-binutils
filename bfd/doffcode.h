@@ -158,10 +158,14 @@ doff_free_sections(bfd *abfd, struct doff_tdata *tdata)
 {
 	int i;
 
-	for (i = 0; i < tdata->num_sections; i++)
-		bfd_release(abfd, tdata->section_data[i]);
+	if (tdata->section_data)
+		for (i = 0; i < tdata->num_sections; i++)
+			if (tdata->section_data[i])
+				bfd_release(abfd, tdata->section_data[i]);
 
-	bfd_release(abfd, tdata->section_data);
+	if (tdata->section_data)
+		bfd_release(abfd, tdata->section_data);
+
 	tdata->num_sections = 0;
 	return;
 }
