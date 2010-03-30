@@ -77,10 +77,13 @@ static void
 doff_load_raw_sect_data(bfd *abfd, struct doff_section_data *sect)
 {
 
-	UNUSED(abfd);
-	UNUSED(sect);
-	fprintf(stderr, "Implement doff_load_raw_sect_data");
-	abort();
+	/* The actual data in a section is cut up into instruction "packets",
+	 * not execution packets but ~1024 byte chunks which I presume get
+	 * pumped into the target processor. They start with a packet header,
+	 * followed by the actual section data, then (I believe) reloc data.
+	 * It's not written down, but I speculate this is only the case for
+	 * stuff that actually get loaded onto the processor -> ie, debug data
+	 * doesn't get packet headers */
 }
 
 static bfd_boolean
