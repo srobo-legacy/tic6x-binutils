@@ -6,8 +6,8 @@
 #include "bfd-in2.h"
 
 struct doff_ipacket {
-	uint8_t *raw_data;	/* In sections lump of raw data */
-	uint32_t size;		/* Size of packet */
+	void *raw_data;		/* In sections lump of raw data */
+	int size;		/* Size of packet */
 	int num_relocs;		/* Self explanatory */
 	arelent **relocs;	/* Table of num_reloc relocs */
 };
@@ -26,7 +26,7 @@ struct doff_section_data {
 	struct doff_ipacket **insn_packets;
 				/* table of instruction packets */
 
-	uint8_t *raw_data;	/* raw section data, pointed to by ipackets */
+	void *raw_data;		/* raw section data, pointed to by ipackets */
 };
 
 struct doff_symbol {
