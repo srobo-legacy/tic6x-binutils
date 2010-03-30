@@ -52,6 +52,14 @@ struct doff_scnhdr {
 /* Probably find it's byte size differences between 54x and rest of world */
 	int16_t page;			/* "memory page id" - what? */
 	int16_t flags;			/* Self explanatory */
+#define DOFF_SCN_FLAG_TYPE_MASK	0xF	/* Different types of sections */
+#define DOFF_SCN_TYPE_TEXT	0
+#define DOFF_SCN_TYPE_DATA	1
+#define DOFF_SCN_TYPE_BSS	2
+#define DOFF_SCN_TYPE_CINIT	3
+#define DOFF_SCN_FLAG_ALLOC	0x10	/* Allocate space on target for scn */
+#define DOFF_SCN_FLAG_DOWNLOAD	0x20	/* Section to be loaded onto target */
+#define DOFF_SCN_FLAG_ALIGN	0xF00	/* scn alignment: 2^this_field */
 	uint32_t first_pkt_offset;	/* Absolute offset into file of data */
 	int32_t num_pkts;		/* Self explanatory */
 };
