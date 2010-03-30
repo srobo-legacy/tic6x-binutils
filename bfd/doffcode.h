@@ -101,6 +101,7 @@ static bfd_boolean
 doff_internalise_sections(bfd *abfd, const void *sec_data,
 			struct doff_tdata *tdata)
 {
+	const char *name;
 	const struct doff_scnhdr *scn;
 	struct doff_section_data *sect;
 	int i, j, stroffset;
@@ -137,6 +138,10 @@ doff_internalise_sections(bfd *abfd, const void *sec_data,
 		sect->flags = bfd_get_16(abfd, &scn->flags);
 		sect->pkt_start = bfd_get_32(abfd, &scn->first_pkt_offset);
 		sect->num_pkts = bfd_get_32(abfd, &scn->num_pkts);
+
+		name = (sect->name_str_idx == -1) ? "<un-named section>"
+				: tdata->string_table[sect->name_str_idx];
+		sect->section = bfd_make_section_anyway(abfd, name);
 	}
 
 	return FALSE;
@@ -147,10 +152,14 @@ doff_free_sections(bfd *abfd, struct doff_tdata *tdata)
 {
 	int i;
 
-	if (tdata->section_data)
-		for (i = 0; i < tdata->num_sections; i++)
-			if (tdata->section_data[i])
+	if (tdata->section_data) {
+		for (i = 0; i < tdata->num_sections; i++) {
+			if (tdata->section_data[i]) {
+				/* XXX - destroy bfd section? */
 				bfd_release(abfd, tdata->section_data[i]);
+			}
+		}
+	}
 
 	if (tdata->section_data)
 		bfd_release(abfd, tdata->section_data);
