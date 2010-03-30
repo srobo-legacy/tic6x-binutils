@@ -153,6 +153,19 @@ doff_internalise_sections(bfd *abfd, const void *sec_data,
 	return;
 }
 
+static void
+doff_free_sections(bfd *abfd, struct doff_tdata *tdata)
+{
+	int i;
+
+	for (i = 0; i < tdata->num_sections; i++)
+		bfd_release(abfd, tdata->section_data[i]);
+
+	bfd_release(abfd, tdata->section_data);
+	tdata->num_sections = 0;
+	return;
+}
+
 static const bfd_target *
 doff_object_p(bfd *abfd)
 {
