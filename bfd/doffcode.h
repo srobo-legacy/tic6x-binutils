@@ -102,6 +102,7 @@ doff_internalise_sections(bfd *abfd, const void *sec_data,
 			struct doff_tdata *tdata)
 {
 	const struct doff_scnhdr *scn;
+	struct doff_section_data *sect;
 	int i, j, stroffset;
 
 	scn = sec_data;
@@ -111,10 +112,11 @@ doff_internalise_sections(bfd *abfd, const void *sec_data,
 		return TRUE;
 
 	for (i = 0; i < tdata->num_sections; i++) {
-		tdata->section_data[i] = bfd_zalloc(abfd,
-					sizeof(struct doff_section_data));
-		if (tdata->section_data[i] == NULL)
+		sect = bfd_zalloc(abfd, sizeof(struct doff_section_data));
+		if (sect == NULL)
 			return TRUE;
+
+		tdata->section_data[i] = sect;
 
 		/* Find index of section name in str table */
 		stroffset = bfd_get_32(abfd, &scn->str_offset);
@@ -124,23 +126,17 @@ doff_internalise_sections(bfd *abfd, const void *sec_data,
 
 		if (j == tdata->num_strings)
 			/* Bad section name, but tollerate */
-			tdata->section_data[i]->name_str_idx = -1;
+			sect->name_str_idx = -1;
 		else
-			tdata->section_data[i]->name_str_idx = j;
+			sect->name_str_idx = j;
 
 		/* Read other fields */
-		tdata->section_data[i]->prog_addr =
-					bfd_get_32(abfd, &scn->prog_addr);
-		tdata->section_data[i]->load_addr =
-					bfd_get_32(abfd, &scn->load_addr);
-		tdata->section_data[i]->size =
-					bfd_get_32(abfd, &scn->size);
-		tdata->section_data[i]->flags =
-					bfd_get_16(abfd, &scn->flags);
-		tdata->section_data[i]->pkt_start =
-				bfd_get_32(abfd, &scn->first_pkt_offset);
-		tdata->section_data[i]->num_pkts =
-				bfd_get_32(abfd, &scn->num_pkts);
+		sect->prog_addr = bfd_get_32(abfd, &scn->prog_addr);
+		sect->load_addr = bfd_get_32(abfd, &scn->load_addr);
+		sect->size = bfd_get_32(abfd, &scn->size);
+		sect->flags = bfd_get_16(abfd, &scn->flags);
+		sect->pkt_start = bfd_get_32(abfd, &scn->first_pkt_offset);
+		sect->num_pkts = bfd_get_32(abfd, &scn->num_pkts);
 	}
 
 	return FALSE;
