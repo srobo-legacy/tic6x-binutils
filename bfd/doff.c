@@ -4,6 +4,7 @@
 
 #include "sysdep.h"
 #include "bfd.h"
+#include "libbfd.h"
 #include "libdoff.h"
 /* inclusion protection please? #include "libbfd.h" */
 #include <coff/doff.h>
@@ -172,7 +173,7 @@ doff_internalise_sections(bfd *abfd, const void *sec_data,
 	return FALSE;
 }
 
-static const bfd_target *
+const bfd_target *
 doff_object_p(bfd *abfd)
 {
 	struct bfd_preserve preserve;
@@ -317,7 +318,7 @@ doff_object_p(bfd *abfd)
 	return NULL;
 }
 
-static bfd_boolean
+bfd_boolean
 doff_mkobject(bfd *abfd)
 {
 
@@ -328,7 +329,7 @@ doff_mkobject(bfd *abfd)
 	return TRUE;
 }
 
-static bfd_boolean
+bfd_boolean
 doff_write_object_contents(bfd *abfd)
 {
 
@@ -337,7 +338,7 @@ doff_write_object_contents(bfd *abfd)
 	abort();
 }
 
-static bfd_boolean
+bfd_boolean
 doff_close_and_cleanup(bfd *abfd)
 {
 
@@ -348,7 +349,7 @@ doff_close_and_cleanup(bfd *abfd)
 	return _bfd_generic_close_and_cleanup(abfd);
 }
 
-static bfd_boolean
+bfd_boolean
 doff_bfd_free_cached_info(bfd *abfd)
 {
 
@@ -357,7 +358,7 @@ doff_bfd_free_cached_info(bfd *abfd)
 	abort();
 }
 
-static bfd_boolean
+bfd_boolean
 doff_new_section_hook(bfd *abfd, sec_ptr section)
 {
 
@@ -365,7 +366,7 @@ doff_new_section_hook(bfd *abfd, sec_ptr section)
 	return _bfd_generic_new_section_hook(abfd, section);
 }
 
-static bfd_boolean
+bfd_boolean
 doff_get_section_contents(bfd *abfd, sec_ptr section, void *data,
 				file_ptr file, bfd_size_type size)
 {
@@ -379,7 +380,7 @@ doff_get_section_contents(bfd *abfd, sec_ptr section, void *data,
 	abort();
 }
 
-static bfd_boolean
+bfd_boolean
 doff_get_section_contents_in_window(bfd *abfd, sec_ptr section,
 			bfd_window *window, file_ptr file, bfd_size_type size)
 {
@@ -393,7 +394,7 @@ doff_get_section_contents_in_window(bfd *abfd, sec_ptr section,
 	abort();
 }
 
-static bfd_boolean
+bfd_boolean
 doff_bfd_copy_private_bfd_data(bfd *abfd, bfd *another_bfd)
 {
 
@@ -403,7 +404,7 @@ doff_bfd_copy_private_bfd_data(bfd *abfd, bfd *another_bfd)
 	abort();
 }
 
-static bfd_boolean
+bfd_boolean
 doff_bfd_merge_private_bfd_data(bfd *abfd, bfd *another_bfd)
 {
 
@@ -415,7 +416,7 @@ doff_bfd_merge_private_bfd_data(bfd *abfd, bfd *another_bfd)
 
 #if 0
 BFD_JUMP_TABLE_COPY initializer declines to use this
-static bfd_boolean
+bfd_boolean
 doff_bfd_init_private_section_data(bfd *abfd, sec_ptr section, bfd *another_bfd,
 			sec_ptr another_section, struct bfd_link_info *info)
 {
@@ -430,7 +431,7 @@ doff_bfd_init_private_section_data(bfd *abfd, sec_ptr section, bfd *another_bfd,
 }
 #endif
 
-static bfd_boolean
+bfd_boolean
 doff_bfd_copy_private_section_data(bfd *abfd, sec_ptr section, bfd *another_bfd,
 			sec_ptr another_section)
 {
@@ -443,7 +444,7 @@ doff_bfd_copy_private_section_data(bfd *abfd, sec_ptr section, bfd *another_bfd,
 	abort();
 }
 
-static bfd_boolean
+bfd_boolean
 doff_bfd_copy_private_symbol_data(bfd *abfd, asymbol *symbol, bfd *another_bfd,
 			asymbol *another_symbol)
 {
@@ -456,7 +457,7 @@ doff_bfd_copy_private_symbol_data(bfd *abfd, asymbol *symbol, bfd *another_bfd,
 	abort();
 }
 
-static bfd_boolean
+bfd_boolean
 doff_bfd_copy_private_header_data(bfd *abfd, bfd *another_bfd)
 {
 
@@ -466,7 +467,7 @@ doff_bfd_copy_private_header_data(bfd *abfd, bfd *another_bfd)
 	abort();
 }
 
-static bfd_boolean
+bfd_boolean
 doff_bfd_set_private_flags(bfd *abfd, flagword what)
 {
 
@@ -476,7 +477,7 @@ doff_bfd_set_private_flags(bfd *abfd, flagword what)
 	abort();
 }
 
-static bfd_boolean
+bfd_boolean
 doff_bfd_print_private_bfd_data(bfd *abfd, void *what)
 {
 
@@ -486,7 +487,7 @@ doff_bfd_print_private_bfd_data(bfd *abfd, void *what)
 	abort();
 }
 
-static long
+long
 doff_get_symtab_upper_bound(bfd *abfd)
 {
 
@@ -495,7 +496,7 @@ doff_get_symtab_upper_bound(bfd *abfd)
 	abort();
 }
 
-static long
+long
 doff_canonicalize_symtab(bfd *abfd, struct bfd_symbol **symbol)
 {
 
@@ -505,7 +506,7 @@ doff_canonicalize_symtab(bfd *abfd, struct bfd_symbol **symbol)
 	abort();
 }
 
-static struct bfd_symbol *
+struct bfd_symbol *
 doff_make_empty_symbol(bfd *abfd)
 {
 	struct doff_symbol *symbol;
@@ -514,7 +515,7 @@ doff_make_empty_symbol(bfd *abfd)
 	return &symbol->bfd_symbol;
 }
 
-static void
+void
 doff_print_symbol(bfd *abfd, void *what, struct bfd_symbol *symbol,
 			bfd_print_symbol_type type)
 {
@@ -527,7 +528,7 @@ doff_print_symbol(bfd *abfd, void *what, struct bfd_symbol *symbol,
 	abort();
 }
 
-static void
+void
 doff_get_symbol_info(bfd *abfd, struct bfd_symbol *symbol, symbol_info *info)
 {
 
@@ -538,7 +539,7 @@ doff_get_symbol_info(bfd *abfd, struct bfd_symbol *symbol, symbol_info *info)
 	abort();
 }
 
-static bfd_boolean
+bfd_boolean
 doff_bfd_is_local_label_name(bfd *abfd, const char *name)
 {
 
@@ -548,7 +549,7 @@ doff_bfd_is_local_label_name(bfd *abfd, const char *name)
 	abort();
 }
 
-static bfd_boolean
+bfd_boolean
 doff_bfd_is_target_special_symbol(bfd *abfd, asymbol *symbol)
 {
 
@@ -558,7 +559,7 @@ doff_bfd_is_target_special_symbol(bfd *abfd, asymbol *symbol)
 	abort();
 }
 
-static alent *
+alent *
 doff_get_lineno(bfd *abfd, struct bfd_symbol *symbol)
 {
 
@@ -568,7 +569,7 @@ doff_get_lineno(bfd *abfd, struct bfd_symbol *symbol)
 	abort();
 }
 
-static bfd_boolean
+bfd_boolean
 doff_find_nearest_line(bfd *abfd, struct bfd_section *section,
 			struct bfd_symbol **symbol, bfd_vma addr,
 			const char **what, const char **what2,
@@ -586,7 +587,7 @@ doff_find_nearest_line(bfd *abfd, struct bfd_section *section,
 	abort();
 }
 
-static bfd_boolean
+bfd_boolean
 doff_find_inliner_info(bfd *abfd, const char **what, const char **what2,
 			unsigned int *what3)
 {
@@ -599,7 +600,7 @@ doff_find_inliner_info(bfd *abfd, const char **what, const char **what2,
 	abort();
 }
 
-static asymbol *
+asymbol *
 doff_bfd_make_debug_symbol(bfd *abfd, void *what, unsigned long size)
 {
 
@@ -610,7 +611,7 @@ doff_bfd_make_debug_symbol(bfd *abfd, void *what, unsigned long size)
 	abort();
 }
 
-static long
+long
 doff_read_minisymbols(bfd *abfd, bfd_boolean what, void **what2,
 			unsigned int *what3)
 {
@@ -623,7 +624,7 @@ doff_read_minisymbols(bfd *abfd, bfd_boolean what, void **what2,
 	abort();
 }
 
-static asymbol *
+asymbol *
 doff_minisymbol_to_symbol(bfd *abfd, bfd_boolean what, const void *what2,
 			asymbol *minisymbol)
 {
@@ -636,7 +637,7 @@ doff_minisymbol_to_symbol(bfd *abfd, bfd_boolean what, const void *what2,
 	abort();
 }
 
-static long
+long
 doff_get_reloc_upper_bound(bfd *abfd, sec_ptr section)
 {
 
@@ -646,7 +647,7 @@ doff_get_reloc_upper_bound(bfd *abfd, sec_ptr section)
 	abort();
 }
 
-static long
+long
 doff_canonicalize_reloc(bfd *abfd, sec_ptr section, arelent **relocs,
 			struct bfd_symbol **symbols)
 {
@@ -659,7 +660,7 @@ doff_canonicalize_reloc(bfd *abfd, sec_ptr section, arelent **relocs,
 	abort();
 }
 
-static reloc_howto_type *
+reloc_howto_type *
 doff_bfd_reloc_type_lookup(bfd *abfd, bfd_reloc_code_real_type type)
 {
 
@@ -669,7 +670,7 @@ doff_bfd_reloc_type_lookup(bfd *abfd, bfd_reloc_code_real_type type)
 	abort();
 }
 
-static reloc_howto_type *
+reloc_howto_type *
 doff_bfd_reloc_name_lookup(bfd *abfd, const char *name)
 {
 
@@ -679,7 +680,7 @@ doff_bfd_reloc_name_lookup(bfd *abfd, const char *name)
 	abort();
 }
 
-static int
+int
 doff_sizeof_headers(bfd *abfd, struct bfd_link_info *info)
 {
 
@@ -689,7 +690,7 @@ doff_sizeof_headers(bfd *abfd, struct bfd_link_info *info)
 	abort();
 }
 
-static bfd_byte *
+bfd_byte *
 doff_bfd_get_relocated_section_contents(bfd *abfd, struct bfd_link_info *info,
 			struct bfd_link_order *order, bfd_byte *what,
 			bfd_boolean what2, struct bfd_symbol **what3)
@@ -705,7 +706,7 @@ doff_bfd_get_relocated_section_contents(bfd *abfd, struct bfd_link_info *info,
 	abort();
 }
 
-static bfd_boolean
+bfd_boolean
 doff_bfd_relax_section(bfd *abfd, struct bfd_section *section,
 			struct bfd_link_info *info, bfd_boolean *what)
 {
@@ -718,7 +719,7 @@ doff_bfd_relax_section(bfd *abfd, struct bfd_section *section,
 	abort();
 }
 
-static struct bfd_link_hash_table *
+struct bfd_link_hash_table *
 doff_bfd_link_hash_table_create(bfd *abfd)
 {
 
@@ -727,7 +728,7 @@ doff_bfd_link_hash_table_create(bfd *abfd)
 	abort();
 }
 
-static void
+void
 doff_bfd_link_hash_table_free(struct bfd_link_hash_table *table)
 {
 
@@ -736,7 +737,7 @@ doff_bfd_link_hash_table_free(struct bfd_link_hash_table *table)
 	abort();
 }
 
-static bfd_boolean
+bfd_boolean
 doff_bfd_link_add_symbols(bfd *abfd, struct bfd_link_info *info)
 {
 
@@ -746,7 +747,7 @@ doff_bfd_link_add_symbols(bfd *abfd, struct bfd_link_info *info)
 	abort();
 }
 
-static void
+void
 doff_bfd_link_just_syms(asection *section, struct bfd_link_info *info)
 {
 
@@ -756,7 +757,7 @@ doff_bfd_link_just_syms(asection *section, struct bfd_link_info *info)
 	abort();
 }
 
-static bfd_boolean
+bfd_boolean
 doff_bfd_final_link(bfd *abfd, struct bfd_link_info *info)
 {
 
@@ -766,7 +767,7 @@ doff_bfd_final_link(bfd *abfd, struct bfd_link_info *info)
 	abort();
 }
 
-static bfd_boolean
+bfd_boolean
 doff_bfd_link_split_section(bfd *abfd, struct bfd_section *section)
 {
 
@@ -776,7 +777,7 @@ doff_bfd_link_split_section(bfd *abfd, struct bfd_section *section)
 	abort();
 }
 
-static bfd_boolean
+bfd_boolean
 doff_bfd_gc_sections(bfd *abfd, struct bfd_link_info *info)
 {
 
@@ -786,7 +787,7 @@ doff_bfd_gc_sections(bfd *abfd, struct bfd_link_info *info)
 	abort();
 }
 
-static bfd_boolean
+bfd_boolean
 doff_bfd_merge_sections(bfd *abfd, struct bfd_link_info *info)
 {
 
@@ -796,7 +797,7 @@ doff_bfd_merge_sections(bfd *abfd, struct bfd_link_info *info)
 	abort();
 }
 
-static bfd_boolean
+bfd_boolean
 doff_bfd_is_group_section(bfd *abfd, const struct bfd_section *section)
 {
 
@@ -806,7 +807,7 @@ doff_bfd_is_group_section(bfd *abfd, const struct bfd_section *section)
 	abort();
 }
 
-static bfd_boolean
+bfd_boolean
 doff_bfd_discard_group(bfd *abfd, struct bfd_section *section)
 {
 
@@ -816,7 +817,7 @@ doff_bfd_discard_group(bfd *abfd, struct bfd_section *section)
 	abort();
 }
 
-static void
+void
 doff_section_already_linked(bfd *abfd, struct bfd_section *section,
 			struct bfd_link_info *info)
 {
@@ -828,7 +829,7 @@ doff_section_already_linked(bfd *abfd, struct bfd_section *section,
 	abort();
 }
 
-static bfd_boolean
+bfd_boolean
 doff_bfd_define_common_symbol(bfd *abfd, struct bfd_link_info *info,
 			struct bfd_link_hash_entry *hash)
 {
@@ -839,7 +840,7 @@ doff_bfd_define_common_symbol(bfd *abfd, struct bfd_link_info *info,
 	fprintf(stderr, "Implement doff_bfd_define_common_symbol");
 	abort();
 }
-static bfd_boolean
+bfd_boolean
 doff_set_section_contents(bfd *abfd, sec_ptr section, const void *location,
 			file_ptr file, bfd_size_type type)
 {

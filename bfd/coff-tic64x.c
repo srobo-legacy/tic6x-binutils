@@ -8,7 +8,7 @@
 #include "coff/tic64x.h"
 #include "libcoff.h"
 
-#include "doffcode.h"
+#include "libdoff.h"
 
 #undef F_LSYMS
 #define F_LSYMS		F_LSYMS_TICOFF
