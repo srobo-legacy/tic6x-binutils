@@ -79,7 +79,7 @@ doff_internalise_sections(bfd *abfd, const void *sec_data,
 	const char *name;
 	const struct doff_scnhdr *scn;
 	struct doff_section_data *sect;
-	int i, j, stroffset, tmp, flags;
+	int i, j, stroffset, tmp;
 
 	scn = sec_data;
 	tdata->section_data = bfd_zalloc(abfd, tdata->num_sections *
@@ -131,13 +131,14 @@ doff_internalise_sections(bfd *abfd, const void *sec_data,
 		if (!bfd_set_section_alignment(abfd, sect->section, tmp))
 			return TRUE;
 
+		doff_load_raw_sect_data(abfd, sect);
+
 		tmp = SEC_NO_FLAGS;
 		if (sect->flags & DOFF_SCN_FLAG_ALLOC)
 			tmp |= SEC_ALLOC;
 		if (sect->flags & DOFF_SCN_FLAG_DOWNLOAD)
 			tmp |= SEC_LOAD;
-		if (doff_sect_contains_relocs(abfd, sect))
-			tmp |= SEC_RELOC;
+/* XXX - set relocs flag */
 		/* XXX - no readonly flag defined */
 		if ((sect->flags & DOFF_SCN_FLAG_TYPE_MASK)==DOFF_SCN_TYPE_TEXT)
 			tmp |= SEC_CODE;
@@ -152,7 +153,7 @@ doff_internalise_sections(bfd *abfd, const void *sec_data,
 		 * have a flag. Also, we could in theory represent the string
 		 * table as a section (possibly a bad plan given it has section
 		 * names encoded */
-		if (!bfd_set_section_flags(abfd, sect->section, flags))
+		if (!bfd_set_section_flags(abfd, sect->section, tmp))
 			return TRUE;
 
 		scn++;
