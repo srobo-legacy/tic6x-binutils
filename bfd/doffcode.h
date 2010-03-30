@@ -84,13 +84,17 @@ doff_internalise_sections(bfd *abfd, const void *sec_data,
 	scn = sec_data;
 	tdata->section_data = bfd_zalloc(abfd, tdata->num_sections *
 					sizeof(struct doff_section_data));
-	if (tdata->section_data == NULL)
+	if (tdata->section_data == NULL) {
+		bfd_set_error(bfd_error_no_memory);
 		return TRUE;
+	}
 
 	for (i = 0; i < tdata->num_sections; i++) {
 		sect = bfd_zalloc(abfd, sizeof(struct doff_section_data));
 		if (sect == NULL)
+			bfd_set_error(bfd_error_no_memory);
 			return TRUE;
+		}
 
 		tdata->section_data[i] = sect;
 
@@ -246,7 +250,6 @@ doff_object_p(bfd *abfd)
 
 	if (doff_internalise_sections(abfd, data, tdata)) {
 		free(data);
-		bfd_set_error(bfd_error_no_memory);
 		goto unwind;
 	}
 	free(data);
