@@ -274,10 +274,6 @@ doff_object_p(bfd *abfd)
 		goto wrong_format;
 	}
 
-	if (bfd_seek(abfd, bfd_get_32(abfd, &d_hdr.strtab_size)+sizeof(d_hdr),
-								SEEK_SET))
-		goto wrong_format;
-
 	size = tdata->num_sections * sizeof(struct doff_scnhdr);
 	data = bfd_alloc(abfd, size);
 	if (!data) {
