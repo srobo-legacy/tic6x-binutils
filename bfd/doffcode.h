@@ -122,7 +122,7 @@ doff_free_strings(bfd *abfd, struct doff_tdata *tdata)
 	return;
 }
 
-static void
+static bfd_boolean
 doff_internalise_sections(bfd *abfd, const void *sec_data,
 			struct doff_tdata *tdata)
 {
@@ -130,10 +130,17 @@ doff_internalise_sections(bfd *abfd, const void *sec_data,
 	int i;
 
 	scn = sec_data;
-	tdata->section_data = bfd_alloc(abfd, tdata->num_sections *
+	tdata->section_data = bfd_zalloc(abfd, tdata->num_sections *
 					sizeof(struct doff_section_data));
+	if (tdata->section_data == NULL)
+		return TRUE;
 
 	for (i = 0; i < tdata->num_sections; i++) {
+		tdata->section_data[i] = bfd_zalloc(abfd,
+					sizeof(struct doff_section_data));
+		if (tdata->section_data[i] == NULL)
+			return TRUE;
+
 		tdata->section_data[i]->stroffset =
 					bfd_get_32(abfd, &scn->str_offset);
 		tdata->section_data[i]->prog_addr =
@@ -150,7 +157,7 @@ doff_internalise_sections(bfd *abfd, const void *sec_data,
 				bfd_get_32(abfd, &scn->num_pkts);
 	}
 
-	return;
+	return FALSE;
 }
 
 static void
@@ -274,7 +281,11 @@ doff_object_p(bfd *abfd)
 			goto unwind;
 	}
 
-	doff_internalise_sections(abfd, data, tdata);
+	if (doff_internalise_sections(abfd, data, tdata)) {
+		bfd_set_error(bfd_error_no_memory);
+		goto unwind;
+	}
+
 	bfd_release(abfd, data);
 
 	bfd_set_start_address(abfd, bfd_get_32(abfd, &d_hdr.entry_point));
