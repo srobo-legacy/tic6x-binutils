@@ -27,8 +27,8 @@ doff_checksum(const void *data, unsigned int len)
 }
 
 static bfd_boolean
-doff_parse_strings(bfd *abfd, struct doff_tdata *tdata, const char *strings,
-			unsigned int len)
+doff_internalise_strings(bfd *abfd, struct doff_tdata *tdata,
+			const char *strings, unsigned int len)
 {
 	int bytes_left, i, tmp;
 
@@ -200,7 +200,7 @@ doff_object_p(bfd *abfd)
 
 	/* We have a big table of strings. The first is the originating file
 	 * name, followed by section names, followed by normal strings */
-	if (doff_parse_strings(abfd, tdata, strings, string_table_sz)) {
+	if (doff_internalise_strings(abfd, tdata, strings, string_table_sz)) {
 		doff_free_strings(abfd, tdata);
 		bfd_release(abfd, strings);
 		goto wrong_format;
