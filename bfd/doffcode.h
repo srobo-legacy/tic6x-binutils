@@ -173,6 +173,7 @@ doff_object_p(bfd *abfd)
 {
 	struct bfd_preserve preserve;
 	struct doff_filehdr d_hdr;
+	struct doff_checksum_rec checksums;
 	struct doff_tdata *tdata;
 	const bfd_target *target;
 	void *data;
@@ -216,6 +217,20 @@ doff_object_p(bfd *abfd)
 
 	preserve.marker = abfd->tdata.doff_obj_data;
 	tdata = abfd->tdata.doff_obj_data;
+
+	if (bfd_bread(&checksums, sizeof(checksums), abfd)
+					 != sizeof(checksums)) {
+		if (bfd_get_error() != bfd_error_system_call)
+			goto wrong_format;
+		else
+			goto unwind;
+	}
+
+	/* So, there's a checksum of checksum field */
+	if (~doff_checksum(&checksums, sizeof(checksums))) {
+		fprintf(stderr, "doff backend: bad checksum table\n");
+		goto wrong_format;
+	}
 
 	/* The string table follows the file header */
 	size = bfd_get_32(abfd, &d_hdr.strtab_size);
