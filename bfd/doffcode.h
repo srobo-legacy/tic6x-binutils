@@ -281,6 +281,11 @@ doff_object_p(bfd *abfd)
 	bfd_set_error(bfd_error_wrong_format);
 
 	unwind:
+	if (preserve.marker != NULL) {
+		doff_free_strings(abfd, tdata);
+		doff_free_sections(abfd, tdata);
+		bfd_preserve_restore(abfd, &preserve);
+	}
 	return NULL;
 }
 
