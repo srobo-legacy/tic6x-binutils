@@ -5,6 +5,13 @@
 
 #include "bfd-in2.h"
 
+struct doff_ipacket {
+	uint8_t *raw_data;	/* In sections lump of raw data */
+	uint32_t size;		/* Size of packet */
+	int num_relocs;		/* Self explanatory */
+	arelent *relocs;	/* Table of num_reloc relocs */
+};
+
 struct doff_section_data {
 	int name_str_idx;	/* str table idx of name; can be -1 */
 	bfd_vma prog_addr;	/* "RUN" address */
