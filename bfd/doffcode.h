@@ -194,7 +194,7 @@ doff_object_p(bfd *abfd)
 		goto wrong_format;
 	}
 
-	data = bfd_alloc(abfd, size);
+	data = bfd_malloc(size);
 	if (!data) {
 		bfd_set_error(bfd_error_no_memory);
 		goto unwind;
@@ -215,10 +215,10 @@ doff_object_p(bfd *abfd)
 	/* We have a big table of strings. The first is the originating file
 	 * name, followed by section names, followed by normal strings */
 	if (doff_internalise_strings(abfd, tdata, data, size)) {
-		bfd_release(abfd, data);
+		free(data);
 		goto wrong_format;
 	}
-	bfd_release(abfd, data);
+	free(data);
 
 	/* Now read section table - it's immediately after string table */
 	tdata->num_sections = bfd_get_16(abfd, &d_hdr.num_scns);
@@ -228,13 +228,14 @@ doff_object_p(bfd *abfd)
 	}
 
 	size = tdata->num_sections * sizeof(struct doff_scnhdr);
-	data = bfd_alloc(abfd, size);
+	data = bfd_malloc(size);
 	if (!data) {
 		bfd_set_error(bfd_error_no_memory);
 		goto unwind;
 	}
 
 	if (bfd_bread(data, size, abfd) != size) {
+		free(data);
 		if (bfd_get_error() != bfd_error_system_call)
 			goto wrong_format;
 		else
@@ -242,11 +243,11 @@ doff_object_p(bfd *abfd)
 	}
 
 	if (doff_internalise_sections(abfd, data, tdata)) {
+		free(data);
 		bfd_set_error(bfd_error_no_memory);
 		goto unwind;
 	}
-
-	bfd_release(abfd, data);
+	free(data);
 
 	bfd_set_start_address(abfd, bfd_get_32(abfd, &d_hdr.entry_point));
 	bfd_preserve_finish(abfd, &preserve);
