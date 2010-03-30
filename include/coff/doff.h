@@ -39,9 +39,10 @@ struct doff_scnhdr {
 	int32_t str_offset;		/* Offset in string table of name */
 	int32_t prog_addr;		/* Program start or "RUN" address */
 	int32_t load_addr;		/* Address for section to load to */
-	int16_t size;			/* Section size */
+	int32_t size;			/* Section size */
 					/* Those three "in target AU"...? */
 /* Probably find it's byte size differences between 54x and rest of world */
+	int16_t page;			/* "memory page id" - what? */
 	int16_t flags;			/* Self explanatory */
 	uint32_t first_pkt_offset;	/* Absolute offset into file of data */
 	int32_t num_pkts;		/* Self explanatory */
