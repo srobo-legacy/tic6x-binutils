@@ -117,6 +117,8 @@ doff_internalise_sections(bfd *abfd, const void *sec_data,
 		name = (sect->name_str_idx == -1) ? "<un-named section>"
 				: tdata->string_table[sect->name_str_idx];
 		sect->section = bfd_make_section_anyway(abfd, name);
+
+		scn++;
 	}
 
 	return FALSE;
