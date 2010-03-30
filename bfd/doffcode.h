@@ -129,7 +129,7 @@ doff_object_p(bfd *abfd)
 	struct doff_filehdr d_hdr;
 	struct doff_tdata *tdata;
 	const bfd_target *target;
-	char *strings;
+	void *data;
 	unsigned int string_table_sz;
 
 	preserve.marker = NULL;
@@ -185,13 +185,13 @@ doff_object_p(bfd *abfd)
 		goto wrong_format;
 	}
 
-	strings = bfd_alloc(abfd, string_table_sz);
-	if (!strings) {
+	data = bfd_alloc(abfd, string_table_sz);
+	if (!data) {
 		bfd_set_error(bfd_error_no_memory);
 		goto unwind;
 	}
 
-	if (bfd_bread(strings, string_table_sz, abfd) != string_table_sz) {
+	if (bfd_bread(data, string_table_sz, abfd) != string_table_sz) {
 		if (bfd_get_error() != bfd_error_system_call)
 			goto wrong_format;
 		else
@@ -200,12 +200,12 @@ doff_object_p(bfd *abfd)
 
 	/* We have a big table of strings. The first is the originating file
 	 * name, followed by section names, followed by normal strings */
-	if (doff_internalise_strings(abfd, tdata, strings, string_table_sz)) {
+	if (doff_internalise_strings(abfd, tdata, data, string_table_sz)) {
 		doff_free_strings(abfd, tdata);
-		bfd_release(abfd, strings);
+		bfd_release(abfd, data);
 		goto wrong_format;
 	}
-	bfd_release(abfd, strings);
+	bfd_release(abfd, data);
 
 	wrong_format:
 	bfd_set_error(bfd_error_wrong_format);
