@@ -79,7 +79,7 @@ doff_internalise_sections(bfd *abfd, const void *sec_data,
 	const char *name;
 	const struct doff_scnhdr *scn;
 	struct doff_section_data *sect;
-	int i, j, stroffset;
+	int i, j, stroffset, tmp;
 
 	scn = sec_data;
 	tdata->section_data = bfd_zalloc(abfd, tdata->num_sections *
@@ -121,6 +121,16 @@ doff_internalise_sections(bfd *abfd, const void *sec_data,
 		name = (sect->name_str_idx == -1) ? "<un-named section>"
 				: tdata->string_table[sect->name_str_idx];
 		sect->section = bfd_make_section_anyway(abfd, name);
+		if (!bfd_set_section_vma(abfd, sect->section, sect->load_addr))
+			return TRUE;
+
+		if (!bfd_set_section_size(abfd, sect->section, sect->size))
+			return TRUE;
+
+		tmp = (sect->flags & DOFF_SCN_FLAG_ALIGN) >> 8;
+		if (!bfd_set_section_alignment(abfd, sect->section, tmp))
+			return TRUE;
+
 
 		scn++;
 	}
