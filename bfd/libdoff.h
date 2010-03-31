@@ -20,6 +20,7 @@ struct doff_section_data {
 	int flags;		/* flags; see no definitions right now */
 	int pkt_start;		/* offset into file where pkt data starts */
 	int num_pkts;		/* Number of said packets */
+	int num_relocs;		/* Number of relocs in insn packets */
 
 	asection *section;	/* BFD section */
 
