@@ -440,6 +440,9 @@ doff_object_p(bfd *abfd)
 		/* Stupidly sized string table */
 		fprintf(stderr, "doff backend: oversized string table\n");
 		goto wrong_format;
+	} else if (size == 0) {
+		fprintf(stderr, "doff file with zero sized string table\n");
+		goto wrong_format;
 	}
 
 	data = bfd_malloc(size);
@@ -472,6 +475,9 @@ doff_object_p(bfd *abfd)
 	tdata->num_sections = (uint16_t)bfd_get_16(abfd, &d_hdr.num_scns);
 	if (tdata->num_sections > 0x1000) {
 		fprintf(stderr, "doff backend: oversized section num\n");
+		goto wrong_format;
+	} else if (tdata->num_sections == 0) {
+		fprintf(stderr, "doff file with zero sections\n");
 		goto wrong_format;
 	}
 
