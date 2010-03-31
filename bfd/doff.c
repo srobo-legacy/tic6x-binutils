@@ -345,6 +345,7 @@ doff_object_p(bfd *abfd)
 	const bfd_target *target;
 	void *data, *symbols;
 	unsigned int size;
+	int i;
 
 	preserve.marker = NULL;
 	target = abfd->xvec;
@@ -501,6 +502,18 @@ doff_object_p(bfd *abfd)
 		goto unwind;
 	}
 	free(data);
+
+	/* Finally, patch up some symbol and section data: they both depend
+	 * on each other, so we need to do this patching at some point anyway */
+	for (i = 0; i < tdata->num_syms; i++) {
+		if (tdata->symbols[i]->sect_idx >= tdata->num_sections) {
+			fprintf(stderr, "Invalid section index in symbol %d",i);
+			goto wrong_format;
+		}
+
+		tdata->symbols[i]->bfd_symbol.section =
+		tdata->section_data[tdata->symbols[i]->sect_idx]->section;
+	}
 
 	bfd_set_start_address(abfd, bfd_get_32(abfd, &d_hdr.entry_point));
 	bfd_preserve_finish(abfd, &preserve);
