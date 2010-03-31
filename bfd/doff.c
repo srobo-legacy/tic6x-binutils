@@ -507,33 +507,37 @@ doff_object_p(bfd *abfd)
 	}
 	free(data);
 
-	bfd_seek(abfd, saved_pos, SEEK_SET);
-	tdata->num_syms = (uint16_t)bfd_get_16(abfd, &d_hdr.num_syms);
-	size = sizeof(struct doff_symbol) * tdata->num_syms;
-	data = bfd_malloc(size);
-	if (data == NULL) {
-		goto unwind;
-	}
-
-	if (bfd_bread(data, size, abfd) != (unsigned int)size) {
-		free(data);
-		if (bfd_get_error() != bfd_error_system_call)
-			goto wrong_format;
-		else
+	/* Read symbols - if there are any. */
+	if (tdata->num_syms != 0) {
+		bfd_seek(abfd, saved_pos, SEEK_SET);
+		tdata->num_syms = (uint16_t)bfd_get_16(abfd, &d_hdr.num_syms);
+		size = sizeof(struct doff_symbol) * tdata->num_syms;
+		data = bfd_malloc(size);
+		if (data == NULL) {
 			goto unwind;
-	}
+		}
 
-	if (~(doff_checksum(data, size) + checksums.symbol_checksum)) {
-		fprintf(stderr, "doff backend: bad symbol table checksum\n");
-		free(data);
-		goto wrong_format;
-	}
+		if (bfd_bread(data, size, abfd) != (unsigned int)size) {
+			free(data);
+			if (bfd_get_error() != bfd_error_system_call)
+				goto wrong_format;
+			else
+				goto unwind;
+		}
 
-	if (doff_internalise_symbols(abfd, data, tdata)) {
+		if (~(doff_checksum(data, size) + checksums.symbol_checksum)) {
+			fprintf(stderr, "doff backend: bad symbol table "
+					"checksum\n");
+			free(data);
+			goto wrong_format;
+		}
+
+		if (doff_internalise_symbols(abfd, data, tdata)) {
+			free(data);
+			goto wrong_format;
+		}
 		free(data);
-		goto wrong_format;
 	}
-	free(data);
 
 	bfd_set_start_address(abfd, bfd_get_32(abfd, &d_hdr.entry_point));
 	target_id = bfd_get_16(abfd, &d_hdr.target_id);
