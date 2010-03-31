@@ -604,7 +604,7 @@ doff_new_section_hook(bfd *abfd, sec_ptr section)
 
 bfd_boolean
 doff_get_section_contents(bfd *abfd, sec_ptr section, void *data,
-				file_ptr file, bfd_size_type size)
+				file_ptr offset, bfd_size_type size)
 {
 
 	UNUSED(abfd);

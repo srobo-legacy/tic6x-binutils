@@ -58,7 +58,7 @@ bfd_boolean doff_close_and_cleanup(bfd *abfd);
 bfd_boolean doff_bfd_free_cached_info(bfd *abfd);
 bfd_boolean doff_new_section_hook(bfd *abfd, sec_ptr section);
 bfd_boolean doff_get_section_contents(bfd *abfd, sec_ptr section, void *data,
-			file_ptr file, bfd_size_type size);
+			file_ptr offset, bfd_size_type size);
 bfd_boolean doff_get_section_contents_in_window(bfd *abfd, sec_ptr section,
 			bfd_window *window, file_ptr file, bfd_size_type size);
 bfd_boolean doff_bfd_copy_private_bfd_data(bfd *abfd, bfd *another_bfd);
