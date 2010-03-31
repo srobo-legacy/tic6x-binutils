@@ -389,7 +389,7 @@ doff_object_p(bfd *abfd)
 	free(data);
 
 	/* Now read section table - it's immediately after string table */
-	tdata->num_sections = bfd_get_16(abfd, &d_hdr.num_scns);
+	tdata->num_sections = (uint16_t)bfd_get_16(abfd, &d_hdr.num_scns);
 	if (tdata->num_sections > 0x1000) {
 		fprintf(stderr, "doff backend: oversized section num\n");
 		goto wrong_format;
