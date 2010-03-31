@@ -274,6 +274,9 @@ doff_load_raw_sect_data(bfd *abfd, struct doff_section_data *sect)
 	sect->num_relocs = reloc_count;
 	sect->section->contents = sect->raw_data;
 
+	if (sect->num_relocs != 0)
+		abfd->flags |= HAS_RELOC;
+
 	return bfd_set_section_contents(abfd, sect->section,
 			sect->raw_data, sect->pkt_start, sect->size);
 }
@@ -515,6 +518,7 @@ doff_object_p(bfd *abfd)
 
 	/* Read symbols - if there are any. */
 	if (tdata->num_syms != 0) {
+		abfd->flags |= HAS_SYMS;
 		bfd_seek(abfd, saved_pos, SEEK_SET);
 		tdata->num_syms = (uint16_t)bfd_get_16(abfd, &d_hdr.num_syms);
 		size = sizeof(struct doff_symbol) * tdata->num_syms;
@@ -546,6 +550,9 @@ doff_object_p(bfd *abfd)
 	}
 
 	bfd_set_start_address(abfd, bfd_get_32(abfd, &d_hdr.entry_point));
+	/* XXX - how to tell if it's directly executable? No file flag */
+	abfd->flags |= EXEC_P;
+
 	target_id = bfd_get_16(abfd, &d_hdr.target_id);
 	switch (target_id) {
 	case DOFF_PROC_TMS320C6000:
