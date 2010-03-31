@@ -265,6 +265,9 @@ doff_load_raw_sect_data(bfd *abfd, struct doff_section_data *sect)
 		free(relocs);
 		/* And accumulate */
 		reloc_count += ipkt->num_relocs;
+
+		/* Increment raw_data ptr for where next pkt is copied in to */
+		raw_data += ipkt->size;
 	}
 
 	/* End of reading ipkts */
