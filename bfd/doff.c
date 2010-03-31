@@ -106,8 +106,22 @@ doff_internalise_symbols(bfd *abfd, void *data, struct doff_tdata *tdata)
 			return TRUE;
 		}
 
+		sym->name = (tmp == -1) ? NULL : tdata->string_table[j];
+		sym->value = bfd_get_32(abfd, &symbol->value);
+		sym->flags = BSF_NO_FLAGS;	/* XXX - pain */
+
 		tdata->symbols[i]->str_table_idx = j;
 		idx = bfd_get_16(abfd,&symbol->scn_num);
+		if (idx == 0 || idx == -1) {
+			/* Special values - meaning absolute and undefined
+			 * respectively. I don't know how to handle these right
+			 * now, would be nice to keep absolute symbols, but
+			 * anyway these never get reported to the user */
+			sym->section = NULL;
+			symbol++;
+			continue;
+		}
+
 		if (idx >= tdata->num_sections) {
 			fprintf(stderr, "Section number out of range for symbol"
 					" %d\n", i);
@@ -115,12 +129,7 @@ doff_internalise_symbols(bfd *abfd, void *data, struct doff_tdata *tdata)
 			return TRUE;
 		}
 
-		sym->name = (tmp == -1) ? NULL : tdata->string_table[j];
-		sym->value = bfd_get_32(abfd, &symbol->value);
 		sym->section = tdata->section_data[idx]->section;
-		sym->flags = BSF_NO_FLAGS;	/* XXX - pain */
-
-		symbol++;
 	}
 
 	return FALSE;
