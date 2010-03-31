@@ -272,6 +272,7 @@ doff_load_raw_sect_data(bfd *abfd, struct doff_section_data *sect)
 
 	/* End of reading ipkts */
 	sect->num_relocs = reloc_count;
+	sect->section->contents = sect->raw_data;
 
 	return bfd_set_section_contents(abfd, sect->section,
 			sect->raw_data, sect->pkt_start, sect->size);
