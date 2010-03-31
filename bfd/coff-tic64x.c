@@ -15,6 +15,7 @@
 /* XXX - dictated by coff/ti.h, but ti's docs say F_LSYMS remains 0x8 */
 
 static void rtype2howto(arelent *internal, struct internal_reloc *dst);
+reloc_howto_type *doff_rtype2howto(unsigned int reloc_type);
 static bfd_boolean tic64x_set_arch_mach(bfd *b, enum bfd_architecture a,
 		unsigned long);
 static bfd_boolean tic64x_set_section_contents(bfd *b, sec_ptr section,
@@ -176,6 +177,21 @@ rtype2howto(arelent *internal, struct internal_reloc *dst)
 						(unsigned int) dst->r_type);
 	internal->howto = NULL;
 	return;
+}
+
+/* XXX XXX XXX this needs to go in backend specific table... */
+reloc_howto_type *
+doff_rtype2howto(unsigned int reloc_type)
+{
+	unsigned int i;
+	for (i = 0; i < sizeof(tic64x_howto_table) /
+			sizeof(tic64x_howto_table[0]); i++) {
+		if (tic64x_howto_table[i].type == reloc_type) {
+			return&tic64x_howto_table[i];
+		}
+	}
+
+	return NULL;
 }
 
 reloc_howto_type *

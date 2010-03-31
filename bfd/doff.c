@@ -118,6 +118,9 @@ doff_internalise_symbols(bfd *abfd, void *data, struct doff_tdata *tdata)
 	return FALSE;
 }
 
+/* From tic64x; XXX XXX XXX, should go in backend data as function ptr */
+extern reloc_howto_type *doff_rtype2howto(unsigned int reloc_type);
+
 static bfd_boolean
 doff_load_raw_sect_data(bfd *abfd, struct doff_section_data *sect)
 {
