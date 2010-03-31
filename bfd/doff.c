@@ -298,7 +298,7 @@ doff_object_p(bfd *abfd)
 	struct doff_checksum_rec checksums;
 	struct doff_tdata *tdata;
 	const bfd_target *target;
-	void *data;
+	void *data, *symbols;
 	unsigned int size;
 
 	preserve.marker = NULL;
@@ -416,6 +416,41 @@ doff_object_p(bfd *abfd)
 		goto wrong_format;
 	}
 
+	/* Process of internalising sections requires symbols - so read in
+	 * and internalise the symbol table, before internalising sections */
+
+	tdata->num_syms = (uint16_t)bfd_get_16(abfd, &d_hdr.num_syms);
+	size = sizeof(struct doff_symbol) * tdata->num_syms;
+	symbols = bfd_malloc(size);
+	if (symbols == NULL) {
+		free(data);
+		goto unwind;
+	}
+
+	if (bfd_bread(symbols, size, abfd) != (unsigned int)size) {
+		free(symbols);
+		free(data);
+		if (bfd_get_error() != bfd_error_system_call)
+			goto wrong_format;
+		else
+			goto unwind;
+	}
+
+	if (~(doff_checksum(symbols, size) + checksums.symbol_checksum)) {
+		fprintf(stderr, "doff backend: bad symbol table checksum\n");
+		free(symbols);
+		free(data);
+		goto wrong_format;
+	}
+
+	if (doff_internalise_symbols(abfd, symbols, tdata)) {
+		free(symbols);
+		free(data);
+		goto wrong_format;
+	}
+	free(symbols);
+
+	/* We have symbols read in, now churn through sections */
 	if (doff_internalise_sections(abfd, data, tdata)) {
 		free(data);
 		goto unwind;

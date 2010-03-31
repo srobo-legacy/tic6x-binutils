@@ -43,6 +43,9 @@ struct doff_tdata {
 	int max_num_strings;
 	char **string_table;
 	int *string_idx_table;
+
+	int num_syms;
+	asymbol **symbols;
 };
 
 #endif /* _BFD_LIBDOFF_H_ */
