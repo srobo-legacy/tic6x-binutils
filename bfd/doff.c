@@ -752,20 +752,30 @@ doff_bfd_print_private_bfd_data(bfd *abfd, void *what)
 long
 doff_get_symtab_upper_bound(bfd *abfd)
 {
+	struct doff_tdata *tdata;
 
-	UNUSED(abfd);
-	fprintf(stderr, "Implement doff_get_symtab_upper_bound");
-	abort();
+	tdata = abfd->tdata.doff_obj_data;
+	if (tdata->num_syms == 0)
+		return 0;
+
+	return (tdata->num_syms + 1) * sizeof(void *);
+
 }
 
 long
 doff_canonicalize_symtab(bfd *abfd, struct bfd_symbol **symbol)
 {
+	struct doff_tdata *tdata;
 
-	UNUSED(abfd);
-	UNUSED(symbol);
-	fprintf(stderr, "Implement doff_canonicalize_symtab");
-	abort();
+	tdata = abfd->tdata.doff_obj_data;
+
+	/* With some suprising sanity, we can just copy the list of pointers
+	 * from the existing symbol table into the chunk of memory the caller
+	 * allocated. The uncertainty is how exactly this translates back into
+	 * our internal list */
+	memcpy(symbol, tdata->symbols, tdata->num_syms * sizeof(void *));
+	symbol[tdata->num_syms] = NULL;
+	return tdata->num_syms;
 }
 
 struct bfd_symbol *
