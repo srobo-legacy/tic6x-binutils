@@ -45,7 +45,7 @@ struct doff_tdata {
 	int *string_idx_table;
 
 	int num_syms;
-	doff_symbol_internal **symbols;
+	struct doff_symbol_internal **symbols;
 };
 
 #endif /* _BFD_LIBDOFF_H_ */
