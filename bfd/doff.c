@@ -78,7 +78,7 @@ doff_internalise_symbols(bfd *abfd, void *data, struct doff_tdata *tdata)
 {
 	const struct doff_symbol *symbol;
 	asymbol *sym;
-	int i, j, tmp;
+	int i, j, tmp, idx;
 
 	symbol = data;
 
@@ -107,10 +107,17 @@ doff_internalise_symbols(bfd *abfd, void *data, struct doff_tdata *tdata)
 		}
 
 		tdata->symbols[i]->str_table_idx = j;
-		tdata->symbols[i]->sect_idx = bfd_get_16(abfd,&symbol->scn_num);
+		idx = bfd_get_16(abfd,&symbol->scn_num);
+		if (idx >= tdata->num_sections) {
+			fprintf(stderr, "Section number out of range for symbol"
+					" %d\n", i);
+			bfd_set_error(bfd_error_wrong_format);
+			return TRUE;
+		}
+
 		sym->name = (tmp == -1) ? NULL : tdata->string_table[j];
 		sym->value = bfd_get_32(abfd, &symbol->value);
-		sym->section = NULL;		/* Patch this up later */
+		sym->section = tdata->section_data[idx]->section;
 		sym->flags = BSF_NO_FLAGS;	/* XXX - pain */
 
 		symbol++;
@@ -358,9 +365,8 @@ doff_object_p(bfd *abfd)
 	struct doff_checksum_rec checksums;
 	struct doff_tdata *tdata;
 	const bfd_target *target;
-	void *data, *symbols;
+	void *data;
 	unsigned int size;
-	int i;
 
 	preserve.marker = NULL;
 	target = abfd->xvec;
@@ -477,19 +483,22 @@ doff_object_p(bfd *abfd)
 		goto wrong_format;
 	}
 
-	/* Process of internalising sections requires symbols - so read in
-	 * and internalise the symbol table, before internalising sections */
-
-	tdata->num_syms = (uint16_t)bfd_get_16(abfd, &d_hdr.num_syms);
-	size = sizeof(struct doff_symbol) * tdata->num_syms;
-	symbols = bfd_malloc(size);
-	if (symbols == NULL) {
+	/* churn through sections */
+	if (doff_internalise_sections(abfd, data, tdata)) {
 		free(data);
 		goto unwind;
 	}
+	free(data);
 
-	if (bfd_bread(symbols, size, abfd) != (unsigned int)size) {
-		free(symbols);
+
+	tdata->num_syms = (uint16_t)bfd_get_16(abfd, &d_hdr.num_syms);
+	size = sizeof(struct doff_symbol) * tdata->num_syms;
+	data = bfd_malloc(size);
+	if (data == NULL) {
+		goto unwind;
+	}
+
+	if (bfd_bread(data, size, abfd) != (unsigned int)size) {
 		free(data);
 		if (bfd_get_error() != bfd_error_system_call)
 			goto wrong_format;
@@ -497,38 +506,17 @@ doff_object_p(bfd *abfd)
 			goto unwind;
 	}
 
-	if (~(doff_checksum(symbols, size) + checksums.symbol_checksum)) {
+	if (~(doff_checksum(data, size) + checksums.symbol_checksum)) {
 		fprintf(stderr, "doff backend: bad symbol table checksum\n");
-		free(symbols);
 		free(data);
 		goto wrong_format;
 	}
 
-	if (doff_internalise_symbols(abfd, symbols, tdata)) {
-		free(symbols);
+	if (doff_internalise_symbols(abfd, data, tdata)) {
 		free(data);
 		goto wrong_format;
-	}
-	free(symbols);
-
-	/* We have symbols read in, now churn through sections */
-	if (doff_internalise_sections(abfd, data, tdata)) {
-		free(data);
-		goto unwind;
 	}
 	free(data);
-
-	/* Finally, patch up some symbol and section data: they both depend
-	 * on each other, so we need to do this patching at some point anyway */
-	for (i = 0; i < tdata->num_syms; i++) {
-		if (tdata->symbols[i]->sect_idx >= tdata->num_sections) {
-			fprintf(stderr, "Invalid section index in symbol %d",i);
-			goto wrong_format;
-		}
-
-		tdata->symbols[i]->bfd_symbol.section =
-		tdata->section_data[tdata->symbols[i]->sect_idx]->section;
-	}
 
 	bfd_set_start_address(abfd, bfd_get_32(abfd, &d_hdr.entry_point));
 	bfd_preserve_finish(abfd, &preserve);
