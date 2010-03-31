@@ -99,6 +99,7 @@ doff_internalise_symbols(bfd *abfd, void *data, struct doff_tdata *tdata)
 					if (tdata->string_idx_table[j] == tmp)
 						break;
 
+		/* XXX - symbols that are -1 refer to current section */
 		if (tmp != -1 && j == tdata->num_strings) {
 			fprintf(stderr, "Unrecognized string index in symbol");
 			bfd_set_error(bfd_error_bad_value);
