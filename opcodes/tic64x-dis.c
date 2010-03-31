@@ -187,10 +187,9 @@ print_insn_tic64x(bfd_vma addr, struct disassemble_info *info)
 							priv->compact_header,
 							&opcode);
 					if (ret) {
-						fprintf(stderr, "Error scaling "
-							"16 bit instruction: %s"
-							, strerror(ret));
-						return -1;
+						info->fprintf_func(info->stream,
+									"????");
+						return 2;
 					}
 
 					break;
