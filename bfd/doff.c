@@ -327,7 +327,7 @@ doff_internalise_sections(bfd *abfd, const void *sec_data,
 
 		doff_load_raw_sect_data(abfd, sect);
 
-		tmp = SEC_NO_FLAGS;
+		tmp = SEC_IN_MEMORY; /* We always read everything in */
 		if (sect->flags & DOFF_SCN_FLAG_ALLOC)
 			tmp |= SEC_ALLOC;
 		if (sect->flags & DOFF_SCN_FLAG_DOWNLOAD)
@@ -603,16 +603,13 @@ doff_new_section_hook(bfd *abfd, sec_ptr section)
 }
 
 bfd_boolean
-doff_get_section_contents(bfd *abfd, sec_ptr section, void *data,
-				file_ptr offset, bfd_size_type size)
+doff_get_section_contents(bfd *abfd ATTRIBUTE_UNUSED,
+			sec_ptr section ATTRIBUTE_UNUSED,
+			void *data ATTRIBUTE_UNUSED,
+			file_ptr offset ATTRIBUTE_UNUSED,
+			bfd_size_type size ATTRIBUTE_UNUSED)
 {
 
-	UNUSED(abfd);
-	UNUSED(section);
-	UNUSED(data);
-	UNUSED(file);
-	UNUSED(size);
-	fprintf(stderr, "Implement doff_bfd_get_section_contents");
 	abort();
 }
 
