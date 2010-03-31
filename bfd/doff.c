@@ -363,6 +363,7 @@ doff_object_p(bfd *abfd)
 	struct bfd_preserve preserve;
 	struct doff_filehdr d_hdr;
 	struct doff_checksum_rec checksums;
+	file_ptr saved_pos;
 	struct doff_tdata *tdata;
 	const bfd_target *target;
 	void *data;
@@ -483,6 +484,10 @@ doff_object_p(bfd *abfd)
 		goto wrong_format;
 	}
 
+	/* Save position of end of section table, we need it for reading symbols
+	 * later on, and internalise_sections can wander around the file */
+	saved_pos = bfd_tell(abfd);
+
 	/* churn through sections */
 	if (doff_internalise_sections(abfd, data, tdata)) {
 		free(data);
@@ -490,7 +495,7 @@ doff_object_p(bfd *abfd)
 	}
 	free(data);
 
-
+	bfd_seek(abfd, saved_pos, SEEK_SET);
 	tdata->num_syms = (uint16_t)bfd_get_16(abfd, &d_hdr.num_syms);
 	size = sizeof(struct doff_symbol) * tdata->num_syms;
 	data = bfd_malloc(size);
