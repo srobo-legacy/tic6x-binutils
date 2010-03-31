@@ -410,6 +410,11 @@ doff_object_p(bfd *abfd)
 			goto unwind;
 	}
 
+	if (~(doff_checksum(data, size) + checksums.section_checksum)) {
+		fprintf(stderr, "doff backend: bad section table checksum\n");
+		goto wrong_format;
+	}
+
 	if (doff_internalise_sections(abfd, data, tdata)) {
 		free(data);
 		goto unwind;
