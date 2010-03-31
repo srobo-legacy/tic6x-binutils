@@ -412,6 +412,7 @@ doff_object_p(bfd *abfd)
 
 	if (~(doff_checksum(data, size) + checksums.section_checksum)) {
 		fprintf(stderr, "doff backend: bad section table checksum\n");
+		free(data);
 		goto wrong_format;
 	}
 
