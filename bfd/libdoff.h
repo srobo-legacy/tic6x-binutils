@@ -32,7 +32,8 @@ struct doff_section_data {
 
 struct doff_symbol_internal {
 	asymbol bfd_symbol;
-	/* Still don't know what we require here yet */
+	int str_table_idx;
+	int sect_idx;
 };
 
 struct doff_tdata {

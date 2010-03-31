@@ -670,6 +670,9 @@ doff_make_empty_symbol(bfd *abfd)
 	struct doff_symbol_internal *symbol;
 
 	symbol = bfd_zalloc(abfd, sizeof(struct doff_symbol_internal));
+	symbol->str_table_idx = -1;
+	symbol->sect_idx = -1;
+	symbol->bfd_symbol.the_bfd = abfd;
 	return &symbol->bfd_symbol;
 }
 
