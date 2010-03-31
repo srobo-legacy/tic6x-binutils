@@ -367,7 +367,7 @@ doff_object_p(bfd *abfd)
 	struct doff_tdata *tdata;
 	const bfd_target *target;
 	void *data;
-	unsigned int size;
+	unsigned int size, target_id;
 
 	preserve.marker = NULL;
 	target = abfd->xvec;
@@ -524,6 +524,18 @@ doff_object_p(bfd *abfd)
 	free(data);
 
 	bfd_set_start_address(abfd, bfd_get_32(abfd, &d_hdr.entry_point));
+	target_id = bfd_get_16(abfd, &d_hdr.target_id);
+	switch (target_id) {
+	case DOFF_PROC_TMS320C6000:
+		bfd_default_set_arch_mach(abfd, bfd_arch_tic64x, 0);
+		break;
+	default:
+		fprintf(stderr, "Parsed file but found processor type %X: "
+				"chances are it won't work until doff is "
+				"cleaned up to support byte != 8 bits\n",
+				target_id);
+		goto wrong_format;
+	}
 	bfd_preserve_finish(abfd, &preserve);
 	return target;
 
