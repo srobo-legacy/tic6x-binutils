@@ -74,6 +74,51 @@ doff_internalise_strings(bfd *abfd, struct doff_tdata *tdata,
 }
 
 static bfd_boolean
+doff_internalise_symbols(bfd *abfd, void *data, struct doff_tdata *tdata)
+{
+	const struct doff_symbol *symbol;
+	asymbol *sym;
+	int i, j, tmp;
+
+	symbol = data;
+
+	/* We don't yet have sections; patch that up later */
+	tdata->symbols = bfd_zalloc(abfd, sizeof(void *) * tdata->num_syms);
+	if (tdata->symbols == NULL)
+		return TRUE;
+
+	for (i = 0; i < tdata->num_syms; i++) {
+		tdata->symbols[i] = (struct doff_symbol_internal *)
+					doff_make_empty_symbol(abfd);
+		sym = &tdata->symbols[i]->bfd_symbol;
+
+		tmp = bfd_get_32(abfd, &symbol->str_offset);
+		if (tmp != -1)
+			for (j = 0; j < tdata->num_strings; j++)
+				if (tdata->string_table[j])
+					if (tdata->string_idx_table[j] == tmp)
+						break;
+
+		if (tmp != -1 && j == tdata->num_strings) {
+			fprintf(stderr, "Unrecognized string index in symbol");
+			bfd_set_error(bfd_error_bad_value);
+			return TRUE;
+		}
+
+		tdata->symbols[i]->str_table_idx = j;
+		tdata->symbols[i]->sect_idx = bfd_get_16(abfd,&symbol->scn_num);
+		sym->name = (tmp == -1) ? NULL : tdata->string_table[j];
+		sym->value = bfd_get_32(abfd, &symbol->value);
+		sym->section = NULL;		/* Patch this up later */
+		sym->flags = BSF_NO_FLAGS;	/* XXX - pain */
+
+		symbol++;
+	}
+
+	return FALSE;
+}
+
+static bfd_boolean
 doff_load_raw_sect_data(bfd *abfd, struct doff_section_data *sect)
 {
 	struct doff_image_packet fpkt;
