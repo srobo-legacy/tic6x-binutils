@@ -122,9 +122,13 @@ doff_internalise_symbols(bfd *abfd, void *data, struct doff_tdata *tdata)
 			continue;
 		}
 
-		if (idx >= tdata->num_sections) {
+		/* Section numbering starts from 1 in this field, decrement
+		 * to fit with our zero based array */
+		idx--;
+
+		if (idx >= tdata->num_sections || idx < 0) {
 			fprintf(stderr, "Section number out of range for symbol"
-					" %d\n", i);
+					" %d, section %d\n", i, idx);
 			bfd_set_error(bfd_error_wrong_format);
 			return TRUE;
 		}
