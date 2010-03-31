@@ -196,9 +196,11 @@ doff_load_raw_sect_data(bfd *abfd, struct doff_section_data *sect)
 						(unsigned int)ipkt->size)
 			return TRUE;
 
+		/* And collect its checksum */
 		checksum += doff_checksum(raw_data, ipkt->size);
 		tmp = sizeof(struct doff_reloc) * ipkt->num_relocs;
 
+		/* Next, we want relocs, allocate memory */
 		ipkt->relocs = bfd_alloc(abfd, sizeof(arelent*) *
 						ipkt->num_relocs);
 		if (ipkt->relocs == NULL)
@@ -209,11 +211,13 @@ doff_load_raw_sect_data(bfd *abfd, struct doff_section_data *sect)
 		if (relocs == NULL)
 			return TRUE;
 
+		/* read reloc data from file */
 		if (bfd_bread(relocs, tmp, abfd) != (unsigned int)tmp) {
 			free(relocs);
 			return TRUE;
 		}
 
+		/* Collect final checksum, verify it's correct */
 		checksum += doff_checksum(relocs, tmp);
 		if (~checksum != 0) {
 			fprintf(stderr, "Bad checksum for insn packet %d in "
@@ -222,6 +226,7 @@ doff_load_raw_sect_data(bfd *abfd, struct doff_section_data *sect)
 			return TRUE;
 		}
 
+		/* Loop through reloc structs, making our own */
 		for (j = 0; j < ipkt->num_relocs; j++) {
 			ipkt->relocs[j] = bfd_alloc(abfd, sizeof(arelent));
 			if (!ipkt->relocs[j]) {
@@ -241,6 +246,7 @@ doff_load_raw_sect_data(bfd *abfd, struct doff_section_data *sect)
 			ipkt->relocs[j]->address = vaddr;
 			ipkt->relocs[j]->addend = 0; /* FIXME */
 
+			/* Lookup reloc type */
 			reloc_type = bfd_get_16(abfd,&relocs->reloc.r_sym.type);
 			ipkt->relocs[j]->howto = doff_rtype2howto(reloc_type);
 			if (ipkt->relocs[j]->howto == NULL) {
@@ -254,8 +260,10 @@ doff_load_raw_sect_data(bfd *abfd, struct doff_section_data *sect)
 			relocs++;
 		}
 
+		/* Correct reloc pointer for freeing */
 		relocs -= ipkt->num_relocs;
 		free(relocs);
+		/* And accumulate */
 		reloc_count += ipkt->num_relocs;
 	}
 
