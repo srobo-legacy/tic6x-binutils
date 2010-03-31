@@ -134,6 +134,8 @@ doff_internalise_symbols(bfd *abfd, void *data, struct doff_tdata *tdata)
 		}
 
 		sym->section = tdata->section_data[idx]->section;
+
+		symbol++;
 	}
 
 	return FALSE;
