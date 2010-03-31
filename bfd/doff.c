@@ -517,10 +517,10 @@ doff_object_p(bfd *abfd)
 	free(data);
 
 	/* Read symbols - if there are any. */
+	tdata->num_syms = (uint16_t)bfd_get_16(abfd, &d_hdr.num_syms);
 	if (tdata->num_syms != 0) {
 		abfd->flags |= HAS_SYMS;
 		bfd_seek(abfd, saved_pos, SEEK_SET);
-		tdata->num_syms = (uint16_t)bfd_get_16(abfd, &d_hdr.num_syms);
 		size = sizeof(struct doff_symbol) * tdata->num_syms;
 		data = bfd_malloc(size);
 		if (data == NULL) {
