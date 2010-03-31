@@ -92,9 +92,7 @@ doff_load_raw_sect_data(bfd *abfd, struct doff_section_data *sect)
 	 * doesn't get packet headers */
 
 	if (!(sect->flags & DOFF_SCN_FLAG_DOWNLOAD)) {
-		/* Doesn't get downloaded to target, so I speculate has no
-		 * instruction packet */
-		BFD_ASSERT(sect->num_pkts == 0);
+		/* Doesn't get downloaded to target, only raw data */
 		sect->raw_data = bfd_alloc(abfd, sect->size);
 		if (!sect->raw_data)
 			return TRUE;
