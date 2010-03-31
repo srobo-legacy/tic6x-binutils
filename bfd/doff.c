@@ -265,7 +265,8 @@ doff_internalise_sections(bfd *abfd, const void *sec_data,
 			tmp |= SEC_ALLOC;
 		if (sect->flags & DOFF_SCN_FLAG_DOWNLOAD)
 			tmp |= SEC_LOAD;
-/* XXX - set relocs flag */
+		if (sect->num_relocs != 0)
+			tmp |= SEC_RELOC;
 		/* XXX - no readonly flag defined */
 		if ((sect->flags & DOFF_SCN_FLAG_TYPE_MASK)==DOFF_SCN_TYPE_TEXT)
 			tmp |= SEC_CODE;
