@@ -114,10 +114,10 @@ doff_internalise_symbols(bfd *abfd, void *data, struct doff_tdata *tdata)
 		idx = bfd_get_16(abfd,&symbol->scn_num);
 		if (idx == 0 || idx == -1) {
 			/* Special values - meaning absolute and undefined
-			 * respectively. I don't know how to handle these right
-			 * now, would be nice to keep absolute symbols, but
-			 * anyway these never get reported to the user */
-			sym->section = NULL;
+			 * respectively. I don't know how to handle the
+			 * undefined flavour right now, set all of them to be
+			 * in the absolute section. */
+			sym->section = bfd_abs_section_ptr;
 			symbol++;
 			continue;
 		}
