@@ -76,6 +76,12 @@ doff_internalise_strings(bfd *abfd, struct doff_tdata *tdata,
 static bfd_boolean
 doff_load_raw_sect_data(bfd *abfd, struct doff_section_data *sect)
 {
+	struct doff_image_packet fpkt;
+	struct doff_ipacket *ipkt;
+	struct doff_reloc *relocs;
+	void *raw_data;
+	uint32_t checksum;
+	int i, j, tmp, reloc_count;
 
 	/* The actual data in a section is cut up into instruction "packets",
 	 * not execution packets but ~1024 byte chunks which I presume get
@@ -102,9 +108,97 @@ doff_load_raw_sect_data(bfd *abfd, struct doff_section_data *sect)
 		if (bfd_bread(sect->raw_data, sect->size, abfd) != sect->size)
 			return TRUE;
 
+		sect->num_relocs = 0;
 		return bfd_set_section_contents(abfd, sect->section,
 				sect->raw_data, sect->pkt_start, sect->size);
 	}
+
+	reloc_count = 0;
+	sect->insn_packets = bfd_zalloc(abfd, sizeof(struct insn_packet *) *
+							sect->num_pkts);
+	raw_data = bfd_zalloc(abfd, sect->size);
+	sect->raw_data = raw_data;
+
+	/* Seek to actual section data */
+	if (bfd_seek(abfd, sect->pkt_start, SEEK_SET)) {
+		bfd_set_error(bfd_error_file_truncated);
+		return TRUE;
+	}
+
+	for (i = 0; i < sect->num_pkts; i++) {
+		ipkt = bfd_zalloc(abfd, sizeof(struct doff_ipacket));
+		sect->insn_packets[i] = ipkt;
+
+		/* Read instruction packet header */
+		if (bfd_bread(&fpkt, sizeof(fpkt), abfd) != sizeof(fpkt))
+			return TRUE;
+
+		ipkt->size = bfd_get_32(abfd, &fpkt.packet_sz);
+		ipkt->num_relocs = bfd_get_32(abfd, &fpkt.num_relocs);
+		checksum = doff_checksum(&fpkt, sizeof(fpkt));
+
+		/* Read actual packet data in */
+		if (bfd_bread(raw_data, ipkt->size, abfd) !=
+						(unsigned int)ipkt->size)
+			return TRUE;
+
+		checksum += doff_checksum(raw_data, ipkt->size);
+		tmp = sizeof(struct doff_reloc) * ipkt->num_relocs;
+
+		ipkt->relocs = bfd_alloc(abfd, sizeof(arelent*) *
+						ipkt->num_relocs);
+		if (ipkt->relocs == NULL)
+			return TRUE;
+
+		relocs = bfd_malloc(tmp);
+
+		if (relocs == NULL)
+			return TRUE;
+
+		if (bfd_bread(relocs, tmp, abfd) != (unsigned int)tmp) {
+			free(relocs);
+			return TRUE;
+		}
+
+		checksum += doff_checksum(relocs, tmp);
+		if (~checksum != 0) {
+			fprintf(stderr, "Bad checksum for insn packet %d in "
+					"section %s\n", i, sect->section->name);
+			bfd_set_error(bfd_error_bad_value);
+			return TRUE;
+		}
+
+		for (j = 0; j < ipkt->num_relocs; j++) {
+			ipkt->relocs[j] = bfd_alloc(abfd, sizeof(arelent));
+			if (!ipkt->relocs[j]) {
+				relocs -= j;
+				free(relocs);
+				return TRUE;
+			}
+
+			/* FIXME: parse symbol table and other foo */
+			ipkt->relocs[j]->sym_ptr_ptr = NULL;
+			ipkt->relocs[j]->address =
+						relocs->vaddr - sect->load_addr;
+			ipkt->relocs[j]->addend = 0;
+			ipkt->relocs[j]->howto = NULL;
+
+			fprintf(stderr, "Saw reloc with r_type %X\n",
+						relocs->reloc.r_sym.type);
+
+			relocs++;
+		}
+
+		relocs -= ipkt->num_relocs;
+		free(relocs);
+		reloc_count += ipkt->num_relocs;
+	}
+
+	/* End of reading ipkts */
+	sect->num_relocs = reloc_count;
+
+	return bfd_set_section_contents(abfd, sect->section,
+			sect->raw_data, sect->pkt_start, sect->size);
 }
 
 static bfd_boolean
