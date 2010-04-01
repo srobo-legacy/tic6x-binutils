@@ -1081,13 +1081,12 @@ doff_bfd_gc_sections(bfd *abfd, struct bfd_link_info *info)
 }
 
 bfd_boolean
-doff_bfd_merge_sections(bfd *abfd, struct bfd_link_info *info)
+doff_bfd_merge_sections(bfd *abfd ATTRIBUTE_UNUSED,
+			struct bfd_link_info *info ATTRIBUTE_UNUSED)
 {
 
-	UNUSED(abfd);
-	UNUSED(info);
-	fprintf(stderr, "Implement doff_bfd_merge_sections");
-	abort();
+	/* There's also nothing special to do here */
+	return TRUE;
 }
 
 bfd_boolean
