@@ -692,7 +692,7 @@ doff_bfd_merge_private_bfd_data(bfd *abfd ATTRIBUTE_UNUSED,
 	 * bfd is doff, we still don't care, there's no special data behind
 	 * it, save perhaps the source file name */
 	/* XXX - save source file name... */
-	return FALSE;
+	return TRUE;
 }
 
 #if 0
