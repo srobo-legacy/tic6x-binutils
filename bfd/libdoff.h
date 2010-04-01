@@ -37,6 +37,7 @@ struct doff_symbol_internal {
 };
 
 struct doff_tdata {
+	bfd *the_bfd;
 	int num_sections;
 	struct doff_section_data **section_data;
 

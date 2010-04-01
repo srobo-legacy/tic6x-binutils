@@ -607,6 +607,7 @@ doff_mkobject(bfd *abfd)
 	if (abfd->tdata.doff_obj_data == NULL)
 		return FALSE;
 
+	abfd->tdata.doff_obj_data->the_bfd = abfd;
 	return TRUE;
 }
 
