@@ -683,13 +683,16 @@ doff_bfd_copy_private_bfd_data(bfd *abfd, bfd *another_bfd)
 }
 
 bfd_boolean
-doff_bfd_merge_private_bfd_data(bfd *abfd, bfd *another_bfd)
+doff_bfd_merge_private_bfd_data(bfd *abfd ATTRIBUTE_UNUSED,
+				bfd *another_bfd ATTRIBUTE_UNUSED)
 {
 
-	UNUSED(abfd);
-	UNUSED(another_bfd);
-	fprintf(stderr, "Implement doff_bfd_merge_private_bfd_data");
-	abort();
+	/* On the whole when we're linking, the other bfd is going to be coff
+	 * for which we probably should be stiring the internals. If the other
+	 * bfd is doff, we still don't care, there's no special data behind
+	 * it, save perhaps the source file name */
+	/* XXX - save source file name... */
+	return FALSE;
 }
 
 #if 0
