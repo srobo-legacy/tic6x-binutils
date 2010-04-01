@@ -1014,18 +1014,17 @@ struct bfd_link_hash_table *
 doff_bfd_link_hash_table_create(bfd *abfd)
 {
 
-	UNUSED(abfd);
-	fprintf(stderr, "Implement doff_bfd_link_hash_table_create");
-	abort();
+	/* We have no file dependant cares about the link hash table */
+	return _bfd_generic_link_hash_table_create(abfd);
 }
 
 void
 doff_bfd_link_hash_table_free(struct bfd_link_hash_table *table)
 {
 
-	UNUSED(table);
-	fprintf(stderr, "Implement doff_bfd_link_hash_table_free");
-	abort();
+	/* No file dependant concern here either */
+	_bfd_generic_link_hash_table_free(table);
+	return;
 }
 
 bfd_boolean
