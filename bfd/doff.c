@@ -112,12 +112,12 @@ doff_internalise_symbols(bfd *abfd, void *data, struct doff_tdata *tdata)
 
 		tdata->symbols[i]->str_table_idx = j;
 		idx = bfd_get_16(abfd,&symbol->scn_num);
-		if (idx == 0 || idx == -1) {
-			/* Special values - meaning absolute and undefined
-			 * respectively. I don't know how to handle the
-			 * undefined flavour right now, set all of them to be
-			 * in the absolute section. */
+		if (idx == 0) {
 			sym->section = bfd_abs_section_ptr;
+			symbol++;
+			continue;
+		} else if (idx == -1) {
+			sym->section = bfd_und_section_ptr;
 			symbol++;
 			continue;
 		}
