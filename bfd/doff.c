@@ -1052,6 +1052,64 @@ doff_bfd_link_just_syms(asection *section, struct bfd_link_info *info)
 	abort();
 }
 
+static bfd_boolean
+collect_syms(struct bfd_link_hash_entry *entry, void *t)
+{
+	struct doff_tdata *tdata;
+	struct doff_symbol_internal *sym;
+	char *name;
+	int len;
+
+	tdata = t;
+	switch (entry->type) {
+	case bfd_link_hash_defined:
+	case bfd_link_hash_undefined:
+		sym = (struct doff_symbol_internal *)
+					doff_make_empty_symbol(tdata->the_bfd);
+		if (sym == NULL)
+			return FALSE;
+
+		len = strlen(entry->root.string);
+		if (len == 0) {
+			fprintf(stderr, "Symbol with no name\n");
+			return FALSE;
+		}
+
+		len++;
+		name = bfd_alloc(tdata->the_bfd, len);
+		strncpy(name, entry->root.string, len);
+		sym->bfd_symbol.name = name;
+		sym->bfd_symbol.flags = BSF_NO_FLAGS;
+		/* XXX - set flags */
+
+		if (entry->type == bfd_link_hash_undefined) {
+			sym->bfd_symbol.value = 0;
+			sym->bfd_symbol.section = bfd_und_section_ptr;
+		} else {
+			sym->bfd_symbol.value = entry->u.def.value;
+			sym->bfd_symbol.section = entry->u.def.section;
+		}
+
+		tdata->symbols[tdata->num_syms++] = sym;
+		break;
+
+	case bfd_link_hash_defweak:
+	case bfd_link_hash_undefweak:
+	case bfd_link_hash_common:
+	case bfd_link_hash_new:
+		fprintf(stderr, "doff: probably should be supported but "
+				"unimplemented symbol type %d\n", entry->type);
+		return FALSE;
+
+	case bfd_link_hash_warning:
+	case bfd_link_hash_indirect:
+		fprintf(stderr, "doff: Don't know how to handle warning or "
+				"indirect classed symbols\n");
+		return FALSE;
+	}
+	return TRUE;
+}
+
 bfd_boolean
 doff_bfd_final_link(bfd *abfd, struct bfd_link_info *info)
 {
