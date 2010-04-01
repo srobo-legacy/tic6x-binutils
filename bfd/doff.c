@@ -4,6 +4,7 @@
 
 #include "sysdep.h"
 #include "bfd.h"
+#include "bfdlink.h"
 #include "libbfd.h"
 #include "libdoff.h"
 /* inclusion protection please? #include "libbfd.h" */
@@ -1054,10 +1055,37 @@ doff_bfd_link_just_syms(asection *section, struct bfd_link_info *info)
 bfd_boolean
 doff_bfd_final_link(bfd *abfd, struct bfd_link_info *info)
 {
+	struct doff_tdata *tdata;
+	int sz;
+	/* Linker or user has munged symbols and relocs to their liking; nuke
+	 * whatever private backend info we have remaining, and then regenerate
+	 * it from the remaining symbols, relocs and sections */
 
-	UNUSED(abfd);
-	UNUSED(info);
-	fprintf(stderr, "Implement doff_bfd_final_link");
+	tdata = abfd->tdata.doff_obj_data;
+	tdata->num_sections = 0;
+	tdata->section_data = NULL; /* bfd_alloc'd, released some other time */
+	tdata->num_strings = 0;
+	tdata->max_num_strings = 0;
+	tdata->string_table = NULL;
+	tdata->string_idx_table = NULL; /* The same */
+	tdata->num_syms = 0;
+	tdata->symbols = NULL; /* And again */
+
+	/* num_syms is used as an index by collect_syms; leave it at zero */
+	sz = info->hash->table.count;
+	tdata->symbols = bfd_alloc(abfd, sz * sizeof(void *));
+	if (tdata->symbols == NULL)
+		return FALSE;
+
+	/* Aarrgh. bfd_link_hash_traverse doesn't return the error code, it's
+	 * discarded. So, check for errors by telling whether or not
+	 * collect_syms has reached the number of existing symbols */
+	bfd_link_hash_traverse(info->hash, collect_syms, tdata);
+	if (tdata->num_syms != sz)
+		return FALSE;
+
+	/* not implemented just yet */
+	__asm__("int $3");
 	abort();
 }
 
