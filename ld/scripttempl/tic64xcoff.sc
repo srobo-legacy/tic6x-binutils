@@ -1,6 +1,6 @@
 # default linker script for tic64x.
 # On the whole copied from tic54x version of this file. We can customise later.
-test -z "$ENTRY" && ENTRY=_c_int00
+test -z "$ENTRY" && ENTRY=_start
 
 cat <<EOF
 OUTPUT_FORMAT("${OUTPUT_FORMAT}")
