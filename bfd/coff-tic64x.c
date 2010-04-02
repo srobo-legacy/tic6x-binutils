@@ -271,7 +271,7 @@ const bfd_target tic64x_coff2_vec =
 const bfd_target tic64x_doff_vec =
 {
 	"doff-c64x",
-	bfd_target_doff_flavour,
+	bfd_target_coff_flavour,
 	BFD_ENDIAN_LITTLE,
 	BFD_ENDIAN_LITTLE,	/* Supports big too; no time right now */
 	(HAS_RELOC | EXEC_P | HAS_LINENO | HAS_DEBUG | HAS_SYMS | HAS_LOCALS
