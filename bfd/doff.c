@@ -1142,9 +1142,7 @@ doff_bfd_final_link(bfd *abfd, struct bfd_link_info *info)
 	if (tdata->num_syms != sz)
 		return FALSE;
 
-	/* not implemented just yet */
-	__asm__("int $3");
-	abort();
+	return TRUE;
 }
 
 bfd_boolean
