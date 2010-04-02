@@ -394,6 +394,10 @@ doff_internalise_sections(bfd *abfd, const void *sec_data,
 		if (!bfd_set_section_flags(abfd, sect->section, tmp))
 			return TRUE;
 
+		/* XXX - I assume this is desireable somehow, don't see a
+		 * routine to set it though */
+		sect->section->reloc_count = sect->num_relocs;
+
 		scn++;
 	}
 
