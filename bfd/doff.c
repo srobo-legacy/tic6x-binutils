@@ -9,6 +9,7 @@
 #include "libdoff.h"
 /* inclusion protection please? #include "libbfd.h" */
 #include <coff/doff.h>
+#include <coff/internal.h>
 
 #define UNUSED(x) ((x) = (x))
 
@@ -612,12 +613,86 @@ doff_mkobject(bfd *abfd)
 	return TRUE;
 }
 
+static void
+doff_ingest_section(bfd *abfd, asection *sect, void *t)
+{
+	struct internal_reloc *coff_relocs, *iter_relocs **saved;
+	struct bfd_link_order *lo;
+	struct doff_tdata *tdata;
+	asection *src_sect;
+	bfd_vma upper_addr, lower_addr;
+	int i, lo_relocs;
+
+	tdata = t;
+	for (lo = sect->map_head.link_order; lo != NULL; lo = lo->next) {
+		switch (lo->type) {
+		case bfd_indirect_link_order:
+			/* So, we load a chunk of data and associated relocs
+			 * from the target section. Which is coff, or at least
+			 * should be, so we'll use coffs reloc internaliser
+			 * for eating these. */
+			/* XXX - need to insert a check that it *is* coff and
+			 * not, say, doff... however due to the linker refusing
+			 * to link differing file format flavours, we have to
+			 * masquerade as coff all the time. Disgusting. */
+			src_sect = lo->u.indirect.section;
+			coff_relocs = bfd_malloc(src_sect->num_relocs *
+					sizeof(struct internal_reloc));
+			if (coff_relocs == NULL) {
+				free(coff_relocs);
+				abort(); /* Cleanup later */
+			}
+
+			if (_bfd_coff_read_internal_relocs(src_sect->owner,
+						src_sect, FALSE, NULL, TRUE,
+						coff_relocs) == NULL) {
+				free(coff_relocs);
+				abort();
+			}
+
+			saved = bfd_malloc(src_sect->num_relocs*sizeof(void*));
+			if (saved == NULL) {
+				free(coff_relocs);
+				abort();
+			}
+			memset(saved, 0, src_sect->num_relocs * sizeof(void*));
+
+			/* Look through this list, and pick out relocs that
+			 * we should be interested in */
+			lo_relocs = 0;
+			iter_relocs = coff_relocs;
+			lower_addr = sect->vma + lo->offset;
+			upper_addr = lower_addr + lo->size;
+			for (i = 0; i < src_sect->num_relocs; i++) {
+				if (iter_relocs->r_vaddr >= lower_addr &&
+					iter_relocs->r_vaddr < upper_addr) {
+					saved[lo_relocs++] = iter_relocs;
+				}
+				iter_relocs++;
+			}
+
+	
+		case bfd_undefined_link_order:
+		case bfd_data_link_order;
+		case bfd_section_reloc_link_order:
+		case bfd_symbol_reloc_link_order:
+			fprintf(stderr, "Can't cope with link order type of "
+					"%d in doff\n", lo->type);
+			abort();
+		}
+
+	return;
+}
+
 bfd_boolean
 doff_write_object_contents(bfd *abfd)
 {
+	struct doff_tdata *tdata;
 
-	UNUSED(abfd);
-	fprintf(stderr, "Implement doff_write_contents");
+	tdata = abfd->tdata.doff_obj_data;
+	bfd_map_over_sections(abfd, doff_ingest_section, tdata);
+
+	__asm__("int $3");
 	abort();
 }
 
