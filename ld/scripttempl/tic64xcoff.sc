@@ -8,8 +8,13 @@ OUTPUT_ARCH("${OUTPUT_ARCH}")
 
 MEMORY
 {
-	/*PAGE 0 : */ prog (RXI) : ORIGIN = 0x00000080, LENGTH = 0xFF00
-	/*PAGE 1 : */ data (W) : ORIGIN = 0x01000080, LENGTH = 0xFF80
+	/* Given that tic64x has an MMU, it can configure memory wherever it
+	 * likes, and for things like OMAP/dspbridge the loader will relocate
+	 * sections to wherever is good - so make all the address space data
+	 * and code. If someone uses this to load directly onto the dsp, they
+	 * (should) be using their own linker script anyway */
+	prog (RXI) : ORIGIN = 0x00000000, LENGTH = 0xFFFFFFFF
+	data (W) : ORIGIN = 0x00000000, LENGTH = 0xFFFFFFFF
 }
 
 ${RELOCATING+ENTRY (${ENTRY})}
