@@ -633,6 +633,7 @@ doff_ingest_section(bfd *abfd, asection *sect, void *t)
 	struct internal_reloc *coff_relocs, *iter_relocs, **saved;
 	struct bfd_link_order *lo;
 	struct doff_tdata *tdata;
+	void *data;
 	asection *src_sect;
 	bfd_vma upper_addr, lower_addr;
 	unsigned int i, lo_relocs;
@@ -684,7 +685,30 @@ doff_ingest_section(bfd *abfd, asection *sect, void *t)
 				}
 				iter_relocs++;
 			}
-			__asm__("int $3"); /* Not this far yet */
+
+			data = bfd_malloc(lo->size);
+			if (!data) {
+				free(coff_relocs);
+				free(saved);
+				abort();
+			}
+
+			if (!bfd_get_section_contents(abfd, src_sect, data, 0,
+								lo->size)) {
+				free(coff_relocs);
+				free(saved);
+				free(data0);
+				abort();
+			}
+
+			if (!bfd_set_section_contents(abfd, sect, data,
+							lo->offset, lo->size)) {
+				free(coff_relocs);
+				free(saved);
+				free(data0);
+				abort();
+			}
+
 
 		case bfd_undefined_link_order:
 		case bfd_data_link_order:
