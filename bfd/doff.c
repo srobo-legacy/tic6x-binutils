@@ -246,6 +246,10 @@ doff_load_raw_sect_data(bfd *abfd, struct doff_section_data *sect,
 	}
 
 	raw_data = bfd_zalloc(abfd, raw_size);
+	if (raw_data == NULL)
+		return TRUE;
+
+	section->contents = raw_data;
 
 	/* Seek to actual section data */
 	if (bfd_seek(abfd, file_offset, SEEK_SET)) {
@@ -320,15 +324,13 @@ doff_load_raw_sect_data(bfd *abfd, struct doff_section_data *sect,
 	}
 
 	/* End of reading ipkts */
-	section->contents = raw_data;
-
 	if (sect->num_relocs != 0) {
 		abfd->flags |= HAS_RELOC;
 		section->reloc_count = sect->num_relocs;
 	}
 
 	return bfd_set_section_contents(abfd, sect->section,
-			raw_data, file_offset, raw_size);
+			section->contents, file_offset, raw_size);
 }
 
 static bfd_boolean
