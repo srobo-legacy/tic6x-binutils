@@ -358,6 +358,7 @@ doff_internalise_sections(bfd *abfd, const void *sec_data,
 		name = (sect->name_str_idx == -1) ? "<un-named section>"
 				: tdata->string_table[sect->name_str_idx];
 		sect->section = bfd_make_section_anyway(abfd, name);
+		sect->section->used_by_bfd = sect;
 		if (!bfd_set_section_vma(abfd, sect->section, sect->load_addr))
 			return TRUE;
 
@@ -753,8 +754,47 @@ doff_bfd_free_cached_info(bfd *abfd)
 bfd_boolean
 doff_new_section_hook(bfd *abfd, sec_ptr section)
 {
+	struct doff_section_data *sect;
+	struct doff_tdata *tdata;
+	void *data;
+	int num_sects;
 
-	/* I can't currently imagine what to do with this, come back later */
+	tdata = abfd->tdata.doff_obj_data;
+	num_sects = tdata->num_sections + 1;
+	data = bfd_realloc(abfd, (num_sects + 1) * sizeof (void *));
+	if (data == NULL)
+		return FALSE;
+
+	tdata->section_data = data;
+	tdata->num_sections = num_sects;
+
+	sect = bfd_alloc(abfd, sizeof(struct doff_section_data));
+	if (!sect) {
+		tdata->num_sections--;
+		return FALSE;
+	}
+
+	tdata->section_data[num_sects - 1] = sect;
+
+	/* Now, it's becoming obvious that doff doesn't have anything
+	 * sufficiently complicated or "rich" enough to live outside of the
+	 * canonical bfd format, so we can probably start moving away from using
+	 * these internal data structs. For now, fill stuff out with blanks */
+	sect->name_str_idx = -1;
+	sect->prog_addr = -1;
+	sect->load_addr = -1;
+	sect->size = -1;
+	sect->flags = 0;
+	sect->pkt_start = -1;
+	sect->num_pkts = 0;
+	sect->section = section;
+	sect->num_relocs = 0;
+	sect->max_num_relocs = 0;
+	sect->relocs = NULL;
+	sect->raw_data = NULL;
+
+	section->used_by_bfd = sect;
+
 	return _bfd_generic_new_section_hook(abfd, section);
 }
 
