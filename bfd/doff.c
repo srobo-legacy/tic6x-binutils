@@ -335,7 +335,7 @@ doff_load_raw_sect_data(bfd *abfd, struct doff_section_data *sect,
 }
 
 static bfd_boolean
-doff_internalise_sections(bfd *abfd, const void *sec_data,
+doff_internalise_sections(bfd *abfd, const void *sec_data, int num_sections,
 			struct doff_tdata *tdata)
 {
 	const char *name;
@@ -346,14 +346,14 @@ doff_internalise_sections(bfd *abfd, const void *sec_data,
 	int i, j, stroffset, tmp, num_pkts;
 
 	scn = sec_data;
-	tdata->section_data = bfd_zalloc(abfd, tdata->num_sections *
+	tdata->section_data = bfd_zalloc(abfd, num_sections *
 					sizeof(struct doff_section_data));
 	if (tdata->section_data == NULL) {
 		bfd_set_error(bfd_error_no_memory);
 		return TRUE;
 	}
 
-	for (i = 0; i < tdata->num_sections; i++) {
+	for (i = 0; i < num_sections; i++) {
 		sect = bfd_zalloc(abfd, sizeof(struct doff_section_data));
 		if (sect == NULL) {
 			bfd_set_error(bfd_error_no_memory);
@@ -433,6 +433,7 @@ doff_object_p(bfd *abfd)
 	const bfd_target *target;
 	void *data;
 	unsigned int size, target_id;
+	int num_sections;
 
 	preserve.marker = NULL;
 	target = abfd->xvec;
@@ -525,16 +526,18 @@ doff_object_p(bfd *abfd)
 	free(data);
 
 	/* Now read section table - it's immediately after string table */
-	tdata->num_sections = (uint16_t)bfd_get_16(abfd, &d_hdr.num_scns);
-	if (tdata->num_sections > 0x1000) {
+	tdata->section_data = NULL;
+	tdata->num_sections = 0;
+	num_sections = (uint16_t)bfd_get_16(abfd, &d_hdr.num_scns);
+	if (num_sections > 0x1000) {
 		fprintf(stderr, "doff backend: oversized section num\n");
 		goto wrong_format;
-	} else if (tdata->num_sections == 0) {
+	} else if (num_sections == 0) {
 		fprintf(stderr, "doff file with zero sections\n");
 		goto wrong_format;
 	}
 
-	size = tdata->num_sections * sizeof(struct doff_scnhdr);
+	size = num_sections * sizeof(struct doff_scnhdr);
 	data = bfd_malloc(size);
 	if (!data) {
 		bfd_set_error(bfd_error_no_memory);
@@ -560,7 +563,7 @@ doff_object_p(bfd *abfd)
 	saved_pos = bfd_tell(abfd);
 
 	/* churn through sections */
-	if (doff_internalise_sections(abfd, data, tdata)) {
+	if (doff_internalise_sections(abfd, data, num_sections, tdata)) {
 		free(data);
 		goto unwind;
 	}
