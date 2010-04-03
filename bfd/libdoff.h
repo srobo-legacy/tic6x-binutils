@@ -41,6 +41,9 @@ struct doff_tdata {
 
 	int num_syms;
 	struct doff_symbol_internal **symbols;
+
+	/* Temporary holder, only valid within doff_bfd_final_link */
+	struct bfd_link_info *link_info;
 };
 
 #endif /* _BFD_LIBDOFF_H_ */

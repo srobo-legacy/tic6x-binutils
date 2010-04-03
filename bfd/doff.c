@@ -724,12 +724,9 @@ doff_ingest_section(bfd *abfd, asection *sect, void *t)
 bfd_boolean
 doff_write_object_contents(bfd *abfd)
 {
-	struct doff_tdata *tdata;
 
-	tdata = abfd->tdata.doff_obj_data;
-	bfd_map_over_sections(abfd, doff_ingest_section, tdata);
-
-	__asm__("int $3");
+	UNUSED(abfd);
+	fprintf(stderr, "Implement doff_write_object_contents\n");
 	abort();
 }
 
@@ -1254,6 +1251,9 @@ doff_bfd_final_link(bfd *abfd, struct bfd_link_info *info)
 	if (tdata->num_syms != sz)
 		return FALSE;
 
+	/* Now, actually do some linking */
+	tdata->link_info = info;
+	bfd_map_over_sections(abfd, doff_ingest_section, tdata);
 	return TRUE;
 }
 
