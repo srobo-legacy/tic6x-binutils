@@ -329,8 +329,9 @@ doff_load_raw_sect_data(bfd *abfd, struct doff_section_data *sect,
 		section->reloc_count = sect->num_relocs;
 	}
 
-	return bfd_set_section_contents(abfd, sect->section,
-			section->contents, file_offset, raw_size);
+	section->size = raw_size;
+	section->rawsize = raw_size;
+	return FALSE;
 }
 
 static bfd_boolean
