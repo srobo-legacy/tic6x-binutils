@@ -338,6 +338,7 @@ static bfd_boolean
 doff_internalise_sections(bfd *abfd, const void *sec_data, int num_sections,
 			struct doff_tdata *tdata)
 {
+	asection *section;
 	const char *name;
 	const struct doff_scnhdr *scn;
 	struct doff_section_data *sect;
@@ -346,37 +347,23 @@ doff_internalise_sections(bfd *abfd, const void *sec_data, int num_sections,
 	int i, j, stroffset, tmp, num_pkts;
 
 	scn = sec_data;
-	tdata->section_data = bfd_zalloc(abfd, num_sections *
-					sizeof(struct doff_section_data));
-	if (tdata->section_data == NULL) {
-		bfd_set_error(bfd_error_no_memory);
-		return TRUE;
-	}
-
 	for (i = 0; i < num_sections; i++) {
-		sect = bfd_zalloc(abfd, sizeof(struct doff_section_data));
-		if (sect == NULL) {
-			bfd_set_error(bfd_error_no_memory);
-			return TRUE;
-		}
-
-		tdata->section_data[i] = sect;
-
 		/* Find index of section name in str table */
 		stroffset = bfd_get_32(abfd, &scn->str_offset);
 		for (j = 0; j < tdata->num_strings; j++)
 			if (tdata->string_idx_table[j] == stroffset)
 				break;
 
+		name = (j == -1) ? "" : tdata->string_table[j];
+
+		section = bfd_make_section_anyway(abfd, name);
+		sect = section->used_by_bfd;
+
 		/* Read other fields */
 		sect->flags = bfd_get_16(abfd, &scn->flags);
 		raw_size = bfd_get_32(abfd, &scn->size);
 		file_offset = bfd_get_32(abfd, &scn->first_pkt_offset);
 		num_pkts = bfd_get_32(abfd, &scn->num_pkts);
-		name = (j == -1) ? "" : tdata->string_table[j];
-
-		sect->section = bfd_make_section_anyway(abfd, name);
-		sect->section->used_by_bfd = sect;
 
 		if (!bfd_set_section_vma(abfd, sect->section,
 					bfd_get_32(abfd, &scn->load_addr)))
