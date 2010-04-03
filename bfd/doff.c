@@ -628,86 +628,98 @@ doff_mkobject(bfd *abfd)
 }
 
 static void
-doff_ingest_section(bfd *abfd, asection *sect, void *t)
+doff_ingest_link_order(bfd *abfd, asection *out_sect, asection * in_sect,
+			struct bfd_link_order *lo, struct doff_tdata *tdata)
 {
 	struct internal_reloc *coff_relocs, *iter_relocs, **saved;
-	struct bfd_link_order *lo;
-	struct doff_tdata *tdata;
 	void *data;
-	asection *src_sect;
 	bfd_vma upper_addr, lower_addr;
 	unsigned int i, lo_relocs;
+
+	/* So, we load a chunk of data and associated relocs
+	 * from the target section. Which is coff, or at least
+	 * should be, so we'll use coffs reloc internaliser
+	 * for eating these. */
+	/* XXX - need to insert a check that it *is* coff and
+	 * not, say, doff... however due to the linker refusing
+	 * to link differing file format flavours, we have to
+	 * masquerade as coff all the time. Disgusting. */
+	coff_relocs = bfd_malloc(in_sect->reloc_count *
+			sizeof(struct internal_reloc));
+	if (coff_relocs == NULL) {
+		free(coff_relocs);
+		abort(); /* Cleanup later */
+	}
+
+	if (_bfd_coff_read_internal_relocs(in_sect->owner,
+				in_sect, FALSE, NULL, TRUE,
+				coff_relocs) == NULL) {
+		free(coff_relocs);
+		abort();
+	}
+
+	saved = bfd_malloc(in_sect->reloc_count*sizeof(void*));
+	if (saved == NULL) {
+		free(coff_relocs);
+		abort();
+	}
+	memset(saved, 0, in_sect->reloc_count * sizeof(void*));
+
+	/* Look through this list, and pick out relocs that
+	 * we should be interested in */
+	lo_relocs = 0;
+	iter_relocs = coff_relocs;
+	lower_addr = out_sect->vma + lo->offset;
+	upper_addr = lower_addr + lo->size;
+	for (i = 0; i < in_sect->reloc_count; i++) {
+		if (iter_relocs->r_vaddr >= lower_addr &&
+			iter_relocs->r_vaddr < upper_addr) {
+			saved[lo_relocs++] = iter_relocs;
+		}
+		iter_relocs++;
+	}
+
+	data = bfd_malloc(lo->size);
+	if (!data) {
+		free(coff_relocs);
+		free(saved);
+		abort();
+	}
+
+	if (!bfd_get_section_contents(abfd, in_sect, data, 0,
+						lo->size)) {
+		free(coff_relocs);
+		free(saved);
+		free(data);
+		abort();
+	}
+
+	if (!bfd_set_section_contents(abfd, out_sect, data,
+					lo->offset, lo->size)) {
+		free(coff_relocs);
+		free(saved);
+		free(data);
+		abort();
+	}
+
+	/* ENOTYET */
+	UNUSED(tdata);
+	abort();
+}
+
+static void
+doff_ingest_section(bfd *abfd, asection *sect, void *t)
+{
+	struct bfd_link_order *lo;
+	struct doff_tdata *tdata;
 
 	tdata = t;
 	for (lo = sect->map_head.link_order; lo != NULL; lo = lo->next) {
 		switch (lo->type) {
 		case bfd_indirect_link_order:
-			/* So, we load a chunk of data and associated relocs
-			 * from the target section. Which is coff, or at least
-			 * should be, so we'll use coffs reloc internaliser
-			 * for eating these. */
-			/* XXX - need to insert a check that it *is* coff and
-			 * not, say, doff... however due to the linker refusing
-			 * to link differing file format flavours, we have to
-			 * masquerade as coff all the time. Disgusting. */
-			src_sect = lo->u.indirect.section;
-			coff_relocs = bfd_malloc(src_sect->reloc_count *
-					sizeof(struct internal_reloc));
-			if (coff_relocs == NULL) {
-				free(coff_relocs);
-				abort(); /* Cleanup later */
-			}
-
-			if (_bfd_coff_read_internal_relocs(src_sect->owner,
-						src_sect, FALSE, NULL, TRUE,
-						coff_relocs) == NULL) {
-				free(coff_relocs);
-				abort();
-			}
-
-			saved = bfd_malloc(src_sect->reloc_count*sizeof(void*));
-			if (saved == NULL) {
-				free(coff_relocs);
-				abort();
-			}
-			memset(saved, 0, src_sect->reloc_count * sizeof(void*));
-
-			/* Look through this list, and pick out relocs that
-			 * we should be interested in */
-			lo_relocs = 0;
-			iter_relocs = coff_relocs;
-			lower_addr = sect->vma + lo->offset;
-			upper_addr = lower_addr + lo->size;
-			for (i = 0; i < src_sect->reloc_count; i++) {
-				if (iter_relocs->r_vaddr >= lower_addr &&
-					iter_relocs->r_vaddr < upper_addr) {
-					saved[lo_relocs++] = iter_relocs;
-				}
-				iter_relocs++;
-			}
-
-			data = bfd_malloc(lo->size);
-			if (!data) {
-				free(coff_relocs);
-				free(saved);
-				abort();
-			}
-
-			if (!bfd_get_section_contents(abfd, src_sect, data, 0,
-								lo->size)) {
-				free(coff_relocs);
-				free(saved);
-				free(data0);
-				abort();
-			}
-
-			if (!bfd_set_section_contents(abfd, sect, data,
-							lo->offset, lo->size)) {
-				free(coff_relocs);
-				free(saved);
-				free(data0);
-				abort();
-			}
+			doff_ingest_link_order(abfd, sect,
+					lo->u.indirect.section, lo, tdata);
+			break;
 
 
 		case bfd_undefined_link_order:
