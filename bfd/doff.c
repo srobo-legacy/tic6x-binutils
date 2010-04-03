@@ -1281,14 +1281,12 @@ doff_bfd_final_link(bfd *abfd, struct bfd_link_info *info)
 	 * it from the remaining symbols, relocs and sections */
 
 	tdata = abfd->tdata.doff_obj_data;
-	tdata->num_sections = 0;
-	tdata->section_data = NULL; /* bfd_alloc'd, released some other time */
 	tdata->num_strings = 0;
 	tdata->max_num_strings = 0;
 	tdata->string_table = NULL;
-	tdata->string_idx_table = NULL; /* The same */
+	tdata->string_idx_table = NULL; /* Doesn't exist, or was bfd_alloc'd */
 	tdata->num_syms = 0;
-	tdata->symbols = NULL; /* And again */
+	tdata->symbols = NULL; /* The same */
 
 	/* num_syms is used as an index by collect_syms; leave it at zero */
 	sz = info->hash->table.count;
