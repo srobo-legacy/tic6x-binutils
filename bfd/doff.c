@@ -627,84 +627,68 @@ doff_mkobject(bfd *abfd)
 	return TRUE;
 }
 
-static void
+static bfd_boolean
 doff_ingest_link_order(bfd *abfd, asection *out_sect, asection * in_sect,
 			struct bfd_link_order *lo, struct doff_tdata *tdata)
 {
-	struct internal_reloc *coff_relocs, *iter_relocs, **saved;
+	asymbol **symtab;
+	arelent **relocs;
 	void *data;
-	bfd_vma upper_addr, lower_addr;
-	unsigned int i, lo_relocs;
+	long symtab_size, reloc_size;
 
-	/* So, we load a chunk of data and associated relocs
-	 * from the target section. Which is coff, or at least
-	 * should be, so we'll use coffs reloc internaliser
-	 * for eating these. */
-	/* XXX - need to insert a check that it *is* coff and
-	 * not, say, doff... however due to the linker refusing
-	 * to link differing file format flavours, we have to
-	 * masquerade as coff all the time. Disgusting. */
-	coff_relocs = bfd_malloc(in_sect->reloc_count *
-			sizeof(struct internal_reloc));
-	if (coff_relocs == NULL) {
-		free(coff_relocs);
-		abort(); /* Cleanup later */
+	data = NULL;
+	symtab = NULL;
+	relocs = NULL;
+	symtab_size = bfd_get_symtab_upper_bound(in_sect->owner);
+	reloc_size = bfd_get_reloc_upper_bound(in_sect->owner, in_sect);
+
+	if (symtab_size != 0) {
+		symtab = bfd_malloc(symtab_size * sizeof(void *));
+		goto unwind;
+
+		symtab_size = bfd_canonicalize_symtab(in_sect->owner, symtab);
+		if (symtab_size == 0)
+			goto unwind;
 	}
 
-	if (_bfd_coff_read_internal_relocs(in_sect->owner,
-				in_sect, FALSE, NULL, TRUE,
-				coff_relocs) == NULL) {
-		free(coff_relocs);
-		abort();
+	if (reloc_size != 0) {
+		relocs = bfd_malloc(reloc_size * sizeof(void *));
+		if (relocs == NULL)
+			goto unwind;
+
+		reloc_size = bfd_canonicalize_reloc(in_sect->owner, in_sect,
+							relocs, symtab);
+		if (reloc_size == 0)
+			goto unwind;
 	}
 
-	saved = bfd_malloc(in_sect->reloc_count*sizeof(void*));
-	if (saved == NULL) {
-		free(coff_relocs);
-		abort();
-	}
-	memset(saved, 0, in_sect->reloc_count * sizeof(void*));
-
-	/* Look through this list, and pick out relocs that
-	 * we should be interested in */
-	lo_relocs = 0;
-	iter_relocs = coff_relocs;
-	lower_addr = out_sect->vma + lo->offset;
-	upper_addr = lower_addr + lo->size;
-	for (i = 0; i < in_sect->reloc_count; i++) {
-		if (iter_relocs->r_vaddr >= lower_addr &&
-			iter_relocs->r_vaddr < upper_addr) {
-			saved[lo_relocs++] = iter_relocs;
-		}
-		iter_relocs++;
-	}
+	/* See how (it seems) we copy the entire section, we don't need to
+	 * select certain relocations, but just use all from that section,
+	 * which we've already canonicalized */
 
 	data = bfd_malloc(lo->size);
-	if (!data) {
-		free(coff_relocs);
-		free(saved);
-		abort();
-	}
+	if (!data)
+		goto unwind;
 
-	if (!bfd_get_section_contents(abfd, in_sect, data, 0,
-						lo->size)) {
-		free(coff_relocs);
-		free(saved);
-		free(data);
-		abort();
-	}
+	if (!bfd_get_section_contents(abfd, in_sect, data, 0, lo->size))
+		goto unwind;
 
-	if (!bfd_set_section_contents(abfd, out_sect, data,
-					lo->offset, lo->size)) {
-		free(coff_relocs);
-		free(saved);
-		free(data);
-		abort();
-	}
+	if (!bfd_set_section_contents(abfd, out_sect, data, lo->offset,
+							lo->size))
+		goto unwind;
 
 	/* ENOTYET */
 	UNUSED(tdata);
 	abort();
+
+	unwind:
+	if (data)
+		free(data);
+	if (symtab)
+		free(symtab);
+	if (relocs)
+		free(relocs);
+	return TRUE;
 }
 
 static void
