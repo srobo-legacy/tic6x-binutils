@@ -137,7 +137,7 @@ doff_internalise_symbols(bfd *abfd, void *data, struct doff_tdata *tdata)
 		}
 
 		sym->section = tdata->section_data[idx]->section;
-		sym->value -= tdata->section_data[idx]->load_addr;
+		sym->value -= tdata->section_data[idx]->section->vma;
 
 		symbol++;
 	}
@@ -192,10 +192,12 @@ doff_add_reloc(bfd *abfd, struct doff_section_data *sect, bfd_vma vaddr,
 }
 
 static bfd_boolean
-doff_load_raw_sect_data(bfd *abfd, struct doff_section_data *sect)
+doff_load_raw_sect_data(bfd *abfd, struct doff_section_data *sect,
+			off_t file_offset, size_t raw_size, int num_pkts)
 {
 	struct doff_image_packet fpkt;
 	struct doff_reloc *relocs;
+	asection *section;
 	void *raw_data;
 	uint32_t checksum;
 	int i, j, sz, tmp, num_relocs, reloc_type, vaddr;
@@ -207,38 +209,51 @@ doff_load_raw_sect_data(bfd *abfd, struct doff_section_data *sect)
 	 * It's not written down, but I speculate this is only the case for
 	 * stuff that actually get loaded onto the processor -> ie, debug data
 	 * doesn't get packet headers */
+	section = sect->section;
 
-	if (!(sect->flags & DOFF_SCN_FLAG_DOWNLOAD)) {
+	if (!(sect->flags & DOFF_SCN_FLAG_DOWNLOAD) &&
+				section->flags & SEC_HAS_CONTENTS) {
 		/* Doesn't get downloaded to target, only raw data */
-		sect->raw_data = bfd_alloc(abfd, sect->size);
-		if (!sect->raw_data)
+		raw_data = bfd_alloc(abfd, raw_size);
+		if (raw_data == NULL)
 			return TRUE;
 
-		if (bfd_seek(abfd, sect->pkt_start, SEEK_SET)) {
+		if (bfd_seek(abfd, file_offset, SEEK_SET)) {
 			bfd_set_error(bfd_error_file_truncated);
 			return TRUE;
 		}
 
-		if (bfd_bread(sect->raw_data, sect->size, abfd) != sect->size)
+		if (bfd_bread(raw_data, raw_size, abfd) != raw_size)
 			return TRUE;
 
 		sect->num_relocs = 0;
 		sect->max_num_relocs = 0;
 		sect->relocs = NULL;
-		return bfd_set_section_contents(abfd, sect->section,
-				sect->raw_data, sect->pkt_start, sect->size);
+		return bfd_set_section_contents(abfd, section, raw_data,
+					file_offset, raw_size);
+	} else if (!(sect->flags & DOFF_SCN_FLAG_DOWNLOAD)) {
+		/* We have something like .bss, no contents but a size */
+		sect->num_relocs = 0;
+		sect->max_num_relocs = 0;
+		sect->relocs = NULL;
+
+		section->filepos = 0;
+		section->rel_filepos = 0;
+		section->contents = NULL;
+		section->rawsize = 0;
+		section->size = raw_size;
+		return FALSE;
 	}
 
-	raw_data = bfd_zalloc(abfd, sect->size);
-	sect->raw_data = raw_data;
+	raw_data = bfd_zalloc(abfd, raw_size);
 
 	/* Seek to actual section data */
-	if (bfd_seek(abfd, sect->pkt_start, SEEK_SET)) {
+	if (bfd_seek(abfd, file_offset, SEEK_SET)) {
 		bfd_set_error(bfd_error_file_truncated);
 		return TRUE;
 	}
 
-	for (i = 0; i < sect->num_pkts; i++) {
+	for (i = 0; i < num_pkts; i++) {
 		/* Read instruction packet header */
 		if (bfd_bread(&fpkt, sizeof(fpkt), abfd) != sizeof(fpkt))
 			return TRUE;
@@ -270,7 +285,7 @@ doff_load_raw_sect_data(bfd *abfd, struct doff_section_data *sect)
 		checksum += doff_checksum(relocs, tmp);
 		if (~checksum != 0) {
 			fprintf(stderr, "Bad checksum for insn packet %d in "
-					"section %s\n", i, sect->section->name);
+					"section %s\n", i, section->name);
 			bfd_set_error(bfd_error_bad_value);
 			return TRUE;
 		}
@@ -278,7 +293,7 @@ doff_load_raw_sect_data(bfd *abfd, struct doff_section_data *sect)
 		/* Loop through reloc structs, making our own */
 		for (j = 0; j < num_relocs; j++) {
 			vaddr = bfd_get_32(abfd, &relocs->vaddr);
-			vaddr -= sect->load_addr;
+			vaddr -= section->vma;
 			reloc_type = bfd_get_16(abfd,&relocs->reloc.r_sym.type);
 			/* XXX - addend */
 			if (doff_add_reloc(abfd, sect, vaddr, reloc_type, 0)) {
@@ -286,7 +301,6 @@ doff_load_raw_sect_data(bfd *abfd, struct doff_section_data *sect)
 				free(relocs);
 				return TRUE;
 			}
-
 
 			relocs++;
 		}
@@ -300,13 +314,15 @@ doff_load_raw_sect_data(bfd *abfd, struct doff_section_data *sect)
 	}
 
 	/* End of reading ipkts */
-	sect->section->contents = sect->raw_data;
+	section->contents = raw_data;
 
-	if (sect->num_relocs != 0)
+	if (sect->num_relocs != 0) {
 		abfd->flags |= HAS_RELOC;
+		section->reloc_count = sect->num_relocs;
+	}
 
 	return bfd_set_section_contents(abfd, sect->section,
-			sect->raw_data, sect->pkt_start, sect->size);
+			raw_data, file_offset, raw_size);
 }
 
 static bfd_boolean
@@ -316,7 +332,9 @@ doff_internalise_sections(bfd *abfd, const void *sec_data,
 	const char *name;
 	const struct doff_scnhdr *scn;
 	struct doff_section_data *sect;
-	int i, j, stroffset, tmp;
+	size_t raw_size;
+	off_t file_offset;
+	int i, j, stroffset, tmp, num_pkts;
 
 	scn = sec_data;
 	tdata->section_data = bfd_zalloc(abfd, tdata->num_sections *
@@ -341,35 +359,26 @@ doff_internalise_sections(bfd *abfd, const void *sec_data,
 			if (tdata->string_idx_table[j] == stroffset)
 				break;
 
-		if (j == tdata->num_strings)
-			/* Bad section name, but tollerate */
-			sect->name_str_idx = -1;
-		else
-			sect->name_str_idx = j;
-
 		/* Read other fields */
-		sect->prog_addr = bfd_get_32(abfd, &scn->prog_addr);
-		sect->load_addr = bfd_get_32(abfd, &scn->load_addr);
-		sect->size = bfd_get_32(abfd, &scn->size);
 		sect->flags = bfd_get_16(abfd, &scn->flags);
-		sect->pkt_start = bfd_get_32(abfd, &scn->first_pkt_offset);
-		sect->num_pkts = bfd_get_32(abfd, &scn->num_pkts);
+		raw_size = bfd_get_32(abfd, &scn->size);
+		file_offset = bfd_get_32(abfd, &scn->first_pkt_offset);
+		num_pkts = bfd_get_32(abfd, &scn->num_pkts);
+		name = (j == -1) ? "" : tdata->string_table[j];
 
-		name = (sect->name_str_idx == -1) ? "<un-named section>"
-				: tdata->string_table[sect->name_str_idx];
 		sect->section = bfd_make_section_anyway(abfd, name);
 		sect->section->used_by_bfd = sect;
-		if (!bfd_set_section_vma(abfd, sect->section, sect->load_addr))
+
+		if (!bfd_set_section_vma(abfd, sect->section,
+					bfd_get_32(abfd, &scn->load_addr)))
 			return TRUE;
 
-		if (!bfd_set_section_size(abfd, sect->section, sect->size))
+		if (!bfd_set_section_size(abfd, sect->section, raw_size))
 			return TRUE;
 
 		tmp = (sect->flags & DOFF_SCN_FLAG_ALIGN) >> 8;
 		if (!bfd_set_section_alignment(abfd, sect->section, tmp))
 			return TRUE;
-
-		doff_load_raw_sect_data(abfd, sect);
 
 		tmp = SEC_IN_MEMORY; /* We always read everything in */
 		if (sect->flags & DOFF_SCN_FLAG_ALLOC)
@@ -385,7 +394,7 @@ doff_internalise_sections(bfd *abfd, const void *sec_data,
 			tmp |= SEC_DATA;
 		/* XXX - constructors, have a type, but I don't fully understand
 		 * what goes on here */
-		if (sect->size != 0)
+		if (raw_size != 0)
 			tmp |= SEC_HAS_CONTENTS;
 		/* XXX other flags I'm not interested in exist; only one of
 		 * particular importance is debugging, for which doff doesn't
@@ -395,9 +404,8 @@ doff_internalise_sections(bfd *abfd, const void *sec_data,
 		if (!bfd_set_section_flags(abfd, sect->section, tmp))
 			return TRUE;
 
-		/* XXX - I assume this is desireable somehow, don't see a
-		 * routine to set it though */
-		sect->section->reloc_count = sect->num_relocs;
+		doff_load_raw_sect_data(abfd, sect, file_offset, raw_size,
+								num_pkts);
 
 		scn++;
 	}
@@ -780,18 +788,11 @@ doff_new_section_hook(bfd *abfd, sec_ptr section)
 	 * sufficiently complicated or "rich" enough to live outside of the
 	 * canonical bfd format, so we can probably start moving away from using
 	 * these internal data structs. For now, fill stuff out with blanks */
-	sect->name_str_idx = -1;
-	sect->prog_addr = -1;
-	sect->load_addr = -1;
-	sect->size = -1;
 	sect->flags = 0;
-	sect->pkt_start = -1;
-	sect->num_pkts = 0;
 	sect->section = section;
 	sect->num_relocs = 0;
 	sect->max_num_relocs = 0;
 	sect->relocs = NULL;
-	sect->raw_data = NULL;
 
 	section->used_by_bfd = sect;
 
