@@ -268,21 +268,25 @@ doff_load_raw_sect_data(bfd *abfd, struct doff_section_data *sect,
 
 		/* And collect its checksum */
 		checksum += doff_checksum(raw_data, sz);
-		tmp = sizeof(struct doff_reloc) * num_relocs;
 
-		relocs = bfd_malloc(tmp);
+		if (num_relocs > 0) {
+			tmp = sizeof(struct doff_reloc) * num_relocs;
+			relocs = bfd_malloc(tmp);
 
-		if (relocs == NULL)
-			return TRUE;
+			if (relocs == NULL)
+				return TRUE;
 
-		/* read reloc data from file */
-		if (bfd_bread(relocs, tmp, abfd) != (unsigned int)tmp) {
-			free(relocs);
-			return TRUE;
+			/* read reloc data from file */
+			if (bfd_bread(relocs, tmp, abfd) != (unsigned int)tmp) {
+				free(relocs);
+				return TRUE;
+			}
+
+			/* Collect final checksum */
+			checksum += doff_checksum(relocs, tmp);
 		}
 
-		/* Collect final checksum, verify it's correct */
-		checksum += doff_checksum(relocs, tmp);
+		/* Verify checksum is correct */
 		if (~checksum != 0) {
 			fprintf(stderr, "Bad checksum for insn packet %d in "
 					"section %s\n", i, section->name);
@@ -305,9 +309,11 @@ doff_load_raw_sect_data(bfd *abfd, struct doff_section_data *sect,
 			relocs++;
 		}
 
-		/* Correct reloc pointer for freeing */
-		relocs -= num_relocs;
-		free(relocs);
+		if (num_relocs > 0) {
+			/* Correct reloc pointer for freeing */
+			relocs -= num_relocs;
+			free(relocs);
+		}
 
 		/* Increment raw_data ptr for where next pkt is copied in to */
 		raw_data += sz;
