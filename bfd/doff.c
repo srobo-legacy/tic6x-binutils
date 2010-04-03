@@ -781,9 +781,16 @@ doff_new_section_hook(bfd *abfd, sec_ptr section)
 
 	tdata = abfd->tdata.doff_obj_data;
 	num_sects = tdata->num_sections + 1;
-	data = bfd_realloc(abfd, (num_sects + 1) * sizeof (void *));
-	if (data == NULL)
-		return FALSE;
+
+	if (tdata->section_data == NULL) {
+		BFD_ASSERT(num_sects == 1);
+		data = bfd_alloc(abfd, sizeof(void *));
+	} else {
+		data = bfd_realloc(tdata->section_data,
+					(num_sects + 1) * sizeof (void *));
+		if (data == NULL)
+			return FALSE;
+	}
 
 	tdata->section_data = data;
 	tdata->num_sections = num_sects;
