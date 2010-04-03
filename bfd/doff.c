@@ -741,10 +741,15 @@ doff_write_object_contents(bfd *abfd)
 bfd_boolean
 doff_close_and_cleanup(bfd *abfd)
 {
+	struct doff_tdata *tdata;
 
 	/* bfd_release released tdata and everything allocated afterwards -
 	 * that includes string and section data. XXX - is this reentrant?
 	 * also, what about asymbols and asections? */
+	tdata = abfd->tdata.doff_obj_data;
+	if (tdata->section_data != NULL)
+		free(tdata->section_data);
+
 	bfd_release(abfd, abfd->tdata.doff_obj_data);
 	return _bfd_generic_close_and_cleanup(abfd);
 }
@@ -771,7 +776,7 @@ doff_new_section_hook(bfd *abfd, sec_ptr section)
 
 	if (tdata->section_data == NULL) {
 		BFD_ASSERT(num_sects == 1);
-		data = bfd_alloc(abfd, sizeof(void *));
+		data = bfd_malloc(sizeof(void *));
 	} else {
 		data = bfd_realloc(tdata->section_data,
 					(num_sects + 1) * sizeof (void *));
