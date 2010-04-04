@@ -1466,15 +1466,26 @@ doff_bfd_define_common_symbol(bfd *abfd, struct bfd_link_info *info,
 	abort();
 }
 bfd_boolean
-doff_set_section_contents(bfd *abfd, sec_ptr section, const void *location,
-			file_ptr file, bfd_size_type type)
+doff_set_section_contents(bfd *abfd ATTRIBUTE_UNUSED, sec_ptr section,
+			const void *location, file_ptr offset,
+			bfd_size_type size)
 {
+	void *dst;
+	int newsize;
 
-	UNUSED(abfd);
-	UNUSED(section);
-	UNUSED(location);
-	UNUSED(file);
-	UNUSED(type);
-	fprintf(stderr, "Implement doff_set_section_contents");
-	abort();
+	if (size == 0)
+		return FALSE;
+
+	if (offset + size > section->rawsize)
+		newsize = offset + size;
+	else
+		newsize = section->rawsize;
+
+	section->contents = bfd_realloc(section->contents, newsize);
+	if (section->contents == NULL)
+		return FALSE;
+
+	dst = section->contents + offset;
+	memcpy(dst, location, size);
+	return TRUE;
 }
