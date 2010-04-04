@@ -245,10 +245,11 @@ doff_load_raw_sect_data(bfd *abfd, struct doff_section_data *sect,
 		return FALSE;
 	}
 
-	raw_data = bfd_zalloc(abfd, raw_size);
+	raw_data = bfd_malloc(raw_size);
 	if (raw_data == NULL)
 		return TRUE;
 
+	memset(raw_data, 0, raw_size);
 	section->contents = raw_data;
 
 	/* Seek to actual section data */
@@ -804,6 +805,18 @@ doff_write_object_contents(bfd *abfd)
 	abort();
 }
 
+static void
+doff_free_section_data(bfd *abfd ATTRIBUTE_UNUSED, asection *section,
+			void *t ATTRIBUTE_UNUSED)
+{
+
+	if (section->contents != NULL)
+		free(section->contents);
+
+	section->contents = NULL;
+	return;
+}
+
 bfd_boolean
 doff_close_and_cleanup(bfd *abfd)
 {
@@ -815,6 +828,8 @@ doff_close_and_cleanup(bfd *abfd)
 	tdata = abfd->tdata.doff_obj_data;
 	if (tdata->section_data != NULL)
 		free(tdata->section_data);
+
+	bfd_map_over_sections(abfd, doff_free_section_data, NULL);
 
 	bfd_release(abfd, abfd->tdata.doff_obj_data);
 	return _bfd_generic_close_and_cleanup(abfd);
