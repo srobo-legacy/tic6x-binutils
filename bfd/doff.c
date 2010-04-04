@@ -887,6 +887,9 @@ doff_new_section_hook(bfd *abfd, sec_ptr section)
 	sect->relocs = NULL;
 
 	section->used_by_bfd = sect;
+	section->size = 0;
+	section->rawsize = 0;
+	section->contents = NULL;
 
 	return _bfd_generic_new_section_hook(abfd, section);
 }
