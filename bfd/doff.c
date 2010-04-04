@@ -1486,6 +1486,8 @@ doff_set_section_contents(bfd *abfd ATTRIBUTE_UNUSED, sec_ptr section,
 		return FALSE;
 
 	section->contents = alloc;
+	section->rawsize = newsize;
+	section->size = newsize;
 	dst = section->contents + offset;
 	memcpy(dst, location, size);
 	return TRUE;
