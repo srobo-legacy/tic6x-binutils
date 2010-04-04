@@ -657,7 +657,8 @@ doff_ingest_link_order(bfd *abfd, asection *out_sect, asection * in_sect,
 	/* Fetch symbol table from input bfd */
 	if (symtab_size != 0) {
 		symtab = bfd_malloc(symtab_size * sizeof(void *));
-		goto unwind;
+		if (symtab == NULL)
+			goto unwind;
 
 		symtab_size = bfd_canonicalize_symtab(in_sect->owner, symtab);
 		if (symtab_size == 0)
