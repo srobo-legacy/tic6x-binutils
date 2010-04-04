@@ -188,6 +188,8 @@ doff_add_reloc(bfd *abfd, struct doff_section_data *sect, bfd_vma vaddr,
 		fprintf(stderr, "Saw reloc with r_type %X\n", reloc_type);
 	}
 
+	sect->relocs[sect->num_relocs++] = r;
+
 	return FALSE;
 }
 
