@@ -686,7 +686,8 @@ doff_ingest_link_order(bfd *abfd, asection *out_sect, asection * in_sect,
 	if (!data)
 		goto unwind;
 
-	if (!bfd_get_section_contents(abfd, in_sect, data, 0, lo->size))
+	if (!bfd_get_section_contents(in_sect->owner, in_sect, data, 0,
+								lo->size))
 		goto unwind;
 
 	if (!bfd_set_section_contents(abfd, out_sect, data, lo->offset,
