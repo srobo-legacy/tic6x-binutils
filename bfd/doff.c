@@ -693,7 +693,9 @@ doff_ingest_link_order(bfd *abfd, asection *out_sect, asection * in_sect,
 								lo->size))
 		goto unwind;
 
-	if (!bfd_set_section_contents(abfd, out_sect, data, lo->offset,
+	/* XXX - can't use bfd_set_section_contents, it decides that if offset
+	 * is > sz, it's for some reason invalid. What? */
+	if (!doff_set_section_contents(abfd, out_sect, data, lo->offset,
 								lo->size))
 		goto unwind;
 
