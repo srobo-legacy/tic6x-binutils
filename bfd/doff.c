@@ -639,11 +639,15 @@ static bfd_boolean
 doff_ingest_link_order(bfd *abfd, asection *out_sect, asection * in_sect,
 			struct bfd_link_order *lo, struct doff_tdata *tdata)
 {
+	struct bfd_link_hash_entry *hentry;
+	struct doff_section_data *sect_data;
 	asymbol **symtab;
-	arelent **relocs;
+	arelent **relocs, *reloc;
 	void *data;
 	long symtab_size, reloc_size;
+	int i, j, ret;
 
+	ret = TRUE;
 	data = NULL;
 	symtab = NULL;
 	relocs = NULL;
@@ -682,12 +686,67 @@ doff_ingest_link_order(bfd *abfd, asection *out_sect, asection * in_sect,
 		goto unwind;
 
 	if (!bfd_set_section_contents(abfd, out_sect, data, lo->offset,
-							lo->size))
+								lo->size))
 		goto unwind;
 
-	/* ENOTYET */
-	UNUSED(tdata);
-	abort();
+	free(data);
+	data = NULL;
+	sect_data = out_sect->used_by_bfd;
+
+	/* We now need to add the relocations to the output section. This means
+	 * the virtual address needs patching up, but also we need to ensure
+	 * that the symbol refered to by the reloc actually exists in the
+	 * outgoing bfd */
+	for (i = 0; i < reloc_size; i++) {
+		if (relocs[i] == NULL || relocs[i]->sym_ptr_ptr == NULL ||
+					*relocs[i]->sym_ptr_ptr == NULL) {
+			fprintf(stderr, "doff: malformed reloc when linking\n");
+			goto unwind;
+		}
+
+		/* Verify symbol exists in our bfd */
+		hentry = bfd_link_hash_lookup(tdata->link_info->hash,
+				(*relocs[i]->sym_ptr_ptr)->name, FALSE, FALSE,
+				TRUE);
+		if (!hentry) {
+			fprintf(stderr, "doff: reloc against nonexistant "
+					"symbol\n");
+			goto unwind;
+		}
+
+		/* Add our reloc - for this we need a ptr into "the" symbol
+		 * table, for this stage we'll use the one stored in tdata
+		 * rather than canonicalising and storing another. XXX -
+		 * searching for the symbol to use should really be optimised
+		 * with a hash table */
+		for (j = 0; j < tdata->num_syms; j++) {
+			if (!strcmp(tdata->symbols[j]->bfd_symbol.name,
+							hentry->root.string)) {
+				break;
+			}
+		}
+
+		if (j == tdata->num_syms) {
+			fprintf(stderr, "doff: input symbol doesn't exist in "
+					"internal symbol table\n");
+			goto unwind;
+		}
+
+		if (doff_add_reloc(abfd, sect_data,
+				 relocs[i]->address + lo->offset,
+				relocs[i]->howto->type, relocs[i]->addend)) {
+			fprintf(stderr, "Couldn't create output reloc\n");
+			goto unwind;
+		}
+
+		/* Grab just-created reloc, always the end one */
+		reloc = sect_data->relocs[sect_data->num_relocs - 1];
+		reloc->sym_ptr_ptr = (asymbol **) &tdata->symbols[j];
+
+		/* Ta-da */
+	}
+
+	ret = FALSE;
 
 	unwind:
 	if (data)
@@ -696,7 +755,7 @@ doff_ingest_link_order(bfd *abfd, asection *out_sect, asection * in_sect,
 		free(symtab);
 	if (relocs)
 		free(relocs);
-	return TRUE;
+	return ret;
 }
 
 static void
