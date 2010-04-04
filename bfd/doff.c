@@ -1470,7 +1470,7 @@ doff_set_section_contents(bfd *abfd ATTRIBUTE_UNUSED, sec_ptr section,
 			const void *location, file_ptr offset,
 			bfd_size_type size)
 {
-	void *dst;
+	void *dst, *alloc;
 	int newsize;
 
 	if (size == 0)
@@ -1481,10 +1481,11 @@ doff_set_section_contents(bfd *abfd ATTRIBUTE_UNUSED, sec_ptr section,
 	else
 		newsize = section->rawsize;
 
-	section->contents = bfd_realloc(section->contents, newsize);
-	if (section->contents == NULL)
+	alloc = bfd_realloc(section->contents, newsize);
+	if (alloc == NULL)
 		return FALSE;
 
+	section->contents = alloc;
 	dst = section->contents + offset;
 	memcpy(dst, location, size);
 	return TRUE;
