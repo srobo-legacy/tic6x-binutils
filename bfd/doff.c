@@ -654,6 +654,7 @@ doff_ingest_link_order(bfd *abfd, asection *out_sect, asection * in_sect,
 	symtab_size = bfd_get_symtab_upper_bound(in_sect->owner);
 	reloc_size = bfd_get_reloc_upper_bound(in_sect->owner, in_sect);
 
+	/* Fetch symbol table from input bfd */
 	if (symtab_size != 0) {
 		symtab = bfd_malloc(symtab_size * sizeof(void *));
 		goto unwind;
@@ -663,6 +664,7 @@ doff_ingest_link_order(bfd *abfd, asection *out_sect, asection * in_sect,
 			goto unwind;
 	}
 
+	/* Fetch reloc table from input section */
 	if (reloc_size != 0) {
 		relocs = bfd_malloc(reloc_size * sizeof(void *));
 		if (relocs == NULL)
@@ -678,6 +680,7 @@ doff_ingest_link_order(bfd *abfd, asection *out_sect, asection * in_sect,
 	 * select certain relocations, but just use all from that section,
 	 * which we've already canonicalized */
 
+	/* Actually move the raw section data */
 	data = bfd_malloc(lo->size);
 	if (!data)
 		goto unwind;
