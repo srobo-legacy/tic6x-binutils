@@ -772,10 +772,12 @@ doff_ingest_section(bfd *abfd, asection *sect, void *t)
 	for (lo = sect->map_head.link_order; lo != NULL; lo = lo->next) {
 		switch (lo->type) {
 		case bfd_indirect_link_order:
-			doff_ingest_link_order(abfd, sect,
-					lo->u.indirect.section, lo, tdata);
+			if (doff_ingest_link_order(abfd, sect,
+					lo->u.indirect.section, lo, tdata)) {
+				fprintf(stderr, "ingest_link_order failed\n");
+				abort();
+			}
 			break;
-
 
 		case bfd_undefined_link_order:
 		case bfd_data_link_order:
