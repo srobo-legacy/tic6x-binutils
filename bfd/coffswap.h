@@ -250,6 +250,8 @@ coff_swap_reloc_out (bfd * abfd, void * src, void * dst)
 
 #endif /* NO_COFF_RELOCS */
 
+#ifndef NO_COFF_FILEHDR
+
 static void
 coff_swap_filehdr_in (bfd * abfd, void * src, void * dst)
 {
@@ -300,6 +302,8 @@ coff_swap_filehdr_out (bfd *abfd, void * in, void * out)
 #endif
   return bfd_coff_filhsz (abfd);
 }
+
+#endif /* NO_COFF_FILEHDR */
 
 #ifndef NO_COFF_SYMBOLS
 
@@ -601,6 +605,8 @@ coff_swap_lineno_out (bfd * abfd, void * inp, void * outp)
 
 #endif /* NO_COFF_LINENOS */
 
+#ifndef NO_COFF_AOUTHDR
+
 static void
 coff_swap_aouthdr_in (bfd * abfd, void * aouthdr_ext1, void * aouthdr_int1)
 {
@@ -748,6 +754,10 @@ coff_swap_aouthdr_out (bfd * abfd, void * in, void * out)
   return AOUTSZ;
 }
 
+#endif /* NO_COFF_AOUTHDR */
+
+#ifndef NO_COFF_SCNHDR
+
 static void
 coff_swap_scnhdr_in (bfd * abfd, void * ext, void * in)
 {
@@ -840,3 +850,5 @@ coff_swap_scnhdr_out (bfd * abfd, void * in, void * out)
 #endif
   return ret;
 }
+
+#endif /* NO_COFF_SCNHDR */
