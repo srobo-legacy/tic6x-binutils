@@ -1,7 +1,6 @@
 #define coff_SWAP_sym_in	NULL
 #define coff_SWAP_sym_out	NULL
 #define coff_SWAP_reloc_out	NULL
-#define coff_SWAP_reloc_out	NULL
 #define coff_SWAP_filehdr_out	NULL
 #define coff_SWAP_aouthdr_out	NULL
 #define coff_SWAP_scnhdr_out	NULL
