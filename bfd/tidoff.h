@@ -24,6 +24,7 @@ bfd_boolean doff_set_section_contents(bfd *abfd, asection *sect,
 #define bfd_pe_print_pdata	NULL
 
 #define BADMAG(x) ((x).f_magic != DOFF_MAGIC)
+#define TIDOFF
 
 #define NO_COFF_RELOCS
 #define NO_COFF_FILEHDR
