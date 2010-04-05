@@ -133,6 +133,13 @@ struct doff_reloc {
 	} reloc;
 };
 
+#define RELOC struct doff_reloc
+
+/* Some guesses, until we care more */
+#define L_LNNO_SIZE	4
+#define E_DIMNUM	4
+#define E_FILNMLEN	14
+
 /* Pick up some extra definitions */
 #define DO_NOT_DEFINE_FILHDR
 #define DO_NOT_DEFINE_AOUTHDR
