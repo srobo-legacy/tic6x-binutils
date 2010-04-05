@@ -39,7 +39,7 @@ bfd_boolean doff_set_section_contents(bfd *abfd, asection *sect,
 static bfd_coff_backend_data tidoff_swap_table =
 {
 	coff_SWAP_aux_in, coff_SWAP_sym_in, coff_SWAP_lineno_in,
-	codff_SWAP_aux_out, coff_SWAP_sym_out, coff_SWAP_lineno_out,
+	coff_SWAP_aux_out, coff_SWAP_sym_out, coff_SWAP_lineno_out,
 	coff_SWAP_reloc_out, coff_SWAP_filehdr_out, coff_SWAP_aouthdr_out,
 	coff_SWAP_scnhdr_out,
 
@@ -59,7 +59,7 @@ static bfd_coff_backend_data tidoff_swap_table =
 	coff_pointerize_aux_hook, coff_print_aux, coff_reloc16_extra_cases,
 	coff_reloc16_estimate, coff_classify_symbol,
 	coff_compute_section_file_positions, coff_start_final_link,
-	coff_relocate_section, doff_rtype_to_howto, coff_adjust_symndx,
+	coff_relocate_section, coff_rtype_to_howto, coff_adjust_symndx,
 	coff_link_add_one_symbol, coff_link_output_has_begun,
-	coff_final_link_postscript
+	coff_final_link_postscript, NULL
 };
