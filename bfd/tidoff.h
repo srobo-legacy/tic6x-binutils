@@ -13,6 +13,11 @@
 
 #define bfd_pe_print_pdata	NULL
 
+#include <coff/doff.h>
+#include <coff/internal.h>
+#include "libcoff.h"
+#include "coffcode.h"
+
 static bfd_coff_backend_data tidoff_swap_table =
 {
 	coff_SWAP_aux_in, coff_SWAP_sym_in, coff_SWAP_lineno_in,

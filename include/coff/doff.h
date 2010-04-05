@@ -136,3 +136,5 @@ struct doff_reloc {
 #define DO_NOT_DEFINE_SCNHDR
 #define DO_NOT_DEFINE_SYMENT
 #include <coff/external.h>
+
+#endif /* _INCLUDE_COFF_DOFF_H_ */

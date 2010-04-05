@@ -4,9 +4,6 @@
 #include "bfd.h"
 #include "libbfd.h"
 #include "bfdlink.h"
-#include "coff/internal.h"
-#include "coff/tic64x.h"
-#include "libcoff.h"
 
 /* Instanciate the backend data we need */
 #include "tidoff.h"
