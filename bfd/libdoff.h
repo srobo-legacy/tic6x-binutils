@@ -4,7 +4,7 @@
 #include <unistd.h>
 
 struct doff_private_data {
-	int str_sz;		/* size of string table */
+	unsigned int str_sz;	/* size of string table */
 	char *str_table;	/* string table */
 
 	struct doff_checksum_rec checksum;
