@@ -38,6 +38,20 @@ doff_bad_format_hook(bfd *abfd ATTRIBUTE_UNUSED, void *filehdr)
 	return TRUE;
 }
 
+static void *
+doff_mkobject_hook(bfd *abfd, void *filehdr, void *aouthdr)
+{
+	struct coff_tdata *foo;
+
+	foo = coff_mkobject_hook(abfd, filehdr, aouthdr);
+	foo->ti_doff_private = bfd_zalloc(abfd,
+					sizeof(struct doff_private_data));
+	if (foo->ti_doff_private == NULL)
+		return NULL;
+
+	return foo;
+}
+
 static bfd_coff_backend_data tidoff_swap_table =
 {
 	coff_swap_aux_in, doff_swap_sym_in, coff_swap_lineno_in,
@@ -56,7 +70,7 @@ static bfd_coff_backend_data tidoff_swap_table =
 	0,	/* debug string prefix len. ??? */
 	doff_swap_filehdr_in, doff_swap_aouthdr_in, doff_swap_scnhdr_in,
 	doff_swap_reloc_in, doff_bad_format_hook, coff_set_arch_mach_hook,
-	coff_mkobject_hook, styp_to_sec_flags, coff_set_alignment_hook,
+	doff_mkobject_hook, styp_to_sec_flags, coff_set_alignment_hook,
 	coff_slurp_symbol_table, symname_in_debug_hook,
 	coff_pointerize_aux_hook, coff_print_aux, coff_reloc16_extra_cases,
 	coff_reloc16_estimate, coff_classify_symbol,
