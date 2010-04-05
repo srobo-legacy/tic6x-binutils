@@ -177,17 +177,6 @@ doff_swap_filehdr_in(bfd *abfd, void *src, void *dst)
 }
 
 bfd_boolean
-doff_bad_format_hook(bfd *abfd, void *filehdr)
-{
-
-
-	UNUSED(abfd);
-	UNUSED(filehdr);
-	fprintf(stderr, "Implement doff_bad_format_hook\n");
-	abort();
-}
-
-bfd_boolean
 doff_set_section_contents(bfd *abfd, asection *sect, const void *data,
 					file_ptr offs, bfd_size_type size)
 {

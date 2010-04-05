@@ -25,6 +25,19 @@
 #define NO_COFF_SCNHDR
 #include "coffcode.h"
 
+static bfd_boolean
+doff_bad_format_hook(bfd *abfd ATTRIBUTE_UNUSED, void *filehdr)
+{
+	struct internal_filehdr *f_hdr;
+
+	f_hdr = filehdr;
+
+	if (f_hdr->f_magic != DOFF_MAGIC)
+		return FALSE;
+
+	return TRUE;
+}
+
 static bfd_coff_backend_data tidoff_swap_table =
 {
 	coff_swap_aux_in, doff_swap_sym_in, coff_swap_lineno_in,
