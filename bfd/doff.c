@@ -141,7 +141,7 @@ doff_swap_filehdr_in(bfd *abfd, void *src, void *dst)
 	 * closest thing to a magic number tidoff has. Also ensure the target
 	 * id is not zero, that's used to indicate bad format to bad_format_hook
 	 */
-	if (doff_checksum(src, sizeof(*src)) != 0xFFFFFFFF ||
+	if (doff_checksum(f_hdr, sizeof(*f_hdr)) != 0xFFFFFFFF ||
 		H_GET_32(abfd, &f_hdr->byte_reshuffle) != DOFF_BYTE_RESHUFFLE
 		|| H_GET_16(abfd, &f_hdr->target_id) == 0) {
 		memset(out, 0, sizeof(*out));
