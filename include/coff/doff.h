@@ -129,3 +129,10 @@ struct doff_reloc {
 		} r_sym;
 	} reloc;
 };
+
+/* Pick up some extra definitions */
+#define DO_NOT_DEFINE_FILHDR
+#define DO_NOT_DEFINE_AOUTHDR
+#define DO_NOT_DEFINE_SCNHDR
+#define DO_NOT_DEFINE_SYMENT
+#include <coff/external.h>
