@@ -156,14 +156,8 @@ doff_swap_filehdr_in(bfd *abfd, void *src, void *dst)
 	out->f_nsyms = H_GET_16(abfd, &f_hdr->num_syms);
 	out->f_flags = F_AR32WR;	/* Little endian; meh */
 
-	/* Hacks: coff dictates that the section table follows the file/opt
-	 * header immediately. Unfortunatly in doff this isn't the case, and
-	 * there's a string table to be handled. So, we'll have the string table
-	 * impersonate the optional header, and munge reality from there.
-	 * Because there are even more checks based on the size of the optional
-	 * header, we have to munge it in the coff backend info too */
-	out->f_opthdr = H_GET_32(abfd, &f_hdr->strtab_size);
-	bfd_coff_aoutsz(abfd) = out->f_opthdr;
+	/* There is no opt header */
+	out->f_opthdr = 0;
 
 	/* Due to other hacks, file header also includes checksum header */
 	checksums = (void *)(f_hdr + 1);
