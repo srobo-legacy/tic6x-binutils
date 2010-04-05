@@ -12,10 +12,10 @@
 #define F_LSYMS		F_LSYMS_TICOFF
 /* XXX - dictated by coff/ti.h, but ti's docs say F_LSYMS remains 0x8 */
 
-static void rtype2howto(arelent *internal, struct internal_reloc *dst);
-static bfd_boolean tic64x_set_arch_mach(bfd *b, enum bfd_architecture a,
+void tic64x_rtype2howto(arelent *internal, struct internal_reloc *dst);
+bfd_boolean tic64x_set_arch_mach(bfd *b, enum bfd_architecture a,
 		unsigned long);
-static bfd_boolean tic64x_set_section_contents(bfd *b, sec_ptr section,
+bfd_boolean tic64x_set_section_contents(bfd *b, sec_ptr section,
 		const PTR location, file_ptr offset, bfd_size_type bytes);
 
 /* Customize + include coffcode.h */
@@ -24,7 +24,7 @@ static bfd_boolean tic64x_set_section_contents(bfd *b, sec_ptr section,
 #define bfd_pe_print_pdata	NULL
 #endif
 
-#define RTYPE2HOWTO(internal, reloc) rtype2howto(internal, reloc);
+#define RTYPE2HOWTO(internal, reloc) tic64x_rtype2howto(internal, reloc);
 
 reloc_howto_type *tic64x_coff_reloc_type_lookup(bfd*, bfd_reloc_code_real_type);
 reloc_howto_type *tic64x_coff_reloc_name_lookup (bfd *abfd, const char *name);
@@ -42,7 +42,7 @@ reloc_howto_type *tic64x_coff_reloc_name_lookup (bfd *abfd, const char *name);
 bfd_coff_backend_data *dummy_backend_0 = &ticoff0_swap_table;
 bfd_coff_backend_data *dummy_backend_1 = &ticoff1_swap_table;
 
-static bfd_boolean
+bfd_boolean
 tic64x_set_arch_mach(bfd *b, enum bfd_architecture arch, unsigned long machine)
 {
 
@@ -54,7 +54,7 @@ tic64x_set_arch_mach(bfd *b, enum bfd_architecture arch, unsigned long machine)
 	return bfd_default_set_arch_mach(b, arch, machine);
 }
 
-static bfd_boolean
+bfd_boolean
 tic64x_set_section_contents(bfd *b, sec_ptr section, const PTR location,
 		file_ptr offset, bfd_size_type bytes)
 {
@@ -141,8 +141,8 @@ tic64x_coff_reloc_type_lookup(bfd *abfd ATTRIBUTE_UNUSED,
 	}
 }
 
-static void
-rtype2howto(arelent *internal, struct internal_reloc *dst)
+void
+tic64x_rtype2howto(arelent *internal, struct internal_reloc *dst)
 {
 	unsigned int i;
 
