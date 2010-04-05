@@ -2,6 +2,9 @@
  * driver on OMAP processors. Seeing how different this is from coff, in theory
  * this should go in its own dir, but that'd be overkill. */
 
+#ifndef _INCLUDE_COFF_DOFF_H_
+#define _INCLUDE_COFF_DOFF_H_
+
 #include <stdint.h>
 
 /* XXX - because someone at TI was on crack when this was designed, different
