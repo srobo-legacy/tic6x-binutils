@@ -90,6 +90,12 @@ struct doff_symbol {
 #define SYMENT	struct doff_symbol
 #define SYMESZ	sizeof(struct doff_symbol)
 
+/* These usually come from external.h, but we don't want it's external struct */
+#define N_BTMASK	0xf
+#define N_TMASK		0x30
+#define N_BTSHFT	4
+#define N_TSHIFT	2
+
 struct doff_image_packet {
 	int32_t num_relocs;		/* Num relocs */
 	int32_t packet_sz;		/* Size in this packet */
