@@ -130,12 +130,50 @@ doff_swap_aouthdr_in(bfd *abfd, void *src, void *dst)
 void
 doff_swap_filehdr_in(bfd *abfd, void *src, void *dst)
 {
+	struct doff_filehdr *f_hdr;
+	struct internal_filehdr *out;
+	struct doff_checksum_rec *checksums;
 
-	UNUSED(abfd);
-	UNUSED(src);
-	UNUSED(dst);
-	fprintf(stderr, "Implement doff_swap_reloc_out\n");
-	abort();
+	f_hdr = src;
+	out = dst;
+
+	/* Check checksum and byte_reshuffle meets expectations - it's the
+	 * closest thing to a magic number tidoff has. Also ensure the target
+	 * id is not zero, that's used to indicate bad format to bad_format_hook
+	 */
+	if (doff_checksum(src, sizeof(*src)) != 0xFFFFFFFF ||
+		H_GET_32(abfd, &f_hdr->byte_reshuffle) != DOFF_BYTE_RESHUFFLE
+		|| H_GET_16(abfd, &f_hdr->target_id) == 0) {
+		memset(out, 0, sizeof(*out));
+		/* XXX - should we set an error? */
+		return;
+	}
+
+	out->f_magic = H_GET_16(abfd, &f_hdr->target_id);
+	out->f_nscns = H_GET_16(abfd, &f_hdr->num_scns);
+	out->f_symptr = H_GET_32(abfd, &f_hdr->strtab_size) +
+				(out->f_nscns * sizeof(struct doff_scnhdr));
+	out->f_nsyms = H_GET_16(abfd, &f_hdr->num_syms);
+	out->f_flags = F_AR32WR;	/* Little endian; meh */
+
+	/* Hacks: coff dictates that the section table follows the file/opt
+	 * header immediately. Unfortunatly in doff this isn't the case, and
+	 * there's a string table to be handled. So, we'll have the string table
+	 * impersonate the optional header, and munge reality from there.
+	 * Because there are even more checks based on the size of the optional
+	 * header, we have to munge it in the coff backend info too */
+	out->f_opthdr = H_GET_32(abfd, &f_hdr->strtab_size);
+	bfd_coff_aoutsz(abfd) = out->f_opthdr;
+
+	/* Due to other hacks, file header also includes checksum header */
+	checksums = (void *)(f_hdr + 1);
+	if (doff_checksum(checksums, sizeof(*checksums)) != 0xFFFFFFFF) {
+		memset(out, 0, sizeof(*out));
+		return;
+	}
+
+	out->f_timdat = H_GET_32(abfd, &checksums->timestamp);
+	return;
 }
 
 bfd_boolean
