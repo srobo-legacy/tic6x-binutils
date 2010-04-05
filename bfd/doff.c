@@ -1,7 +1,13 @@
 #include "sysdep.h"
 #include "bfd.h"
 #include "libbfd.h"
+#include "bfd-in2.h"
+#include <coff/doff.h>
+#include <coff/internal.h>
+#include "libcoff.h"
 #include "libdoff.h"
+
+#include <stdint.h>
 
 #define UNUSED(x) ((x) = (x))
 
