@@ -16,11 +16,15 @@ extern bfd_boolean tic64x_set_arch_mach(bfd *abfd, enum bfd_architecture arch,
 extern bfd_boolean tic64x_set_section_contents(bfd *abfd, sec_ptr section,
 					const PTR location, file_ptr offset,
 					bfd_size_type size);
+reloc_howto_type *tic64x_coff_reloc_type_lookup(bfd*, bfd_reloc_code_real_type);
+reloc_howto_type *tic64x_coff_reloc_name_lookup (bfd *abfd, const char *name);
 
 /* Instantiate the backend data we need */
 #define COFF_DEFAULT_SECTION_ALIGNMENT_POWER (12)
 #define DOFF_MAGIC DOFF_PROC_TMS320C6000
 #define RTYPE2HOWTO(internal, reloc) tic64x_rtype2howto(internal, reloc);
+#define coff_bfd_reloc_type_lookup tic64x_coff_reloc_type_lookup
+#define coff_bfd_reloc_name_lookup tic64x_coff_reloc_name_lookup
 #include "tidoff.h"
 
 const bfd_target tic64x_coff2_vec =
