@@ -53,6 +53,9 @@ struct doff_checksum_rec {
  * header, where we can pull the timestamp info in from. */
 
 #define AOUTSZ sizeof(struct doff_checksum_rec)
+/* AOUTSZ is still required to make coffcode.h happy in a single place; not
+ * actually used anywhere in code. We abuse this field in bfd_coff_backend_data
+ * anyway; see doff_swap_in_filehdr */
 
 struct doff_scnhdr {
 	int32_t str_offset;		/* Offset in string table of name */
