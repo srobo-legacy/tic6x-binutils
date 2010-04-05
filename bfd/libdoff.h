@@ -1,6 +1,15 @@
 #ifndef _BFD_LIBDOFF_H_
 #define _BFD_LIBDOFF_H_
 
+#include <unistd.h>
+
+struct doff_private_data {
+	int str_sz;		/* size of string table */
+	char *str_table;	/* string table */
+
+	struct doff_checksum_rec checksum;
+};
+
 unsigned int doff_swap_reloc_out(bfd *abfd, void *src, void *dst);
 unsigned int doff_swap_sym_out(bfd *abfd, void *src, void *dst);
 unsigned int doff_swap_scnhdr_out(bfd *abfd, void *src, void *dst);
