@@ -134,6 +134,7 @@ doff_swap_filehdr_in(bfd *abfd, void *src, void *dst)
 	struct internal_filehdr *out;
 	struct doff_checksum_rec *checksums;
 	void *data;
+	off_t saved_fileptr;
 	uint32_t checksum;
 	unsigned int sz;
 
@@ -175,64 +176,66 @@ doff_swap_filehdr_in(bfd *abfd, void *src, void *dst)
 
 	out->f_timdat = H_GET_32(abfd, &checksums->timestamp);
 
+	/* Validate string table - but first save where we are in the file */
+	saved_fileptr = bfd_tell(abfd);
+
 	sz = H_GET_32(abfd, &f_hdr->strtab_size);
 	data = bfd_malloc(sz);
-	if (data == NULL) {
-		/* alloc will have set memory error for us */
-		memset(out, 0, sizeof(*out));
-		return;
-	}
+	if (data == NULL)
+		goto validate_fail;
 
 	if (bfd_bread(data, sz, abfd) != sz) {
-		memset(out, 0, sizeof(*out));
-		return;
+		free(data);
+		goto validate_fail;
 	}
 
 	checksum = doff_checksum(data, sz);
+	free(data);
 	checksum += checksums->strtable_checksum;
-	if (checksum != 0xFFFFFFFF) {
-		memset(out, 0, sizeof(*out));
-		return;
-	}
+	if (checksum != 0xFFFFFFFF)
+		goto validate_fail;
 
 	/* While we're here, read in all the section table and validate it */
 	sz = sizeof(struct doff_scnhdr) * out->f_nscns;
 	data = bfd_malloc(sz);
 	if (data == NULL)
-		return;
+		memset(out, 0, sizeof(*out));
 
 	if (bfd_bread(data, sz, abfd) == sz) {
 		free(data);
-		return;
+		memset(out, 0, sizeof(*out));
 	}
 
 	checksum = doff_checksum(data, sz);
 	free(data);
 	checksum += checksums->section_checksum;
-	if (checksum != 0xFFFFFFFF) {
-		memset(out, 0, sizeof(*out));
-		return;
-	}
+	if (checksum != 0xFFFFFFFF)
+		goto validate_fail;
 
 	/* Validate symbol table too... */
 	sz = sizeof(struct doff_symbol) * out->f_nsyms;
 	data  = bfd_malloc(sz);
 	if (data == NULL)
-		return;
+		goto validate_fail;
 
 	if(bfd_bread(data, sz, abfd) != sz) {
 		free(data);
-		return;
+		goto validate_fail;
 	}
 
 	checksum = doff_checksum(data, sz);
 	free(data);
 	checksum += checksums->symbol_checksum;
-	if (checksum != 0xFFFFFFFF) {
-		memset(out, 0, sizeof(*out));
-		return;
-	}
+	if (checksum != 0xFFFFFFFF)
+		goto validate_fail;
 
+	/* Success */
+	bfd_seek(abfd, saved_fileptr, SEEK_SET);
+	return;
+
+	validate_fail:
+	memset(out, 0, sizeof(*out));
+	bfd_seek(abfd, saved_fileptr, SEEK_SET);
 	return;
 }
 
