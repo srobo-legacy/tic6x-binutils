@@ -11,6 +11,23 @@
 
 #define UNUSED(x) ((x) = (x))
 
+static uint32_t
+doff_checksum(const void *data, unsigned int len)
+{
+	const uint32_t *d;
+	uint32_t sum;
+	int l;
+
+	BFD_ASSERT((len & 3) == 0);
+	sum = 0;
+	d = data;
+	for (l = len; l > 0; l -= sizeof(uint32_t))
+		sum += *d++;
+
+	return sum;
+}
+
+
 unsigned int
 doff_swap_reloc_out(bfd *abfd, void *src, void *dst)
 {
