@@ -195,6 +195,44 @@ doff_swap_filehdr_in(bfd *abfd, void *src, void *dst)
 		return;
 	}
 
+	/* While we're here, read in all the section table and validate it */
+	sz = sizeof(struct doff_scnhdr) * out->f_nscns;
+	data = bfd_malloc(sz);
+	if (data == NULL)
+		return;
+
+	if (bfd_bread(data, sz, abfd) == sz) {
+		free(data);
+		return;
+	}
+
+	checksum = doff_checksum(data, sz);
+	free(data);
+	checksum += checksums->section_checksum;
+	if (checksum != 0xFFFFFFFF) {
+		memset(out, 0, sizeof(*out));
+		return;
+	}
+
+	/* Validate symbol table too... */
+	sz = sizeof(struct doff_symbol) * out->f_nsyms;
+	data  = bfd_malloc(sz);
+	if (data == NULL)
+		return;
+
+	if(bfd_bread(data, sz, abfd) != sz) {
+		free(data);
+		return;
+	}
+
+	checksum = doff_checksum(data, sz);
+	free(data);
+	checksum += checksums->symbol_checksum;
+	if (checksum != 0xFFFFFFFF) {
+		memset(out, 0, sizeof(*out));
+		return;
+	}
+
 	return;
 }
 
