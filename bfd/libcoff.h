@@ -113,6 +113,12 @@ typedef struct coff_tdata
   /* coff-stgo32 EXE stub header after BFD tdata has been allocated.  Its data
      is kept in internal_filehdr.go32stub beforehand.  */
   char *go32stub;
+
+  /* TI DOFF differs significantly from what we normally find in a coff file;
+   * this private handle allows it to keep that stuff behind the scenes instead
+   * of repeatedly beating the file back and forth trying to collect extra
+   * information it needs */
+  void *ti_doff_private;
 } coff_data_type;
 
 /* Tdata for pe image files.  */
