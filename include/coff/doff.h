@@ -140,6 +140,7 @@ struct doff_reloc {
 };
 
 #define RELOC struct doff_reloc
+#define external_reloc doff_reloc
 
 /* Some guesses, until we care more */
 #define L_LNNO_SIZE	4
