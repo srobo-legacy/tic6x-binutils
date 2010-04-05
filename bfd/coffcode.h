@@ -4016,6 +4016,10 @@ coff_write_object_contents (bfd * abfd)
     internal_a.magic = TIC80_ARCH_MAGIC;
 #define __A_MAGIC_SET__
 #endif /* TIC80 */
+#ifdef TIDOFF
+    internal_a.magic = DOFF_MAGIC;
+#define __A_MAGIC_SET__
+#endif
 #ifdef I860
     /* FIXME: What are the a.out magic numbers for the i860?  */
     internal_a.magic = 0;
