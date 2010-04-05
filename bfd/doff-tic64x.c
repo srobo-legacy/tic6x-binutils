@@ -27,7 +27,7 @@ reloc_howto_type *tic64x_coff_reloc_name_lookup (bfd *abfd, const char *name);
 #define coff_bfd_reloc_name_lookup tic64x_coff_reloc_name_lookup
 #include "tidoff.h"
 
-const bfd_target tic64x_coff2_vec =
+const bfd_target tic64x_doff_vec =
 {
 	"doff-c64x",				/* Name */
 	bfd_target_coff_flavour,
