@@ -80,7 +80,12 @@ struct internal_filehdr
   unsigned short f_opthdr;	/* sizeof(optional hdr)		*/
   unsigned short f_flags;	/* flags			*/
   unsigned short f_target_id;	/* (TI COFF specific)		*/
-  bfd_vma f_scnptr;		/* TI DOFF - offset to sections */
+
+  bfd_vma f_scnptr;		/* TI DOFF has section table in */
+				/* a non standard location;	*/
+				/* this field is initialised by */
+				/* coff, the backend should	*/
+				/* update it if needed		*/
 };
 
 
