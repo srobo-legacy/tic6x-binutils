@@ -147,4 +147,13 @@ struct doff_reloc {
 #define DO_NOT_DEFINE_SYMENT
 #include <coff/external.h>
 
+#define _TEXT	".text"
+#define _DATA	".data"
+#define _BSS	".bss"
+#define _CINIT	".cinit"
+#define _SCONST	".const"
+#define _SWITCH	".switch"
+#define _STACK	".stack"
+#define _SYSMEM	".sysmem"
+
 #endif /* _INCLUDE_COFF_DOFF_H_ */
