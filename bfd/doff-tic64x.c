@@ -5,9 +5,14 @@
 #include "libbfd.h"
 #include "bfdlink.h"
 
+#include <coff/doff.h>
+#include <coff/internal.h>
+#include "libcoff.h"
+
 /* Instantiate the backend data we need */
 #define COFF_DEFAULT_SECTION_ALIGNMENT_POWER (12)
 #define DOFF_MAGIC DOFF_PROC_TMS320C6000
+#define RTYPE2HOWTO(internal, reloc) tic64x_rtype2howto(internal, reloc);
 #include "tidoff.h"
 
 const bfd_target tic64x_coff2_vec =
