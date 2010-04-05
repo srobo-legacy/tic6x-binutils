@@ -431,7 +431,7 @@ static bfd_boolean coff_compute_section_file_positions
 static bfd_boolean coff_write_object_contents
   (bfd *) ATTRIBUTE_UNUSED;
 static bfd_boolean coff_set_section_contents
-  (bfd *, asection *, const void *, file_ptr, bfd_size_type);
+  (bfd *, asection *, const void *, file_ptr, bfd_size_type) ATTRIBUTE_UNUSED;
 static void * buy_and_read
   (bfd *, file_ptr, bfd_size_type);
 static bfd_boolean coff_slurp_line_table
