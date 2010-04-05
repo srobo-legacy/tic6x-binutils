@@ -38,7 +38,6 @@ struct doff_filehdr {
 	uint32_t checksum;		/* Sum of previous values as uint32s */
 };
 
-#define FILHDR	struct doff_filehdr
 #define FILHSZ sizeof(struct doff_filehdr)
 
 /* Doff doesn't have the conventional file header / opt header; so for the
@@ -53,7 +52,6 @@ struct doff_checksum_rec {
 	uint32_t self_checksum;
 };
 
-#define AOUTHDRSZ sizeof(struct doff_checksum_rec)
 #define AOUTSZ sizeof(struct doff_checksum_rec)
 
 struct doff_scnhdr {
@@ -77,7 +75,6 @@ struct doff_scnhdr {
 	int32_t num_pkts;		/* Self explanatory */
 };
 
-#define SCNHDR	struct doff_scnhdr
 #define SCNHSZ	sizeof(struct doff_scnhdr)
 
 struct doff_symbol {
@@ -87,7 +84,6 @@ struct doff_symbol {
 	int16_t storage_class;		/* ??? */
 };
 
-#define SYMENT	struct doff_symbol
 #define SYMESZ	sizeof(struct doff_symbol)
 
 /* These usually come from external.h, but we don't want it's external struct */
@@ -139,7 +135,6 @@ struct doff_reloc {
 	} reloc;
 };
 
-#define RELOC struct doff_reloc
 #define RELSZ sizeof(struct doff_reloc)
 #define external_reloc doff_reloc
 
