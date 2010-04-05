@@ -133,13 +133,12 @@ doff_swap_filehdr_in(bfd *abfd, void *src, void *dst)
 	struct doff_filehdr *f_hdr;
 	struct internal_filehdr *out;
 	struct doff_checksum_rec *checksums;
-	struct doff_private_data *priv;
-	uint32_t str_checksum;
+	void *data;
+	uint32_t checksum;
+	unsigned int sz;
 
 	f_hdr = src;
 	out = dst;
-	priv = coff_data(abfd)->ti_doff_private;
-	BFD_ASSERT(priv != NULL);
 
 	/* Check checksum and byte_reshuffle meets expectations - it's the
 	 * closest thing to a magic number tidoff has. Also ensure the target
@@ -176,27 +175,26 @@ doff_swap_filehdr_in(bfd *abfd, void *src, void *dst)
 
 	out->f_timdat = H_GET_32(abfd, &checksums->timestamp);
 
-	priv->str_sz = H_GET_32(abfd, &f_hdr->strtab_size);
-	priv->str_table = bfd_alloc(abfd, priv->str_sz);
-	if (priv->str_table == NULL) {
+	sz = H_GET_32(abfd, &f_hdr->strtab_size);
+	data = bfd_malloc(sz);
+	if (data == NULL) {
 		/* alloc will have set memory error for us */
 		memset(out, 0, sizeof(*out));
 		return;
 	}
 
-	if (bfd_bread(priv->str_table, priv->str_sz, abfd) != priv->str_sz) {
+	if (bfd_bread(data, sz, abfd) != sz) {
 		memset(out, 0, sizeof(*out));
 		return;
 	}
 
-	str_checksum = doff_checksum(priv->str_table, priv->str_sz);
-	str_checksum += checksums->strtable_checksum;
-	if (str_checksum != 0xFFFFFFFF) {
+	checksum = doff_checksum(data, sz);
+	checksum += checksums->strtable_checksum;
+	if (checksum != 0xFFFFFFFF) {
 		memset(out, 0, sizeof(*out));
 		return;
 	}
 
-	memcpy(&priv->checksum, checksums, sizeof(priv->checksum));
 	return;
 }
 
