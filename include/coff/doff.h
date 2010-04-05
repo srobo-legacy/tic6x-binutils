@@ -38,12 +38,6 @@ struct doff_filehdr {
 	uint32_t checksum;		/* Sum of previous values as uint32s */
 };
 
-#define FILHSZ sizeof(struct doff_filehdr)
-
-/* Doff doesn't have the conventional file header / opt header; so for the
- * purposes of the coff backend, have the checksum record impersonate the
- * optional header, and we'll munge our way to reality on swapin/swapout */
-
 struct doff_checksum_rec {
 	uint32_t timestamp;
 	uint32_t section_checksum;
@@ -51,6 +45,11 @@ struct doff_checksum_rec {
 	uint32_t symbol_checksum;
 	uint32_t self_checksum;
 };
+
+#define FILHSZ sizeof(struct doff_filehdr) + sizeof(struct doff_checksum_rec)
+/* Doff doesn't have the conventional file header / opt header; so for the
+ * purposes of the coff backend, have the checksum record be part of the file
+ * header, where we can pull the timestamp info in from. */
 
 #define AOUTSZ sizeof(struct doff_checksum_rec)
 
