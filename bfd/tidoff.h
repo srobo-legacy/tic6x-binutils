@@ -1,3 +1,18 @@
+/* Prototypes for functions we'll be using */
+unsigned int coff_swap_reloc_out(bfd *abfd, void *src, void *dst);
+unsigned int coff_swap_scnhdr_out(bfd *abfd, void *src, void *dst);
+unsigned int coff_swap_aouthdr_out(bfd *abfd, void *src, void *dst);
+unsigned int coff_swap_aux_out(bfd *abfd, void *inp, int type, int in_class,
+				int indx, int numaux, void *extp);
+
+unsigned int coff_swap_reloc_in(bfd *abfd, void *src, void *dst);
+unsigned int coff_swap_aux_in(bfd *abfd, void *ext1, int type, int in_class,
+				int indx, int numaux, void *in1);
+
+bfd_boolean doff_bad_format_hook(bfd *abfd, void *filehdr);
+bfd_boolean doff_set_section_contents(bfd *abfd, asection *sect,
+			const void *data, file_ptr offs, bfd_size_type size);
+
 #define coff_SWAP_sym_in	NULL
 #define coff_SWAP_sym_out	NULL
 #define coff_SWAP_reloc_out	NULL
