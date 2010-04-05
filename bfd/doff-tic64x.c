@@ -6,6 +6,7 @@
 #include "bfdlink.h"
 
 /* Instantiate the backend data we need */
+#define COFF_DEFAULT_SECTION_ALIGNMENT_POWER (12)
 #define DOFF_MAGIC DOFF_PROC_TMS320C6000
 #include "tidoff.h"
 
