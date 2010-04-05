@@ -155,6 +155,10 @@ doff_swap_filehdr_in(bfd *abfd, void *src, void *dst)
 				(out->f_nscns * sizeof(struct doff_scnhdr));
 	out->f_nsyms = H_GET_16(abfd, &f_hdr->num_syms);
 	out->f_flags = F_AR32WR;	/* Little endian; meh */
+	/* Let's set all possibly things this may have; then return zero of them
+	 * if it later turns out that they don't exist (although that's more
+	 * coff's problem than ours) */
+	out->f_flags |= F_RELFLG | F_EXEC | F_LNNO | F_LSYMS;
 
 	/* There is no opt header */
 	out->f_opthdr = 0;
