@@ -9,13 +9,13 @@ bfd_boolean doff_bad_format_hook(bfd *abfd, void *filehdr);
 bfd_boolean doff_set_section_contents(bfd *abfd, asection *sect,
 			const void *data, file_ptr offs, bfd_size_type size);
 
-#define coff_SWAP_sym_in	NULL
 #define coff_SWAP_sym_out	NULL
 #define coff_SWAP_reloc_out	NULL
 #define coff_SWAP_filehdr_out	NULL
 #define coff_SWAP_aouthdr_out	NULL
 #define coff_SWAP_scnhdr_out	NULL
 
+#define coff_SWAP_sym_in	NULL
 #define coff_SWAP_filehdr_in	NULL
 #define coff_SWAP_aouthdr_in	NULL
 #define coff_SWAP_scnhdr_in	NULL
