@@ -8,10 +8,12 @@
 #include "coff/tic64x.h"
 #include "libcoff.h"
 
+/* Instanciate the backend data we need */
+#include "tidoff.h"
 
 const bfd_target tic64x_coff2_vec =
 {
-	"coff2-c64x",				/* Name */
+	"doff-c64x",				/* Name */
 	bfd_target_coff_flavour,
 	BFD_ENDIAN_LITTLE,			/* data */
 	BFD_ENDIAN_LITTLE,			/* header */
@@ -63,5 +65,5 @@ const bfd_target tic64x_coff2_vec =
 	BFD_JUMP_TABLE_LINK(coff),
 	BFD_JUMP_TABLE_DYNAMIC(_bfd_nodynamic),
 	NULL,
-	&ticoff2_swap_table
+	&tidoff_swap_table
 };
