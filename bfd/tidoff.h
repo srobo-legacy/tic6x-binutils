@@ -41,14 +41,48 @@ doff_bad_format_hook(bfd *abfd ATTRIBUTE_UNUSED, void *filehdr)
 static void *
 doff_mkobject_hook(bfd *abfd, void *filehdr, void *aouthdr)
 {
+	struct doff_filehdr f_hdr;
+	struct doff_private_data *priv;
 	struct coff_tdata *foo;
+	void *strtable;
+	off_t saved_fileptr;
+	unsigned long size;
 
 	foo = coff_mkobject_hook(abfd, filehdr, aouthdr);
-	foo->ti_doff_private = bfd_zalloc(abfd,
-					sizeof(struct doff_private_data));
-	if (foo->ti_doff_private == NULL)
+	priv = bfd_alloc(abfd, sizeof(struct doff_private_data));
+	foo->ti_doff_private = priv;
+	if (priv == NULL)
 		return NULL;
 
+	/* Read in string table - preserve file ptr */
+	saved_fileptr = bfd_tell(abfd);
+
+	bfd_seek(abfd, 0, SEEK_SET);
+	if (bfd_bread(&f_hdr, sizeof(f_hdr), abfd) != sizeof(f_hdr)) {
+		free(foo);
+		bfd_seek(abfd, saved_fileptr, SEEK_SET);
+		return NULL;
+	}
+
+	size = H_GET_32(abfd, &f_hdr.strtab_size);
+	bfd_seek(abfd, sizeof(struct doff_filehdr) +
+			sizeof(struct doff_checksum_rec), SEEK_SET);
+	strtable = bfd_malloc(size);
+	if (strtable == NULL) {
+		free(foo);
+		bfd_seek(abfd, saved_fileptr, SEEK_SET);
+		return NULL;
+	}
+
+	if(bfd_bread(strtable, size, abfd) != size) {
+		free(strtable);
+		free(foo);
+		bfd_seek(abfd, saved_fileptr, SEEK_SET);
+		return NULL;
+	}
+
+	priv->str_sz = size;
+	priv->str_table = strtable;
 	return foo;
 }
 
