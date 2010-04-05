@@ -9,6 +9,14 @@
 #include <coff/internal.h>
 #include "libcoff.h"
 
+/* Declare some functions in coff-tic64x we use */
+extern void tic64x_rtype2howto(arelent *internal, struct internal_reloc *dst);
+extern bfd_boolean tic64x_set_arch_mach(bfd *abfd, enum bfd_architecture arch,
+					unsigned long machine);
+extern bfd_boolean tic64x_set_section_contents(bfd *abfd, sec_ptr section,
+					const PTR location, file_ptr offset,
+					bfd_size_type size);
+
 /* Instantiate the backend data we need */
 #define COFF_DEFAULT_SECTION_ALIGNMENT_POWER (12)
 #define DOFF_MAGIC DOFF_PROC_TMS320C6000
