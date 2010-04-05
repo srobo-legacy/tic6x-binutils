@@ -16,7 +16,7 @@
 #include <coff/doff.h>
 #include <coff/internal.h>
 #include "libcoff.h"
-#define BADMAG(x) ((x).f_magic != DOFF_BYTE_RESHUFFLE)
+#define BADMAG(x) ((x).f_magic != DOFF_MAGIC)
 
 #define NO_COFF_RELOCS
 #define NO_COFF_FILEHDR

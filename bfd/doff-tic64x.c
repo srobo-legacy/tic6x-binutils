@@ -6,6 +6,7 @@
 #include "bfdlink.h"
 
 /* Instanciate the backend data we need */
+#define DOFF_MAGIC DOFF_PROC_TMS320C6000
 #include "tidoff.h"
 
 const bfd_target tic64x_coff2_vec =
