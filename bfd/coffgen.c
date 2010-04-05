@@ -201,6 +201,9 @@ coff_real_object_p (bfd *abfd,
   if (!external_sections)
     goto fail;
 
+  if (bfd_seek(abfd, internal_f->f_scnptr, SEEK_SET))
+    goto fail;
+
   if (bfd_bread ((void *) external_sections, readsize, abfd) != readsize)
     goto fail;
 
@@ -252,9 +255,13 @@ coff_object_p (bfd *abfd)
   filhsz = bfd_coff_filhsz (abfd);
   aoutsz = bfd_coff_aoutsz (abfd);
 
+  /* File header might update section location, but we need to initialise it */
+  internal_f.f_scnptr = filhsz + aoutsz;
+
   filehdr = bfd_alloc (abfd, filhsz);
   if (filehdr == NULL)
     return NULL;
+
   if (bfd_bread (filehdr, filhsz, abfd) != filhsz)
     {
       if (bfd_get_error () != bfd_error_system_call)
