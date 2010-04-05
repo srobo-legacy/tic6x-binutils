@@ -382,6 +382,8 @@ coff_swap_sym_out (bfd * abfd, void * inp, void * extp)
   return SYMESZ;
 }
 
+#endif /* NO_COFF_SYMBOLS */
+
 static void
 coff_swap_aux_in (bfd *abfd,
 		  void * ext1,
@@ -577,8 +579,6 @@ coff_swap_aux_out (bfd * abfd,
 #endif
   return AUXESZ;
 }
-
-#endif /* NO_COFF_SYMBOLS */
 
 #ifndef NO_COFF_LINENOS
 
