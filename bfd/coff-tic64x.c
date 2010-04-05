@@ -8,14 +8,11 @@
 #include "coff/tic64x.h"
 #include "libcoff.h"
 
-#include "libdoff.h"
-
 #undef F_LSYMS
 #define F_LSYMS		F_LSYMS_TICOFF
 /* XXX - dictated by coff/ti.h, but ti's docs say F_LSYMS remains 0x8 */
 
 static void rtype2howto(arelent *internal, struct internal_reloc *dst);
-reloc_howto_type *doff_rtype2howto(unsigned int reloc_type);
 static bfd_boolean tic64x_set_arch_mach(bfd *b, enum bfd_architecture a,
 		unsigned long);
 static bfd_boolean tic64x_set_section_contents(bfd *b, sec_ptr section,
@@ -58,26 +55,11 @@ tic64x_set_arch_mach(bfd *b, enum bfd_architecture arch, unsigned long machine)
 }
 
 static bfd_boolean
-tic64x_doff_set_arch_mach(bfd *b, enum bfd_architecture arch, unsigned long m)
-{
-
-	return tic64x_set_arch_mach(b, arch, m);
-}
-
-static bfd_boolean
 tic64x_set_section_contents(bfd *b, sec_ptr section, const PTR location,
 		file_ptr offset, bfd_size_type bytes)
 {
 
 	return coff_set_section_contents(b, section, location, offset, bytes);
-}
-
-static bfd_boolean
-tic64x_doff_set_section_contents(bfd *b, sec_ptr section, const PTR location,
-		file_ptr offset, bfd_size_type bytes)
-{
-
-	return doff_set_section_contents(b, section, location, offset, bytes);
 }
 
 reloc_howto_type tic64x_howto_table[] = {
@@ -179,21 +161,6 @@ rtype2howto(arelent *internal, struct internal_reloc *dst)
 	return;
 }
 
-/* XXX XXX XXX this needs to go in backend specific table... */
-reloc_howto_type *
-doff_rtype2howto(unsigned int reloc_type)
-{
-	unsigned int i;
-	for (i = 0; i < sizeof(tic64x_howto_table) /
-			sizeof(tic64x_howto_table[0]); i++) {
-		if (tic64x_howto_table[i].type == reloc_type) {
-			return&tic64x_howto_table[i];
-		}
-	}
-
-	return NULL;
-}
-
 reloc_howto_type *
 tic64x_coff_reloc_name_lookup (bfd *abfd ATTRIBUTE_UNUSED, const char *name)
 {
@@ -263,58 +230,4 @@ const bfd_target tic64x_coff2_vec =
 	BFD_JUMP_TABLE_DYNAMIC(_bfd_nodynamic),
 	NULL,
 	&ticoff2_swap_table
-};
-
-/* NB: BFD typically puts targets of different formats into different files;
- * however thats likely overkill because doff is quite similar to doff, uses
- * the same relocations, and right now is only for tic64x */
-const bfd_target tic64x_doff_vec =
-{
-	"doff-c64x",
-	bfd_target_coff_flavour,
-	BFD_ENDIAN_LITTLE,
-	BFD_ENDIAN_LITTLE,	/* Supports big too; no time right now */
-	(HAS_RELOC | EXEC_P | HAS_LINENO | HAS_DEBUG | HAS_SYMS | HAS_LOCALS
-		| DYNAMIC | WP_TEXT),
-	(SEC_ALLOC | SEC_LOAD | SEC_RELOC | SEC_READONLY | SEC_CODE | SEC_DATA
-		| SEC_HAS_CONTENTS | SEC_DEBUGGING | SEC_STRINGS | SEC_MERGE),
-	'_',
-	'/',
-	15,
-	bfd_getl64, bfd_getl_signed_64, bfd_putl64,
-	bfd_getl32, bfd_getl_signed_32, bfd_putl32,
-	bfd_getl16, bfd_getl_signed_16, bfd_putl16,
-	bfd_getl64, bfd_getl_signed_64, bfd_putl64,
-	bfd_getl32, bfd_getl_signed_32, bfd_putl32,
-	bfd_getl16, bfd_getl_signed_16, bfd_putl16,
-	
-	{
-		_bfd_dummy_target,
-		doff_object_p,
-		bfd_generic_archive_p,
-		_bfd_dummy_target
-	},
-	{
-		bfd_false,
-		doff_mkobject,
-		_bfd_generic_mkarchive,
-		bfd_false
-	},
-	{
-		bfd_false,
-		doff_write_object_contents,
-		_bfd_write_archive_contents,
-		bfd_false
-	},
-	BFD_JUMP_TABLE_GENERIC(doff),
-	BFD_JUMP_TABLE_COPY(doff),
-	BFD_JUMP_TABLE_CORE(_bfd_nocore),
-	BFD_JUMP_TABLE_ARCHIVE(_bfd_noarchive),
-	BFD_JUMP_TABLE_SYMBOLS(doff),
-	BFD_JUMP_TABLE_RELOCS(doff),
-	BFD_JUMP_TABLE_WRITE(tic64x_doff),
-	BFD_JUMP_TABLE_LINK(doff),
-	BFD_JUMP_TABLE_DYNAMIC(_bfd_nodynamic),
-	NULL,
-	NULL /* XXX - custom backend data should _probably_ exist */
 };
