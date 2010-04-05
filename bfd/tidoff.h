@@ -16,6 +16,8 @@
 #include <coff/doff.h>
 #include <coff/internal.h>
 #include "libcoff.h"
+#define BADMAG(x) ((x).f_magic != DOFF_BYTE_RESHUFFLE)
+
 #include "coffcode.h"
 
 static bfd_coff_backend_data tidoff_swap_table =
