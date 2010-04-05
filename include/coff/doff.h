@@ -35,6 +35,13 @@ struct doff_filehdr {
 	uint32_t checksum;		/* Sum of previous values as uint32s */
 };
 
+#define FILHDR	struct doff_filehdr
+#define FILHSZ sizeof(struct doff_filehdr)
+
+/* Doff doesn't have the conventional file header / opt header; so for the
+ * purposes of the coff backend, have the checksum record impersonate the
+ * optional header, and we'll munge our way to reality on swapin/swapout */
+
 struct doff_checksum_rec {
 	uint32_t timestamp;
 	uint32_t section_checksum;
@@ -42,6 +49,9 @@ struct doff_checksum_rec {
 	uint32_t symbol_checksum;
 	uint32_t self_checksum;
 };
+
+#define AOUTHDRSZ sizeof(struct doff_checksum_rec)
+#define AOUTSZ sizeof(struct doff_checksum_rec)
 
 struct doff_scnhdr {
 	int32_t str_offset;		/* Offset in string table of name */
@@ -64,12 +74,18 @@ struct doff_scnhdr {
 	int32_t num_pkts;		/* Self explanatory */
 };
 
+#define SCNHDR	struct doff_scnhdr
+#define SCNHSZ	sizeof(struct doff_scnhdr)
+
 struct doff_symbol {
 	int32_t str_offset;		/* Bytes into string table */
 	int32_t value;			/* "Value" */
 	int16_t scn_num;		/* Self explanatory */
 	int16_t storage_class;		/* ??? */
 };
+
+#define SYMENT	struct doff_symbol
+#define SYMESZ	sizeof(struct doff_symbol)
 
 struct doff_image_packet {
 	int32_t num_relocs;		/* Num relocs */
