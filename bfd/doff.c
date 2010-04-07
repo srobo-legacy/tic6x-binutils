@@ -362,27 +362,29 @@ doff_index_str_table(bfd *abfd ATTRIBUTE_UNUSED, struct doff_private_data *priv)
 	return FALSE;
 }
 
+#define MAX(a,b) (((a) > (b)) ? (a) : (b))
 struct doff_internal_sectdata *doff_internalise_sectiondata(bfd *abfd,
-                                        struct internal_section *sectinfo)
+                                        struct internal_scnhdr *sectinfo)
 {
 	struct doff_image_packet pkt;
-	arelent *reloc;
+	struct doff_reloc rel;
+	struct doff_internal_reloc *reloc;
 	struct doff_internal_sectdata *record;
 	void *data;
-	int sz_read;
+	unsigned int sz_read, pkt_sz, pkt_relocs, i;
 	uint32_t checksum;
 
-	record = bfd_malloc(abfd, sizeof(*data));
+	record = bfd_malloc(sizeof(*data));
 	if (record == NULL)
 		return NULL;
 
-	data = bfd_malloc(abfd, sectinfo->s_size);
+	data = bfd_malloc(sectinfo->s_size);
 	if (data == NULL) {
 		free(record);
 		return NULL;
 	}
 
-	reloc = bfd_malloc(abfd, sizeof(arelent) * 100);
+	reloc = bfd_malloc(sizeof(struct doff_internal_reloc) * 100);
 	if (reloc == NULL) {
 		free(data);
 		free(record);
@@ -406,5 +408,60 @@ struct doff_internal_sectdata *doff_internalise_sectiondata(bfd *abfd,
 		if (bfd_bread(&pkt, sizeof(pkt), abfd) != sizeof(pkt))
 			goto fail;
 
-		checksum = doff_checksum(&pkg, sizeof(pkt));
+		checksum = doff_checksum(&pkt, sizeof(pkt));
+		pkt_sz = H_GET_32(abfd, &pkt.packet_sz);
 
+		if (pkt_sz + sz_read > sectinfo->s_size) {
+			fprintf(stderr, "Unexpected excess data in section\n");
+			goto fail;
+		}
+
+		if (bfd_bread(data, pkt_sz, abfd) != pkt_sz)
+			goto fail;
+
+		checksum += doff_checksum(data, pkt_sz);
+		data += pkt_sz;
+		sz_read += pkt_sz;
+
+		pkt_relocs = H_GET_32(abfd, &pkt.num_relocs);
+		if (record->num_relocs + pkt_relocs > record->max_num_relocs) {
+			record->max_num_relocs += MAX(100, pkt_relocs);
+			reloc = realloc(record->relocs,
+					record->max_num_relocs *
+					sizeof(struct doff_internal_reloc));
+			if (reloc == NULL)
+				goto fail;
+			record->relocs = reloc;
+			reloc += record->num_relocs;
+		}
+
+		for (i = 0; i < pkt_relocs; i++) {
+			if (bfd_bread(&rel, sizeof(rel), abfd) != sizeof(rel))
+				goto fail;
+
+			checksum += doff_checksum(&rel, sizeof(rel));
+
+			reloc->vaddr = H_GET_32(abfd, &rel.vaddr);
+			reloc->type = H_GET_16(abfd, &rel.reloc.r_sym.type);
+			reloc->symidx = H_GET_32(abfd,&rel.reloc.r_sym.sym_idx);
+
+			reloc++;
+			record->num_relocs++;
+		}
+
+		if (checksum != 0xFFFFFFFF) {
+			fprintf(stderr, "Instruction packet failed checksum\n");
+			goto fail;
+		}
+	}
+
+	/* Due to the way we're doing things, there isn't actually a case where
+	 * we don't read enough data */
+	return record;
+
+	fail:
+	free(record->raw_data);
+	free(record->relocs);
+	free(record);
+	return NULL;
+}
