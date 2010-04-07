@@ -97,12 +97,21 @@ doff_swap_reloc_in(bfd *abfd, void *src, void *dst)
 void
 doff_swap_sym_in(bfd *abfd, void *src, void *dst)
 {
+	struct doff_symbol *sym;
+	struct internal_syment *out;
 
-	UNUSED(abfd);
-	UNUSED(src);
-	UNUSED(dst);
-	fprintf(stderr, "Implement doff_swap_reloc_out\n");
-	abort();
+	sym = src;
+	out = dst;
+
+	out->_n._n_n._n_zeroes = 0;
+	out->_n._n_n._n_offset = H_GET_32(abfd, &sym->str_offset);
+	out->n_value = H_GET_32(abfd, &sym->value);
+	out->n_scnum = H_GET_16(abfd, &sym->scn_num);
+	out->n_flags = 0;
+	out->n_type = 0;
+	out->n_sclass = H_GET_16(abfd, &sym->storage_class);
+	out->n_numaux = 0;
+	return;
 }
 
 void
