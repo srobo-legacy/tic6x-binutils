@@ -16,6 +16,7 @@ struct doff_internal_sectdata {
 	unsigned int size;	/* of raw data */
 	void *raw_data;		/* self explanatory */
 	int num_relocs;		/* self explanatory */
+	int max_num_relocs;	/* self explanatory */
 	arelent *relocs;	/* self explanatory */
 };
 
