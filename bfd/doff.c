@@ -361,3 +361,50 @@ doff_index_str_table(bfd *abfd ATTRIBUTE_UNUSED, struct doff_private_data *priv)
 	priv->num_strs = i;
 	return FALSE;
 }
+
+struct doff_internal_sectdata *doff_internalise_sectiondata(bfd *abfd,
+                                        struct internal_section *sectinfo)
+{
+	struct doff_image_packet pkt;
+	arelent *reloc;
+	struct doff_internal_sectdata *record;
+	void *data;
+	int sz_read;
+	uint32_t checksum;
+
+	record = bfd_malloc(abfd, sizeof(*data));
+	if (record == NULL)
+		return NULL;
+
+	data = bfd_malloc(abfd, sectinfo->s_size);
+	if (data == NULL) {
+		free(record);
+		return NULL;
+	}
+
+	reloc = bfd_malloc(abfd, sizeof(arelent) * 100);
+	if (reloc == NULL) {
+		free(data);
+		free(record);
+		return NULL;
+	}
+
+	record->raw_data = data;
+	record->size = sectinfo->s_size;
+	record->num_relocs = 0;
+	record->max_num_relocs = 100;
+	record->relocs = reloc;
+	
+	bfd_seek(abfd, sectinfo->s_scnptr, SEEK_SET);
+
+	/* In theory we need the number of packets, but we know the size, and
+	 * can just read until we have enough. Exactly why the num_pkts field
+	 * exists, I do not know */
+
+	for (sz_read = 0; sz_read < sectinfo->s_size; ) {
+		/* Get header */
+		if (bfd_bread(&pkt, sizeof(pkt), abfd) != sizeof(pkt))
+			goto fail;
+
+		checksum = doff_checksum(&pkg, sizeof(pkt));
+
