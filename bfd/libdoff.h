@@ -11,6 +11,14 @@ struct doff_private_data {
 				 * to numbered entries */
 };
 
+/* Our own internal representation of a section */
+struct doff_internal_sectdata {
+	unsigned int size;	/* of raw data */
+	void *raw_data;		/* self explanatory */
+	int num_relocs;		/* self explanatory */
+	arelent *relocs;	/* self explanatory */
+};
+
 unsigned int doff_swap_reloc_out(bfd *abfd, void *src, void *dst);
 unsigned int doff_swap_sym_out(bfd *abfd, void *src, void *dst);
 unsigned int doff_swap_scnhdr_out(bfd *abfd, void *src, void *dst);
@@ -26,6 +34,7 @@ void doff_swap_filehdr_in(bfd *abfd, void *src, void *dst);
 bfd_boolean doff_set_section_contents(bfd *abfd, asection *sect,
 			const void *data, file_ptr offs, bfd_size_type size);
 bfd_boolean doff_index_str_table(bfd *abfd, struct doff_private_data *priv);
-
+struct doff_internal_sectdata *doff_internalise_sectiondata(bfd *abfd,
+					struct internal_section *sectinfo);
 
 #endif /* _BFD_LIBDOFF_H_ */
