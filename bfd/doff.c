@@ -500,6 +500,29 @@ struct doff_internal_sectdata *doff_internalise_sectiondata(bfd *abfd,
 	return NULL;
 }
 
+struct doff_internal_sectdata *
+doff_blank_sectiondata(bfd *abfd ATTRIBUTE_UNUSED, bfd_size_type size)
+{
+	struct doff_internal_sectdata *data;
+
+	data = bfd_malloc(sizeof(struct doff_internal_sectdata));
+	if (data == NULL)
+		return NULL;
+
+	data->raw_data= bfd_malloc(size);
+	if (data->raw_data == NULL) {
+		free(data);
+		return NULL;
+	}
+
+	memset(data->raw_data, 0, size);
+	data->size = size;
+	data->num_relocs = 0;
+	data->max_num_relocs = 0;
+	data->relocs = NULL;
+	return data;
+}
+
 void
 doff_free_internal_sectiondata(struct doff_internal_sectdata *data)
 {
