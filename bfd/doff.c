@@ -196,6 +196,8 @@ doff_swap_filehdr_in(bfd *abfd, void *src, void *dst)
 		goto validate_fail;
 
 	/* While we're here, read in all the section table and validate it */
+	/* Also, tell coff about where it is */
+	out->f_scnptr = bfd_tell(abfd);
 	sz = sizeof(struct doff_scnhdr) * out->f_nscns;
 	data = bfd_malloc(sz);
 	if (data == NULL)
