@@ -19,11 +19,11 @@ struct doff_internal_reloc {
 
 /* Our own internal representation of a section */
 struct doff_internal_sectdata {
-	unsigned int size;	/* of raw data */
-	void *raw_data;		/* self explanatory */
-	int num_relocs;		/* self explanatory */
-	int max_num_relocs;	/* self explanatory */
-	arelent *relocs;	/* self explanatory */
+	unsigned int size;		/* of raw data */
+	void *raw_data;			/* self explanatory */
+	unsigned int num_relocs;	/* self explanatory */
+	unsigned int max_num_relocs;	/* self explanatory */
+	struct doff_internal_reloc *relocs; /* self explanatory */
 };
 
 unsigned int doff_swap_reloc_out(bfd *abfd, void *src, void *dst);
