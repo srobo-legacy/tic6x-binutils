@@ -186,7 +186,7 @@ doff_swap_scnhdr_in(bfd *abfd, void *src, void *dst)
 	/* We need to tell bfd about relocs. Unfortunately TI chose not to store
 	 * this information, so we actually have to trawl the section data
 	 * looking for them */
-	sect = doff_internalise_sectiondata(abfd, out);
+	sect = doff_internalise_sectiondata(abfd, out->s_size, out->s_scnptr);
 	if (sect == NULL)
 		goto invalid;
 
