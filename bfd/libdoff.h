@@ -11,6 +11,12 @@ struct doff_private_data {
 				 * to numbered entries */
 };
 
+struct doff_internal_reloc {
+	bfd_vma vaddr;
+	unsigned int symidx;
+	short type;
+};
+
 /* Our own internal representation of a section */
 struct doff_internal_sectdata {
 	unsigned int size;	/* of raw data */
