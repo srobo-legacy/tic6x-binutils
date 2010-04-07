@@ -393,6 +393,7 @@ doff_index_str_table(bfd *abfd ATTRIBUTE_UNUSED, struct doff_private_data *priv)
 
 	str_table = priv->str_table;
 	bytes_left = priv->str_sz;
+	bytes_left--; /* We inject a null byte at the end anyway */
 
 	sz = strlen(str_table);
 	bytes_left -= sz;
@@ -412,6 +413,9 @@ doff_index_str_table(bfd *abfd ATTRIBUTE_UNUSED, struct doff_private_data *priv)
 		str_idx_table[i] = str_table;
 
 		str_table += sz + 1; /* Next string, including null byte */
+		if (bytes_left == 0)
+			break;
+
 		sz = strlen(str_table);
 		bytes_left -= sz + 1;
 	}
