@@ -148,12 +148,17 @@ doff_swap_scnhdr_in(bfd *abfd, void *src, void *dst)
 	/* We need to tell bfd about relocs. Unfortunately TI chose not to store
 	 * this information, so we actually have to trawl the section data
 	 * looking for them */
-	sect = doff_internalise_sectiondata(abfd, out->s_size, out->s_scnptr);
-	if (sect == NULL)
-		goto invalid;
+	if (flags & DOFF_SCN_FLAG_DOWNLOAD) {
+		sect = doff_internalise_sectiondata(abfd, out->s_size,
+							out->s_scnptr);
+		if (sect == NULL)
+			goto invalid;
 
-	out->s_nreloc = sect->num_relocs;
-	doff_free_internal_sectiondata(sect);
+		out->s_nreloc = sect->num_relocs;
+		doff_free_internal_sectiondata(sect);
+	} else {
+		out->s_nreloc = 0;
+	}
 	/* Comment in internal.h says s_align is only used by I960 */
 
 	return;
