@@ -108,12 +108,77 @@ doff_swap_sym_in(bfd *abfd, void *src, void *dst)
 void
 doff_swap_scnhdr_in(bfd *abfd, void *src, void *dst)
 {
+	struct doff_scnhdr *scnhdr;
+	struct internal_scnhdr *out;
+	struct doff_private_data *priv;
+	const char *name;
+	unsigned int str_offset, i, flags;
 
-	UNUSED(abfd);
-	UNUSED(src);
-	UNUSED(dst);
-	fprintf(stderr, "Implement doff_swap_reloc_out\n");
+	/* We can be confident at this point that the section headers has been
+	 * validated and that the string table has been read in and stored
+	 * in our private data record. This relies on what coffgen does
+	 * at the moment, perhaps this will change in the future. */
+	scnhdr = src;
+	out = dst;
+	priv = coff_data(abfd)->ti_doff_private;
+	memset(out, 0, sizeof(*out));
+
+	str_offset = H_GET_32(abfd, &scnhdr->str_offset);
+	if (str_offset >= priv->str_sz)
+		goto invalid;
+
+	/* We need use the "\idx" method of setting section names - coff
+	 * only expects 8 characters, if it doesn't fit we give it an index
+	 * number in the string table. So always do this */
+	/* First, a pointer into the string table of where the section header
+	 * says we should find its string */
+	name = &priv->str_table[str_offset];
+
+	/* Search for that in the indexed string table */
+	for (i = 0; i < priv->num_strs; i++)
+		/* We could probably turn this into a hash-table situation */
+		if (priv->str_idx_table[i] == name)
+			break;
+
+	if (i == priv->num_strs) {
+		fprintf(stderr, "Bad string table index for section name\n");
+		goto invalid;
+	}
+
+	/* Actually set the section "name" */
+	snprintf(&out->s_name[0], 7, "\%d", i);
+
+	out->s_vaddr = H_GET_32(abfd, &scnhdr->load_addr);
+	out->s_size = H_GET_32(abfd, &scnhdr->size);
+	out->s_scnptr = H_GET_32(abfd, &scnhdr->first_pkt_offset);
+	out->s_relptr = out->s_scnptr; /* We'll have to hack relocs anyway */
+	out->s_lnnoptr = 0;
+	out->s_nlnno = 0;
+
+	flags = H_GET_32(abfd, &scnhdr->flags);
+
+	if ((flags & DOFF_SCN_FLAG_ALLOC) && (flags & DOFF_SCN_FLAG_DOWNLOAD))
+		out->s_flags = STYP_REG;
+	else if (flags & DOFF_SCN_FLAG_DOWNLOAD) /* Download, no alloc? */
+		out->s_flags = STYP_PAD;
+	else if (flags & DOFF_SCN_FLAG_ALLOC)
+		out->s_flags = STYP_NOLOAD;
+	else
+		out->s_flags = STYP_INFO;
+
+	if ((flags & DOFF_SCN_FLAG_TYPE_MASK) == DOFF_SCN_TYPE_TEXT)
+		out->s_flags |= STYP_TEXT;
+	else if ((flags & DOFF_SCN_FLAG_TYPE_MASK) == DOFF_SCN_TYPE_DATA)
+		out->s_flags |= STYP_DATA;
+	else if ((flags & DOFF_SCN_FLAG_TYPE_MASK) == DOFF_SCN_TYPE_BSS)
+		out->s_flags |= STYP_BSS;
+
+	/* XXX - reloc info */
 	abort();
+
+	invalid:
+	memset(out, 0, sizeof(*out));
+	return;
 }
 
 void
