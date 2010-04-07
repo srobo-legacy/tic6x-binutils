@@ -42,6 +42,6 @@ bfd_boolean doff_set_section_contents(bfd *abfd, asection *sect,
 			const void *data, file_ptr offs, bfd_size_type size);
 bfd_boolean doff_index_str_table(bfd *abfd, struct doff_private_data *priv);
 struct doff_internal_sectdata *doff_internalise_sectiondata(bfd *abfd,
-					struct internal_section *sectinfo);
+					struct internal_scnhdr *sectinfo);
 
 #endif /* _BFD_LIBDOFF_H_ */
