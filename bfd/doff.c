@@ -201,9 +201,10 @@ doff_swap_filehdr_in(bfd *abfd, void *src, void *dst)
 	if (data == NULL)
 		memset(out, 0, sizeof(*out));
 
-	if (bfd_bread(data, sz, abfd) == sz) {
+	if (bfd_bread(data, sz, abfd) != sz) {
 		free(data);
 		memset(out, 0, sizeof(*out));
+		goto validate_fail;
 	}
 
 	checksum = doff_checksum(data, sz);
