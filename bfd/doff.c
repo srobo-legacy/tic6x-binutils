@@ -431,7 +431,8 @@ doff_index_str_table(bfd *abfd ATTRIBUTE_UNUSED, struct doff_private_data *priv)
 
 #define MAX(a,b) (((a) > (b)) ? (a) : (b))
 struct doff_internal_sectdata *doff_internalise_sectiondata(bfd *abfd,
-				bfd_size_type sect_size, file_ptr sect_offset)
+				bfd_boolean download, bfd_size_type sect_size,
+				file_ptr sect_offset)
 {
 	struct doff_image_packet pkt;
 	struct doff_reloc rel;
@@ -463,6 +464,7 @@ struct doff_internal_sectdata *doff_internalise_sectiondata(bfd *abfd,
 	record->num_relocs = 0;
 	record->max_num_relocs = 100;
 	record->relocs = reloc;
+	record->download = download;
 	
 	bfd_seek(abfd, sect_offset, SEEK_SET);
 
@@ -534,7 +536,8 @@ struct doff_internal_sectdata *doff_internalise_sectiondata(bfd *abfd,
 }
 
 struct doff_internal_sectdata *
-doff_blank_sectiondata(bfd *abfd ATTRIBUTE_UNUSED, bfd_size_type size)
+doff_blank_sectiondata(bfd *abfd ATTRIBUTE_UNUSED, bfd_boolean download,
+					bfd_size_type size)
 {
 	struct doff_internal_sectdata *data;
 
@@ -553,6 +556,7 @@ doff_blank_sectiondata(bfd *abfd ATTRIBUTE_UNUSED, bfd_size_type size)
 	data->num_relocs = 0;
 	data->max_num_relocs = 0;
 	data->relocs = NULL;
+	data->download = download;
 	return data;
 }
 
