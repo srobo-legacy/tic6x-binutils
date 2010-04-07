@@ -125,7 +125,7 @@ static bfd_coff_backend_data tidoff_swap_table =
 
 	TRUE,	/* We always have long filenames */
 	TRUE,	/* And section names */
-	NULL,	/* set long section names? */
+	COFF_LONG_SECTION_NAMES_SETTER,
 	12,	/* Default alignment power */
 	FALSE,	/* Force symnames in strings */
 	0,	/* debug string prefix len. ??? */
