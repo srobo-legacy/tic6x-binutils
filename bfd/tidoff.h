@@ -83,6 +83,14 @@ doff_mkobject_hook(bfd *abfd, void *filehdr, void *aouthdr)
 
 	priv->str_sz = size;
 	priv->str_table = strtable;
+
+	if (doff_index_str_table(abfd, priv))
+		free(strtable);
+		free(foo);
+		bfd_seek(abfd, saved_fileptr, SEEK_SET);
+		return NULL;
+	}
+
 	return foo;
 }
 
