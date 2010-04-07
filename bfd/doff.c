@@ -431,7 +431,7 @@ struct doff_internal_sectdata *doff_internalise_sectiondata(bfd *abfd,
 	record->max_num_relocs = 100;
 	record->relocs = reloc;
 	
-	bfd_seek(abfd, file_offset, SEEK_SET);
+	bfd_seek(abfd, sect_offset, SEEK_SET);
 
 	/* In theory we need the number of packets, but we know the size, and
 	 * can just read until we have enough. Exactly why the num_pkts field
