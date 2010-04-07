@@ -465,3 +465,13 @@ struct doff_internal_sectdata *doff_internalise_sectiondata(bfd *abfd,
 	free(record);
 	return NULL;
 }
+
+void
+doff_free_internal_sectiondata(struct doff_internal_sectdata *data)
+{
+
+	free(data->raw_data);
+	free(data->relocs);
+	free(data);
+	return;
+}
