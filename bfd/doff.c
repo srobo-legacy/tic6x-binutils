@@ -27,62 +27,14 @@ doff_checksum(const void *data, unsigned int len)
 	return sum;
 }
 
-
+/* See tidoff.h commentry on what we're doing about swaping out */
 unsigned int
-doff_swap_reloc_out(bfd *abfd, void *src, void *dst)
+doff_fake_swap_out(bfd *abfd ATTRIBUTE_UNUSED, void *src ATTRIBUTE_UNUSED,				void *dst ATTRIBUTE_UNUSED)
 {
 
-	UNUSED(abfd);
-	UNUSED(src);
-	UNUSED(dst);
-	fprintf(stderr, "Implement doff_swap_reloc_out\n");
-	abort();
+	return 1;
 }
 	
-unsigned int
-doff_swap_sym_out(bfd *abfd, void *src, void *dst)
-{
-
-	UNUSED(abfd);
-	UNUSED(src);
-	UNUSED(dst);
-	fprintf(stderr, "Implement doff_swap_sym_out\n");
-	abort();
-}
-
-unsigned int
-doff_swap_scnhdr_out(bfd *abfd, void *src, void *dst)
-{
-
-	UNUSED(abfd);
-	UNUSED(src);
-	UNUSED(dst);
-	fprintf(stderr, "Implement doff_swap_scnhdr_out\n");
-	abort();
-}
-
-unsigned int
-doff_swap_aouthdr_out(bfd *abfd, void *src, void *dst)
-{
-
-	UNUSED(abfd);
-	UNUSED(src);
-	UNUSED(dst);
-	fprintf(stderr, "Implement doff_swap_aouthdr_out\n");
-	abort();
-}
-
-unsigned int
-doff_swap_filehdr_out(bfd *abfd, void *src, void *dst)
-{
-
-	UNUSED(abfd);
-	UNUSED(src);
-	UNUSED(dst);
-	fprintf(stderr, "Implement doff_swap_reloc_out\n");
-	abort();
-}
-
 void
 doff_swap_reloc_in(bfd *abfd, void *src, void *dst)
 {

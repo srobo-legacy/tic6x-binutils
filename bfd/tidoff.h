@@ -1,11 +1,20 @@
 /* Prototypes for functions we'll be using */
 #include "libdoff.h"
 
-#define coff_swap_sym_out	doff_swap_sym_out
-#define coff_swap_reloc_out	doff_swap_reloc_out
-#define coff_swap_filehdr_out	doff_swap_filehdr_out
-#define coff_swap_aouthdr_out	doff_swap_aouthdr_out
-#define coff_swap_scnhdr_out	doff_swap_scnhdr_out
+/* We wish to use our own swap-in functions, which lets coff read file data
+ * without re-implementing too much stuff to handle the insaneness of doff.
+ * However, this approaches the impossible in the case of writing the
+ * contents of the file out, because so many thing have an implicit location,
+ * or have some other fudge thrown in with it. So: no swapout functions are
+ * unimplemented, and we #define all calls to swapouts as doff_fake_swap_out,
+ * which does precisely nothing.
+ * Then, we hook write_object_contents, and dump everything out then. */
+
+#define coff_swap_sym_out	doff_fake_swap_out
+#define coff_swap_reloc_out	doff_fake_swap_out
+#define coff_swap_filehdr_out	doff_fake_swap_out
+#define coff_swap_aouthdr_out	doff_fake_swap_out
+#define coff_swap_scnhdr_out	doff_fake_swap_out
 
 #define coff_swap_sym_in	doff_swap_sym_in
 #define coff_swap_filehdr_in	doff_swap_filehdr_in
@@ -107,9 +116,9 @@ doff_mkobject_hook(bfd *abfd, void *filehdr, void *aouthdr)
 static bfd_coff_backend_data tidoff_swap_table =
 {
 	coff_swap_aux_in, doff_swap_sym_in, coff_swap_lineno_in,
-	coff_swap_aux_out, doff_swap_sym_out, coff_swap_lineno_out,
-	doff_swap_reloc_out, doff_swap_filehdr_out, doff_swap_aouthdr_out,
-	doff_swap_scnhdr_out,
+	coff_swap_aux_out, doff_fake_swap_out, coff_swap_lineno_out,
+	doff_fake_swap_out, doff_fake_swap_out, doff_fake_swap_out,
+	doff_fake_swap_out,
 
 	FILHSZ, AOUTSZ, SCNHSZ, SYMESZ, AUXESZ, RELSZ, LINESZ, FILNMLEN,
 	/* FIXME - filename lengths? */

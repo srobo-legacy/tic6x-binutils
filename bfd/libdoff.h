@@ -26,11 +26,7 @@ struct doff_internal_sectdata {
 	struct doff_internal_reloc *relocs; /* self explanatory */
 };
 
-unsigned int doff_swap_reloc_out(bfd *abfd, void *src, void *dst);
-unsigned int doff_swap_sym_out(bfd *abfd, void *src, void *dst);
-unsigned int doff_swap_scnhdr_out(bfd *abfd, void *src, void *dst);
-unsigned int doff_swap_aouthdr_out(bfd *abfd, void *src, void *dst);
-unsigned int doff_swap_filehdr_out(bfd *abfd, void *src, void *dst);
+unsigned int doff_fake_swap_out(bfd *abfd, void *src, void *dst);
 
 void doff_swap_reloc_in(bfd *abfd, void *src, void *dst);
 void doff_swap_sym_in(bfd *abfd, void *src, void *dst);
