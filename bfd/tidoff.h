@@ -65,6 +65,7 @@ doff_mkobject_hook(bfd *abfd, void *filehdr, void *aouthdr)
 	}
 
 	size = H_GET_32(abfd, &f_hdr.strtab_size);
+	size += 1; /* We'll stick a null byte at the end, making strlen safe */
 	bfd_seek(abfd, sizeof(struct doff_filehdr) +
 			sizeof(struct doff_checksum_rec), SEEK_SET);
 	strtable = bfd_malloc(size);
@@ -81,6 +82,7 @@ doff_mkobject_hook(bfd *abfd, void *filehdr, void *aouthdr)
 		return NULL;
 	}
 
+	strtable[size-1] = 0; /* Ensure strlen doesn't fall off end of block */
 	priv->str_sz = size;
 	priv->str_table = strtable;
 
