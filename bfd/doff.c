@@ -398,7 +398,7 @@ doff_index_str_table(bfd *abfd ATTRIBUTE_UNUSED, struct doff_private_data *priv)
 
 #define MAX(a,b) (((a) > (b)) ? (a) : (b))
 struct doff_internal_sectdata *doff_internalise_sectiondata(bfd *abfd,
-                                        struct internal_scnhdr *sectinfo)
+				bfd_size_type sect_size, file_ptr sect_offset)
 {
 	struct doff_image_packet pkt;
 	struct doff_reloc rel;
@@ -412,7 +412,7 @@ struct doff_internal_sectdata *doff_internalise_sectiondata(bfd *abfd,
 	if (record == NULL)
 		return NULL;
 
-	data = bfd_malloc(sectinfo->s_size);
+	data = bfd_malloc(sect_size);
 	if (data == NULL) {
 		free(record);
 		return NULL;
@@ -426,18 +426,18 @@ struct doff_internal_sectdata *doff_internalise_sectiondata(bfd *abfd,
 	}
 
 	record->raw_data = data;
-	record->size = sectinfo->s_size;
+	record->size = sect_size;
 	record->num_relocs = 0;
 	record->max_num_relocs = 100;
 	record->relocs = reloc;
 	
-	bfd_seek(abfd, sectinfo->s_scnptr, SEEK_SET);
+	bfd_seek(abfd, file_offset, SEEK_SET);
 
 	/* In theory we need the number of packets, but we know the size, and
 	 * can just read until we have enough. Exactly why the num_pkts field
 	 * exists, I do not know */
 
-	for (sz_read = 0; sz_read < sectinfo->s_size; ) {
+	for (sz_read = 0; sz_read < sect_size; ) {
 		/* Get header */
 		if (bfd_bread(&pkt, sizeof(pkt), abfd) != sizeof(pkt))
 			goto fail;
@@ -445,7 +445,7 @@ struct doff_internal_sectdata *doff_internalise_sectiondata(bfd *abfd,
 		checksum = doff_checksum(&pkt, sizeof(pkt));
 		pkt_sz = H_GET_32(abfd, &pkt.packet_sz);
 
-		if (pkt_sz + sz_read > sectinfo->s_size) {
+		if (pkt_sz + sz_read > sect_size) {
 			fprintf(stderr, "Unexpected excess data in section\n");
 			goto fail;
 		}
