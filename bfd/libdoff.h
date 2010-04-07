@@ -6,6 +6,9 @@
 struct doff_private_data {
 	unsigned int str_sz;	/* size of string table */
 	char *str_table;	/* string table */
+	unsigned int num_strs;	/* How many *actual* strings there are*/
+	char **str_idx_table;	/* Pointers into string table, corresponding
+				 * to numbered entries */
 };
 
 unsigned int doff_swap_reloc_out(bfd *abfd, void *src, void *dst);
@@ -22,5 +25,7 @@ void doff_swap_filehdr_in(bfd *abfd, void *src, void *dst);
 
 bfd_boolean doff_set_section_contents(bfd *abfd, asection *sect,
 			const void *data, file_ptr offs, bfd_size_type size);
+bfd_boolean doff_index_str_table(bfd *abfd, struct doff_private_data *priv);
+
 
 #endif /* _BFD_LIBDOFF_H_ */

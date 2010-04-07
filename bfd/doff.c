@@ -252,3 +252,44 @@ doff_set_section_contents(bfd *abfd, asection *sect, const void *data,
 	fprintf(stderr, "Implement doff_set_section_contents\n");
 	abort();
 }
+
+bfd_boolean
+doff_index_str_table(bfd *abfd ATTRIBUTE_UNUSED, struct doff_private_data *priv)
+{
+	char **str_idx_table, *str_table;
+	int bytes_left, i, sz, maxnum;
+
+	maxnum = 100;
+	str_idx_table = bfd_malloc(100 * sizeof(char*));
+	priv->str_idx_table = str_idx_table;
+	if (str_idx_table == NULL)
+		return TRUE;
+
+	str_table = priv->str_table;
+	bytes_left = priv->str_sz;
+
+	sz = strlen(str_table);
+	bytes_left -= sz;
+	for (i = 0; bytes_left > 0; i++) {
+		if (i >= maxnum) {
+			str_idx_table = realloc(str_idx_table,
+						sizeof(char*) * (maxnum + 100));
+			if (str_idx_table == NULL) {
+				free(priv->str_idx_table);
+				return TRUE;
+			}
+
+			priv->str_idx_table = str_idx_table;
+			maxnum += 100;
+		}
+
+		str_idx_table[i] = str_table;
+
+		str_table += sz + 1; /* Next string, including null byte */
+		sz = strlen(str_table);
+		bytes_left -= sz;
+	}
+
+	priv->num_strs = i;
+	return FALSE;
+}
