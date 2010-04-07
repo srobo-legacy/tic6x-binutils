@@ -422,7 +422,7 @@ struct doff_internal_sectdata *doff_internalise_sectiondata(bfd *abfd,
 	unsigned int sz_read, pkt_sz, pkt_relocs, i;
 	uint32_t checksum;
 
-	record = bfd_malloc(sizeof(*data));
+	record = bfd_malloc(sizeof(*record));
 	if (record == NULL)
 		return NULL;
 
