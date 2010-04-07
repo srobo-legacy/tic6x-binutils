@@ -85,6 +85,7 @@ doff_mkobject_hook(bfd *abfd, void *filehdr, void *aouthdr)
 	strtable[size-1] = 0; /* Ensure strlen doesn't fall off end of block */
 	priv->str_sz = size;
 	priv->str_table = strtable;
+	obj_coff_strings(abfd) = strtable; /* Also store for coff itself */
 
 	if (doff_index_str_table(abfd, priv)) {
 		free(strtable);
