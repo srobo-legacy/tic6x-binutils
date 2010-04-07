@@ -413,7 +413,7 @@ doff_index_str_table(bfd *abfd ATTRIBUTE_UNUSED, struct doff_private_data *priv)
 
 		str_table += sz + 1; /* Next string, including null byte */
 		sz = strlen(str_table);
-		bytes_left -= sz;
+		bytes_left -= sz + 1;
 	}
 
 	priv->num_strs = i;
