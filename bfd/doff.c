@@ -111,6 +111,7 @@ doff_swap_scnhdr_in(bfd *abfd, void *src, void *dst)
 	struct doff_scnhdr *scnhdr;
 	struct internal_scnhdr *out;
 	struct doff_private_data *priv;
+	struct doff_internal_sectdata *sect;
 	const char *name;
 	unsigned int str_offset, i, flags;
 
@@ -173,8 +174,18 @@ doff_swap_scnhdr_in(bfd *abfd, void *src, void *dst)
 	else if ((flags & DOFF_SCN_FLAG_TYPE_MASK) == DOFF_SCN_TYPE_BSS)
 		out->s_flags |= STYP_BSS;
 
-	/* XXX - reloc info */
-	abort();
+	/* We need to tell bfd about relocs. Unfortunately TI chose not to store
+	 * this information, so we actually have to trawl the section data
+	 * looking for them */
+	sect = doff_internalise_sectiondata(abfd, out);
+	if (sect == NULL)
+		goto invalid;
+
+	out->s_nreloc = sect->num_relocs;
+	doff_free_internal_sectiondata(sect);
+	/* Comment in internal.h says s_align is only used by I960 */
+
+	return;
 
 	invalid:
 	memset(out, 0, sizeof(*out));
