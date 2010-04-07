@@ -38,6 +38,8 @@ void doff_swap_scnhdr_in(bfd *abfd, void *src, void *dst);
 void doff_swap_aouthdr_in(bfd *abfd, void *src, void *dst);
 void doff_swap_filehdr_in(bfd *abfd, void *src, void *dst);
 
+bfd_boolean doff_get_section_contents(bfd *abfd, asection *sect,
+			void *data, file_ptr offs, bfd_size_type size);
 bfd_boolean doff_set_section_contents(bfd *abfd, asection *sect,
 			const void *data, file_ptr offs, bfd_size_type size);
 bfd_boolean doff_index_str_table(bfd *abfd, struct doff_private_data *priv);

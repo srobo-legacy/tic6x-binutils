@@ -25,6 +25,13 @@
 #define NO_COFF_SCNHDR
 #include "coffcode.h"
 
+/* We need to hook into section content munging functions, to handle the
+ * unpleasentness of how it's stored. Has to go after #include coffcode
+ * as coffcode defines its own coff_set_section_contents */
+#undef coff_get_section_contents
+#define coff_get_section_contents	doff_get_section_contents
+#define coff_set_section_contents	doff_set_section_contents
+
 static bfd_boolean
 doff_bad_format_hook(bfd *abfd ATTRIBUTE_UNUSED, void *filehdr)
 {

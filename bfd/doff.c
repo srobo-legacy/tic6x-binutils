@@ -328,6 +328,20 @@ doff_swap_filehdr_in(bfd *abfd, void *src, void *dst)
 }
 
 bfd_boolean
+doff_get_section_contents(bfd *abfd, asection *sect, void *data,
+					file_ptr offs, bfd_size_type size)
+{
+
+	UNUSED(abfd);
+	UNUSED(sect);
+	UNUSED(data);
+	UNUSED(offs);
+	UNUSED(size);
+	fprintf(stderr, "Implement doff_get_section_contents\n");
+	abort();
+}
+
+bfd_boolean
 doff_set_section_contents(bfd *abfd, asection *sect, const void *data,
 					file_ptr offs, bfd_size_type size)
 {
