@@ -468,6 +468,13 @@ struct doff_internal_sectdata *doff_internalise_sectiondata(bfd *abfd,
 	
 	bfd_seek(abfd, sect_offset, SEEK_SET);
 
+	if (!download) {
+		if (bfd_bread(data, sect_size, abfd) != sect_size)
+			goto fail;
+
+		return record;
+	}
+
 	/* In theory we need the number of packets, but we know the size, and
 	 * can just read until we have enough. Exactly why the num_pkts field
 	 * exists, I do not know */
