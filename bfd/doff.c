@@ -15,14 +15,24 @@ static uint32_t
 doff_checksum(const void *data, unsigned int len)
 {
 	const uint32_t *d;
+	const uint8_t *u;
 	uint32_t sum;
-	int l;
+	int l, i;
 
-	BFD_ASSERT((len & 3) == 0);
 	sum = 0;
 	d = data;
-	for (l = len; l > 0; l -= sizeof(uint32_t))
+	for (l = len; l > 3; l -= sizeof(uint32_t))
 		sum += *d++;
+
+	if (l != 0) {
+		/* Tack in the remaining data, little endian. Dunno if this
+		 * is right or wrong, the actual information about this checksum
+		 * isn't documented anywhere */
+		u = (uint8_t *)d;
+		for (i = 0; l > 0; l--, i++) {
+			sum += u[i] << (i * 8);
+		}
+	}
 
 	return sum;
 }
