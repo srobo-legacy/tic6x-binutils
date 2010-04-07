@@ -44,7 +44,7 @@ doff_mkobject_hook(bfd *abfd, void *filehdr, void *aouthdr)
 	struct doff_filehdr f_hdr;
 	struct doff_private_data *priv;
 	struct coff_tdata *foo;
-	void *strtable;
+	char *strtable;
 	off_t saved_fileptr;
 	unsigned long size;
 
@@ -86,7 +86,7 @@ doff_mkobject_hook(bfd *abfd, void *filehdr, void *aouthdr)
 	priv->str_sz = size;
 	priv->str_table = strtable;
 
-	if (doff_index_str_table(abfd, priv))
+	if (doff_index_str_table(abfd, priv)) {
 		free(strtable);
 		free(foo);
 		bfd_seek(abfd, saved_fileptr, SEEK_SET);
