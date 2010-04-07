@@ -376,14 +376,45 @@ bfd_boolean
 doff_set_section_contents(bfd *abfd, asection *sect, const void *data,
 					file_ptr offs, bfd_size_type size)
 {
+	struct coff_section_tdata *coff_tdata;
+	struct doff_internal_sectdata *doff_tdata;
+	void *dst_data;
 
-	UNUSED(abfd);
-	UNUSED(sect);
-	UNUSED(data);
-	UNUSED(offs);
-	UNUSED(size);
-	fprintf(stderr, "Implement doff_set_section_contents\n");
-	abort();
+	coff_tdata = sect->used_by_bfd;
+	doff_tdata = coff_tdata->tdata;
+	if (doff_tdata == NULL) {
+		if (abfd->direction == both_direction) {
+			doff_tdata = doff_internalise_sectiondata(abfd,
+						sect->filepos, sect->rawsize);
+		} else if (abfd->direction == write_direction) {
+			doff_tdata = doff_blank_sectiondata(abfd,sect->rawsize);
+		} else if (abfd->direction == read_direction) {
+			bfd_set_error(bfd_error_invalid_operation);
+			return FALSE;
+		} else {
+			BFD_ASSERT("Invalid direction for set_section_contents"
+					== NULL);
+		}
+
+		if (doff_tdata == NULL)
+			return FALSE;
+
+		coff_tdata->tdata = doff_tdata;
+	}
+
+	/* Basic validation */
+	if (offs >= doff_tdata->size || offs + size >= doff_tdata->size) {
+		bfd_set_error(bfd_error_invalid_operation);
+		return FALSE;
+	}
+
+	/* We buffer absolutely everything we can in memory in terms of section
+	 * contents, and then actually beat everything into shape at the last
+	 * possible moment. */
+
+	dst_data = doff_tdata->raw_data + offs;
+	memcpy(dst_data, data, size);
+	return TRUE;
 }
 
 bfd_boolean
