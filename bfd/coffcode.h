@@ -2362,6 +2362,13 @@ coff_set_arch_mach_hook (bfd *abfd, void * filehdr)
       break;
 #endif
 
+#ifdef DOFF_MAGIC
+    case DOFF_MAGIC:
+      arch = DOFF_ARCH;
+      machine = 0;
+      break;
+#endif
+
 #ifdef TIC30MAGIC
     case TIC30MAGIC:
       arch = bfd_arch_tic30;

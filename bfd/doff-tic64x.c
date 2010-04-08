@@ -22,6 +22,7 @@ reloc_howto_type *tic64x_coff_reloc_name_lookup (bfd *abfd, const char *name);
 /* Instantiate the backend data we need */
 #define COFF_DEFAULT_SECTION_ALIGNMENT_POWER (12)
 #define DOFF_MAGIC DOFF_PROC_TMS320C6000
+#define DOFF_ARCH bfd_arch_tic64x
 #define RTYPE2HOWTO(internal, reloc) tic64x_rtype2howto(internal, reloc);
 #define coff_bfd_reloc_type_lookup tic64x_coff_reloc_type_lookup
 #define coff_bfd_reloc_name_lookup tic64x_coff_reloc_name_lookup
