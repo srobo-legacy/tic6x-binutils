@@ -72,6 +72,12 @@ doff_swap_sym_in(bfd *abfd, void *src, void *dst)
 	out->n_flags = 0;
 	out->n_type = 0;
 	out->n_sclass = H_GET_16(abfd, &sym->storage_class);
+
+	/* Many symbols have no storage class, so give them the (ti specific?)
+	 * undefined external class */
+	if (out->n_sclass == 0)
+		out->n_sclass = C_UEXT;
+
 	out->n_numaux = 0;
 	return;
 }
