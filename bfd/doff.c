@@ -329,7 +329,7 @@ doff_get_section_contents(bfd *abfd, asection *sect, void *data,
 	}
 
 	/* Basic validation */
-	if (offs >= doff_tdata->size || offs + size >= doff_tdata->size) {
+	if (offs >= doff_tdata->size || offs + size > doff_tdata->size) {
 		bfd_set_error(bfd_error_invalid_operation);
 		return FALSE;
 	}
@@ -388,7 +388,7 @@ doff_set_section_contents(bfd *abfd, asection *sect, const void *data,
 	}
 
 	/* Basic validation */
-	if (offs >= doff_tdata->size || offs + size >= doff_tdata->size) {
+	if (offs >= doff_tdata->size || offs + size > doff_tdata->size) {
 		bfd_set_error(bfd_error_invalid_operation);
 		return FALSE;
 	}
