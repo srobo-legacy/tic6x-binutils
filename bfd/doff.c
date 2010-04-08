@@ -149,7 +149,7 @@ doff_swap_scnhdr_in(bfd *abfd, void *src, void *dst)
 	 * this information, so we actually have to trawl the section data
 	 * looking for them */
 	if (flags & DOFF_SCN_FLAG_DOWNLOAD) {
-		sect = doff_internalise_sectiondata(abfd, out->s_size,
+		sect = doff_internalise_sectiondata(abfd, TRUE, out->s_size,
 							out->s_scnptr);
 		if (sect == NULL)
 			goto invalid;
@@ -309,6 +309,8 @@ doff_get_section_contents(bfd *abfd, asection *sect, void *data,
 					abfd->direction == both_direction) {
 			/* XXX - rawsize is correct, yuh? */
 			doff_tdata = doff_internalise_sectiondata(abfd,
+						(sect->flags & SEC_LOAD)
+						? TRUE : FALSE,
 						sect->filepos, sect->rawsize);
 		} else if (abfd->direction == write_direction) {
 			bfd_set_error(bfd_error_invalid_operation);
@@ -352,9 +354,14 @@ doff_set_section_contents(bfd *abfd, asection *sect, const void *data,
 	if (doff_tdata == NULL) {
 		if (abfd->direction == both_direction) {
 			doff_tdata = doff_internalise_sectiondata(abfd,
+						(sect->flags & SEC_LOAD)
+						? TRUE : FALSE,
 						sect->filepos, sect->rawsize);
 		} else if (abfd->direction == write_direction) {
-			doff_tdata = doff_blank_sectiondata(abfd,sect->rawsize);
+			doff_tdata = doff_blank_sectiondata(abfd,
+						(sect->flags & SEC_LOAD)
+						? TRUE : FALSE,
+						sect->rawsize);
 		} else if (abfd->direction == read_direction) {
 			bfd_set_error(bfd_error_invalid_operation);
 			return FALSE;
