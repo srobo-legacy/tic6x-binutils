@@ -83,8 +83,7 @@ doff_swap_scnhdr_in(bfd *abfd, void *src, void *dst)
 	struct internal_scnhdr *out;
 	struct doff_private_data *priv;
 	struct doff_internal_sectdata *sect;
-	const char *name;
-	unsigned int str_offset, i, flags;
+	unsigned int str_offset, flags;
 
 	/* We can be confident at this point that the section headers has been
 	 * validated and that the string table has been read in and stored
@@ -102,23 +101,9 @@ doff_swap_scnhdr_in(bfd *abfd, void *src, void *dst)
 	/* We need use the "\idx" method of setting section names - coff
 	 * only expects 8 characters, if it doesn't fit we give it an index
 	 * number in the string table. So always do this */
-	/* First, a pointer into the string table of where the section header
-	 * says we should find its string */
-	name = &priv->str_table[str_offset];
-
-	/* Search for that in the indexed string table */
-	for (i = 0; i < priv->num_strs; i++)
-		/* We could probably turn this into a hash-table situation */
-		if (priv->str_idx_table[i] == name)
-			break;
-
-	if (i == priv->num_strs) {
-		fprintf(stderr, "Bad string table index for section name\n");
-		goto invalid;
-	}
 
 	/* Actually set the section "name" */
-	snprintf(&out->s_name[0], 7, "\%d", i);
+	snprintf(&out->s_name[0], 7, "/%d", str_offset);
 
 	out->s_vaddr = H_GET_32(abfd, &scnhdr->load_addr);
 	out->s_size = H_GET_32(abfd, &scnhdr->size);
