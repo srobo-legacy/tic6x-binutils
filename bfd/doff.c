@@ -314,7 +314,7 @@ doff_get_section_contents(bfd *abfd, asection *sect, void *data,
 			doff_tdata = doff_internalise_sectiondata(abfd,
 						(sect->flags & SEC_LOAD)
 						? TRUE : FALSE,
-						sect->filepos, sect->rawsize);
+						sect->size, sect->filepos);
 		} else if (abfd->direction == write_direction) {
 			bfd_set_error(bfd_error_invalid_operation);
 			return FALSE;
