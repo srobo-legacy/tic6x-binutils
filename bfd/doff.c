@@ -288,6 +288,18 @@ doff_get_section_contents(bfd *abfd, asection *sect, void *data,
 	void *src_data;
 
 	coff_tdata = sect->used_by_bfd;
+
+	/* It appears coff tdata is only created on demand, ie when things
+	 * actually need to use it. So, we need to allocate it ourselves in
+	 * certain circumstances */
+	if (coff_tdata == NULL) {
+		coff_tdata = bfd_zalloc(abfd,sizeof(struct coff_section_tdata));
+		if (coff_tdata == NULL)
+			return FALSE;
+
+		sect->used_by_bfd = coff_tdata;
+	}
+
 	doff_tdata = coff_tdata->tdata;
 	if (doff_tdata == NULL) {
 		if (abfd->direction == read_direction ||
@@ -335,6 +347,15 @@ doff_set_section_contents(bfd *abfd, asection *sect, const void *data,
 	void *dst_data;
 
 	coff_tdata = sect->used_by_bfd;
+
+	if (coff_tdata == NULL) {
+		coff_tdata = bfd_zalloc(abfd,sizeof(struct coff_section_tdata));
+		if (coff_tdata == NULL)
+			return FALSE;
+
+		sect->used_by_bfd = coff_tdata;
+	}
+
 	doff_tdata = coff_tdata->tdata;
 	if (doff_tdata == NULL) {
 		if (abfd->direction == both_direction) {
