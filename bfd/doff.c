@@ -310,7 +310,6 @@ doff_get_section_contents(bfd *abfd, asection *sect, void *data,
 	if (doff_tdata == NULL) {
 		if (abfd->direction == read_direction ||
 					abfd->direction == both_direction) {
-			/* XXX - rawsize is correct, yuh? */
 			doff_tdata = doff_internalise_sectiondata(abfd,
 						(sect->flags & SEC_LOAD)
 						? TRUE : FALSE,
@@ -368,12 +367,12 @@ doff_set_section_contents(bfd *abfd, asection *sect, const void *data,
 			doff_tdata = doff_internalise_sectiondata(abfd,
 						(sect->flags & SEC_LOAD)
 						? TRUE : FALSE,
-						sect->filepos, sect->rawsize);
+						sect->filepos, sect->size);
 		} else if (abfd->direction == write_direction) {
 			doff_tdata = doff_blank_sectiondata(abfd,
 						(sect->flags & SEC_LOAD)
 						? TRUE : FALSE,
-						sect->rawsize);
+						sect->size);
 		} else if (abfd->direction == read_direction) {
 			bfd_set_error(bfd_error_invalid_operation);
 			return FALSE;
