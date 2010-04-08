@@ -27,6 +27,8 @@
 #define BADMAG(x) ((x).f_magic != DOFF_MAGIC)
 #define TIDOFF
 
+#define COFF_LONG_SECTION_NAMES
+
 #define NO_COFF_RELOCS
 #define NO_COFF_FILEHDR
 #define NO_COFF_SYMBOLS
