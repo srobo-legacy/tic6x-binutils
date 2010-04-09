@@ -5154,7 +5154,13 @@ coff_slurp_reloc_table (bfd * abfd, sec_ptr asect, asymbol ** symbols)
       src = native_relocs + idx;
 
       dst.r_offset = 0;
+#ifndef TIDOFF
       coff_swap_reloc_in (abfd, src, &dst);
+#else
+      /* TI have decided to be absolutely ridiculous here - and I think
+       * it deserves to have at least one arbitary-special-case ifdef */
+      doff_regurgitate_reloc(abfd, asect, idx, &dst);
+#endif
 
 #ifdef RELOC_PROCESSING
       RELOC_PROCESSING (cache_ptr, &dst, symbols, abfd, asect);
