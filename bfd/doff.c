@@ -199,6 +199,8 @@ doff_swap_filehdr_in(bfd *abfd, void *src, void *dst)
 	out->f_magic = H_GET_16(abfd, &f_hdr->target_id);
 	out->f_nscns = H_GET_16(abfd, &f_hdr->num_scns);
 	out->f_symptr = H_GET_32(abfd, &f_hdr->strtab_size) +
+				sizeof(struct doff_filehdr) +
+				sizeof(struct doff_checksum_rec) +
 				(out->f_nscns * sizeof(struct doff_scnhdr));
 	out->f_nsyms = H_GET_16(abfd, &f_hdr->num_syms);
 	out->f_flags = F_AR32WR;	/* Little endian; meh */
