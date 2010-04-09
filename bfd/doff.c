@@ -331,7 +331,7 @@ doff_regurgitate_reloc(bfd *abfd, asection *sect, unsigned int idx,
 	struct doff_internal_sectdata *doff_tdata;
 	struct doff_internal_reloc *reloc;
 
-	doff_tdata = doff_get_internal_sectdata(abfd, sect, write_direction);
+	doff_tdata = doff_get_internal_sectdata(abfd, sect, read_direction);
 
 	if (idx >= doff_tdata->num_relocs) {
 		fprintf(stderr, "Invalid reloc index %d\n", idx);
