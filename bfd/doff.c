@@ -94,17 +94,6 @@ doff_fake_swap_out(bfd *abfd ATTRIBUTE_UNUSED, void *src ATTRIBUTE_UNUSED,				vo
 }
 	
 void
-doff_swap_reloc_in(bfd *abfd, void *src, void *dst)
-{
-
-	UNUSED(abfd);
-	UNUSED(src);
-	UNUSED(dst);
-	fprintf(stderr, "Implement doff_swap_reloc_out\n");
-	abort();
-}
-
-void
 doff_swap_sym_in(bfd *abfd, void *src, void *dst)
 {
 	struct doff_symbol *sym;
@@ -332,6 +321,30 @@ doff_swap_filehdr_in(bfd *abfd, void *src, void *dst)
 	validate_fail:
 	memset(out, 0, sizeof(*out));
 	bfd_seek(abfd, saved_fileptr, SEEK_SET);
+	return;
+}
+
+doff_regurgitate_reloc(bfd *abfd, asection *sect, unsigned int idx,
+					struct internal_reloc *dst)
+{
+	struct doff_internal_sectdata *doff_tdata;
+	struct doff_internal_reloc *reloc;
+
+	doff_tdata = doff_get_internal_sectdata(abfd, sect, write_direction);
+
+	if (idx >= doff_tdata->num_relocs) {
+		fprintf(stderr, "Invalid reloc index %d\n", idx);
+		memset(dst, 0, sizeof(*dst));
+		return;
+	}
+
+	reloc = doff_tdata->relocs + idx;
+	dst->r_vaddr = reloc->vaddr;
+	dst->r_symndx = reloc->symidx;
+	dst->r_type = reloc->type;
+	dst->r_size = 0;
+	dst->r_extern = 0;
+	dst->r_offset = 0;
 	return;
 }
 
