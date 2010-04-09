@@ -37,6 +37,54 @@ doff_checksum(const void *data, unsigned int len)
 	return sum;
 }
 
+static struct doff_internal_sectdata *
+doff_get_internal_sectdata(bfd *abfd, asection *sect, int direction)
+{
+	struct coff_section_tdata *coff_tdata;
+	struct doff_internal_sectdata *doff_tdata;
+
+	/* It appears coff tdata is only created on demand, ie when things
+	 * actually need to use it. So, we need to allocate it ourselves in
+	 * certain circumstances */
+	coff_tdata = sect->used_by_bfd;
+	if (coff_tdata == NULL) {
+		coff_tdata = bfd_zalloc(abfd,sizeof(struct coff_section_tdata));
+		if (coff_tdata == NULL)
+			return FALSE;
+
+		sect->used_by_bfd = coff_tdata;
+	}
+
+	doff_tdata = coff_tdata->tdata;
+	if (doff_tdata == NULL) {
+		if (direction == read_direction && (
+					abfd->direction == read_direction
+					|| abfd->direction == both_direction)) {
+			doff_tdata = doff_internalise_sectiondata(abfd,
+						(sect->flags & SEC_LOAD)
+						? TRUE : FALSE,
+						sect->size, sect->filepos);
+		} else if (direction == write_direction && (
+					abfd->direction == read_direction
+					|| abfd->direction == both_direction)) {
+			doff_tdata = doff_blank_sectiondata(abfd,
+						(sect->flags & SEC_LOAD)
+						? TRUE : FALSE,
+						sect->size);
+		} else {
+			bfd_set_error(bfd_error_invalid_operation);
+			return FALSE;
+		}
+
+		if (doff_tdata == NULL)
+			return FALSE;
+
+		coff_tdata->tdata = doff_tdata;
+	}
+
+	return doff_tdata;
+}
+
 /* See tidoff.h commentry on what we're doing about swaping out */
 unsigned int
 doff_fake_swap_out(bfd *abfd ATTRIBUTE_UNUSED, void *src ATTRIBUTE_UNUSED,				void *dst ATTRIBUTE_UNUSED)
@@ -291,44 +339,10 @@ bfd_boolean
 doff_get_section_contents(bfd *abfd, asection *sect, void *data,
 					file_ptr offs, bfd_size_type size)
 {
-	struct coff_section_tdata *coff_tdata;
 	struct doff_internal_sectdata *doff_tdata;
 	void *src_data;
 
-	coff_tdata = sect->used_by_bfd;
-
-	/* It appears coff tdata is only created on demand, ie when things
-	 * actually need to use it. So, we need to allocate it ourselves in
-	 * certain circumstances */
-	if (coff_tdata == NULL) {
-		coff_tdata = bfd_zalloc(abfd,sizeof(struct coff_section_tdata));
-		if (coff_tdata == NULL)
-			return FALSE;
-
-		sect->used_by_bfd = coff_tdata;
-	}
-
-	doff_tdata = coff_tdata->tdata;
-	if (doff_tdata == NULL) {
-		if (abfd->direction == read_direction ||
-					abfd->direction == both_direction) {
-			doff_tdata = doff_internalise_sectiondata(abfd,
-						(sect->flags & SEC_LOAD)
-						? TRUE : FALSE,
-						sect->size, sect->filepos);
-		} else if (abfd->direction == write_direction) {
-			bfd_set_error(bfd_error_invalid_operation);
-			return FALSE;
-		} else {
-			BFD_ASSERT("Invalid direction for get_section_contents"
-					== NULL);
-		}
-
-		if (doff_tdata == NULL)
-			return FALSE;
-
-		coff_tdata->tdata = doff_tdata;
-	}
+	doff_tdata = doff_get_internal_sectdata(abfd, sect, read_direction);
 
 	/* Basic validation */
 	if (offs >= doff_tdata->size || offs + size > doff_tdata->size) {
@@ -349,45 +363,10 @@ bfd_boolean
 doff_set_section_contents(bfd *abfd, asection *sect, const void *data,
 					file_ptr offs, bfd_size_type size)
 {
-	struct coff_section_tdata *coff_tdata;
 	struct doff_internal_sectdata *doff_tdata;
 	void *dst_data;
 
-	coff_tdata = sect->used_by_bfd;
-
-	if (coff_tdata == NULL) {
-		coff_tdata = bfd_zalloc(abfd,sizeof(struct coff_section_tdata));
-		if (coff_tdata == NULL)
-			return FALSE;
-
-		sect->used_by_bfd = coff_tdata;
-	}
-
-	doff_tdata = coff_tdata->tdata;
-	if (doff_tdata == NULL) {
-		if (abfd->direction == both_direction) {
-			doff_tdata = doff_internalise_sectiondata(abfd,
-						(sect->flags & SEC_LOAD)
-						? TRUE : FALSE,
-						sect->filepos, sect->size);
-		} else if (abfd->direction == write_direction) {
-			doff_tdata = doff_blank_sectiondata(abfd,
-						(sect->flags & SEC_LOAD)
-						? TRUE : FALSE,
-						sect->size);
-		} else if (abfd->direction == read_direction) {
-			bfd_set_error(bfd_error_invalid_operation);
-			return FALSE;
-		} else {
-			BFD_ASSERT("Invalid direction for set_section_contents"
-					== NULL);
-		}
-
-		if (doff_tdata == NULL)
-			return FALSE;
-
-		coff_tdata->tdata = doff_tdata;
-	}
+	doff_tdata = doff_get_internal_sectdata(abfd, sect, write_direction);
 
 	/* Basic validation */
 	if (offs >= doff_tdata->size || offs + size > doff_tdata->size) {
