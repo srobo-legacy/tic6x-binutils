@@ -324,6 +324,7 @@ doff_swap_filehdr_in(bfd *abfd, void *src, void *dst)
 	return;
 }
 
+void
 doff_regurgitate_reloc(bfd *abfd, asection *sect, unsigned int idx,
 					struct internal_reloc *dst)
 {
