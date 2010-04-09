@@ -16,11 +16,11 @@
 #define coff_swap_aouthdr_out	doff_fake_swap_out
 #define coff_swap_scnhdr_out	doff_fake_swap_out
 
+#define coff_swap_reloc_in	doff_swap_reloc_in
 #define coff_swap_sym_in	doff_swap_sym_in
 #define coff_swap_filehdr_in	doff_swap_filehdr_in
 #define coff_swap_aouthdr_in	doff_swap_aouthdr_in
 #define coff_swap_scnhdr_in	doff_swap_scnhdr_in
-#define coff_swap_reloc_in	doff_swap_reloc_in
 
 #define bfd_pe_print_pdata	NULL
 
@@ -34,6 +34,13 @@
 #define NO_COFF_SYMBOLS
 #define NO_COFF_AOUTHDR
 #define NO_COFF_SCNHDR
+
+static inline void doff_swap_reloc_in(bfd *abfd ATTRIBUTE_UNUSED,
+				void *a ATTRIBUTE_UNUSED,
+				void *b ATTRIBUTE_UNUSED) {
+	abort();
+}
+
 #include "coffcode.h"
 
 /* We need to hook into section content munging functions, to handle the

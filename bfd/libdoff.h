@@ -31,7 +31,6 @@ struct doff_internal_sectdata {
 
 unsigned int doff_fake_swap_out(bfd *abfd, void *src, void *dst);
 
-void doff_swap_reloc_in(bfd *abfd, void *src, void *dst);
 void doff_swap_sym_in(bfd *abfd, void *src, void *dst);
 void doff_swap_scnhdr_in(bfd *abfd, void *src, void *dst);
 void doff_swap_aouthdr_in(bfd *abfd, void *src, void *dst);
