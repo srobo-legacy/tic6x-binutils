@@ -38,10 +38,12 @@ doff_checksum(const void *data, unsigned int len)
 }
 
 static struct doff_internal_sectdata *
-doff_get_internal_sectdata(bfd *abfd, asection *sect, int direction)
+doff_get_internal_sectdata(bfd *abfd, asection *sect, int direction,
+				bfd_boolean force_downloadable)
 {
 	struct coff_section_tdata *coff_tdata;
 	struct doff_internal_sectdata *doff_tdata;
+	bfd_boolean download;
 
 	/* It appears coff tdata is only created on demand, ie when things
 	 * actually need to use it. So, we need to allocate it ourselves in
@@ -55,21 +57,25 @@ doff_get_internal_sectdata(bfd *abfd, asection *sect, int direction)
 		sect->used_by_bfd = coff_tdata;
 	}
 
+	/* Do we need to parse packet headers and the like in this section?
+	 * yes if this gets downloaded to the target, yes if there are no flags,
+	 * which in coff only seems to occur when we're padding. And if we're
+	 * padding, we have the ALLOC flag but not DOWNLOAD flag. Also, urgh */
+	download = (sect->flags & SEC_LOAD || force_downloadable);
+
 	doff_tdata = coff_tdata->tdata;
 	if (doff_tdata == NULL) {
 		if (direction == read_direction && (
 					abfd->direction == read_direction
 					|| abfd->direction == both_direction)) {
 			doff_tdata = doff_internalise_sectiondata(abfd,
-						(sect->flags & SEC_LOAD)
-						? TRUE : FALSE,
+						download,
 						sect->size, sect->filepos);
 		} else if (direction == write_direction && (
 					abfd->direction == read_direction
 					|| abfd->direction == both_direction)) {
 			doff_tdata = doff_blank_sectiondata(abfd,
-						(sect->flags & SEC_LOAD)
-						? TRUE : FALSE,
+						download,
 						sect->size);
 		} else {
 			bfd_set_error(bfd_error_invalid_operation);
@@ -331,7 +337,8 @@ doff_regurgitate_reloc(bfd *abfd, asection *sect, unsigned int idx,
 	struct doff_internal_sectdata *doff_tdata;
 	struct doff_internal_reloc *reloc;
 
-	doff_tdata = doff_get_internal_sectdata(abfd, sect, read_direction);
+	doff_tdata = doff_get_internal_sectdata(abfd, sect, read_direction,
+						TRUE);
 
 	if (idx >= doff_tdata->num_relocs) {
 		fprintf(stderr, "Invalid reloc index %d\n", idx);
@@ -356,7 +363,8 @@ doff_get_section_contents(bfd *abfd, asection *sect, void *data,
 	struct doff_internal_sectdata *doff_tdata;
 	void *src_data;
 
-	doff_tdata = doff_get_internal_sectdata(abfd, sect, read_direction);
+	doff_tdata = doff_get_internal_sectdata(abfd, sect, read_direction,
+						FALSE);
 
 	/* Basic validation */
 	if (offs >= doff_tdata->size || offs + size > doff_tdata->size) {
@@ -380,7 +388,8 @@ doff_set_section_contents(bfd *abfd, asection *sect, const void *data,
 	struct doff_internal_sectdata *doff_tdata;
 	void *dst_data;
 
-	doff_tdata = doff_get_internal_sectdata(abfd, sect, write_direction);
+	doff_tdata = doff_get_internal_sectdata(abfd, sect, write_direction,
+						FALSE);
 
 	/* Basic validation */
 	if (offs >= doff_tdata->size || offs + size > doff_tdata->size) {
