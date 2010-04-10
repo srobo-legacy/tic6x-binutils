@@ -7,6 +7,7 @@
 #include "coff/internal.h"
 #include "coff/tic64x.h"
 #include "libcoff.h"
+#include "libdoff.h"
 
 #undef F_LSYMS
 #define F_LSYMS		F_LSYMS_TICOFF
@@ -102,7 +103,79 @@ reloc_howto_type tic64x_howto_table[] = {
 		NULL, "RELWORD", FALSE, 0xFFFF, 0xFFFF, FALSE),
 
 	HOWTO(R_RELLONG, 0, 2, 32, FALSE, 0, complain_overflow_bitfield,
-		NULL, "RELLONG", FALSE, 0xFFFFFFFF, 0xFFFFFFFF, FALSE)
+		NULL, "RELLONG", FALSE, 0xFFFFFFFF, 0xFFFFFFFF, FALSE),
+
+	HOWTO(RE_ADD, 0, 0, 0, FALSE, 0, complain_overflow_dont, ti_reloc_fail,
+		"RE_ADD", FALSE, 0, 0, FALSE),
+
+	HOWTO(RE_SUB, 0, 0, 0, FALSE, 0, complain_overflow_dont, ti_reloc_fail,
+		"RE_USB", FALSE, 0, 0, FALSE),
+
+	HOWTO(RE_NEG, 0, 0, 0, FALSE, 0, complain_overflow_dont, ti_reloc_fail,
+		"RE_NEG", FALSE, 0, 0, FALSE),
+
+	HOWTO(RE_MPY, 0, 0, 0, FALSE, 0, complain_overflow_dont, ti_reloc_fail,
+		"RE_MPY", FALSE, 0, 0, FALSE),
+
+	HOWTO(RE_DIV, 0, 0, 0, FALSE, 0, complain_overflow_dont, ti_reloc_fail,
+		"RE_DIV", FALSE, 0, 0, FALSE),
+
+	HOWTO(RE_MOD, 0, 0, 0, FALSE, 0, complain_overflow_dont, ti_reloc_fail,
+		"RE_MOD", FALSE, 0, 0, FALSE),
+
+	HOWTO(RE_SR, 0, 0, 0, FALSE, 0, complain_overflow_dont, ti_reloc_fail,
+		"RE_SR", FALSE, 0, 0, FALSE),
+
+	HOWTO(RE_ASR, 0, 0, 0, FALSE, 0, complain_overflow_dont, ti_reloc_fail,
+		"RE_ASR", FALSE, 0, 0, FALSE),
+
+	HOWTO(RE_SL, 0, 0, 0, FALSE, 0, complain_overflow_dont, ti_reloc_fail,
+		"RE_SL", FALSE, 0, 0, FALSE),
+
+	HOWTO(RE_AND, 0, 0, 0, FALSE, 0, complain_overflow_dont, ti_reloc_fail,
+		"RE_AND", FALSE, 0, 0, FALSE),
+
+	HOWTO(RE_OR, 0, 0, 0, FALSE, 0, complain_overflow_dont, ti_reloc_fail,
+		"RE_OR", FALSE, 0, 0, FALSE),
+
+	HOWTO(RE_XOR, 0, 0, 0, FALSE, 0, complain_overflow_dont, ti_reloc_fail,
+		"RE_XOR", FALSE, 0, 0, FALSE),
+
+	HOWTO(RE_NOTB, 0, 0, 0, FALSE, 0, complain_overflow_dont, ti_reloc_fail,
+		"RE_NOTB", FALSE, 0, 0, FALSE),
+
+	HOWTO(RE_ULDFLD, 0, 0, 0, FALSE, 0, complain_overflow_dont,
+		ti_reloc_fail, "RE_ULDFLD", FALSE, 0, 0, FALSE),
+
+	HOWTO(RE_SLDFLD, 0, 0, 0, FALSE, 0, complain_overflow_dont,
+		ti_reloc_fail, "RE_SLDFLD", FALSE, 0, 0, FALSE),
+
+	HOWTO(RE_USTFLD, 0, 0, 0, FALSE, 0, complain_overflow_dont,
+		ti_reloc_fail, "RE_USTFLD", FALSE, 0, 0, FALSE),
+
+	HOWTO(RE_SSTFLD, 0, 0, 0, FALSE, 0, complain_overflow_dont,
+		ti_reloc_fail, "RE_SSTFLD", FALSE, 0, 0, FALSE),
+
+	HOWTO(RE_PUSH, 0, 0, 0, FALSE, 0, complain_overflow_dont,
+		ti_reloc_fail, "RE_PUSH", FALSE, 0, 0, FALSE),
+
+	HOWTO(RE_PUSHSK, 0, 0, 0, FALSE, 0, complain_overflow_dont,
+		ti_reloc_fail, "RE_PUSHSK", FALSE, 0, 0, FALSE),
+
+	HOWTO(RE_PUSHUK, 0, 0, 0, FALSE, 0, complain_overflow_dont,
+		ti_reloc_fail, "RE_PUSHUK", FALSE, 0, 0, FALSE),
+
+	HOWTO(RE_PUSHPC, 0, 0, 0, FALSE, 0, complain_overflow_dont,
+		ti_reloc_fail, "RE_PUSHPC", FALSE, 0, 0, FALSE),
+
+	HOWTO(RE_DUP, 0, 0, 0, FALSE, 0, complain_overflow_dont,
+		ti_reloc_fail, "RE_DUP", FALSE, 0, 0, FALSE),
+
+	HOWTO(RE_XSTFLD, 0, 0, 0, FALSE, 0, complain_overflow_dont,
+		ti_reloc_fail, "RE_XSTFLD", FALSE, 0, 0, FALSE),
+
+	HOWTO(RE_PUSHSV, 0, 0, 0, FALSE, 0, complain_overflow_dont,
+		ti_reloc_fail, "RE_PUSHSV", FALSE, 0, 0, FALSE)
 };
 
 reloc_howto_type *
