@@ -11,6 +11,31 @@
 
 #define UNUSED(x) ((x) = (x))
 
+bfd_reloc_status_type
+ti_reloc_fail(bfd *abfd ATTRIBUTE_UNUSED, arelent *reloc ATTRIBUTE_UNUSED,
+		struct bfd_symbol *sym ATTRIBUTE_UNUSED,
+		void *what ATTRIBUTE_UNUSED,
+		asection *sect ATTRIBUTE_UNUSED,
+		bfd *bfd2 ATTRIBUTE_UNUSED,
+		char **what2 ATTRIBUTE_UNUSED)
+{
+
+	fprintf(stderr, "Dear valued user:\n"
+			"You are attempting to link a TI DOFF file section "
+			"with relocations that become resolved and require "
+			"evaluating. TI's \"generic\" relocs are a language "
+			"by themselves, and a cricket bat with nails in would "
+			"not convince me to go anywhere near it.\n"
+			"I recommend that you either link in one step (ie, not "
+			"incrementally or any other way that involves "
+			"evaluating relocs) or if using a precompiled doff "
+			"file your should just allow the dspbridge dynamic "
+			"loader to handle it (saving both your and my sanity)."
+			"\nYours faithfully,\nThe Author\n");
+	return bfd_reloc_outofrange;
+}
+
+
 static uint32_t
 doff_checksum(const void *data, unsigned int len)
 {

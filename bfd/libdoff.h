@@ -50,4 +50,8 @@ struct doff_internal_sectdata *doff_blank_sectiondata(bfd *abfd,
 				bfd_boolean download, bfd_size_type size);
 void doff_free_internal_sectiondata(struct doff_internal_sectdata *data);
 
+bfd_reloc_status_type ti_reloc_fail(bfd *abfd, arelent *reloc,
+				struct bfd_symbol *sym, void *what,
+				asection *sect, bfd *bfd2, char **what2);
+
 #endif /* _BFD_LIBDOFF_H_ */
