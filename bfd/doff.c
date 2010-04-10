@@ -365,6 +365,8 @@ doff_get_section_contents(bfd *abfd, asection *sect, void *data,
 
 	doff_tdata = doff_get_internal_sectdata(abfd, sect, read_direction,
 						FALSE);
+	if (doff_tdata == NULL)
+		return FALSE;
 
 	/* Basic validation */
 	if (offs >= doff_tdata->size || offs + size > doff_tdata->size) {
@@ -390,6 +392,8 @@ doff_set_section_contents(bfd *abfd, asection *sect, const void *data,
 
 	doff_tdata = doff_get_internal_sectdata(abfd, sect, write_direction,
 						FALSE);
+	if (doff_tdata == NULL)
+		return FALSE;
 
 	/* Basic validation */
 	if (offs >= doff_tdata->size || offs + size > doff_tdata->size) {
