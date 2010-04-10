@@ -29,6 +29,31 @@
 #define R_C60PCR7				0x70
 #define R_C60PCR12				0x71
 
+#define RE_ADD					0x4000
+#define RE_SUB					0x4001
+#define RE_NEG					0x4002
+#define RE_MPY					0x4003
+#define RE_DIV					0x4004
+#define RE_MOD					0x4005
+#define RE_SR					0x4006
+#define RE_ASR					0x4007
+#define RE_SL					0x4008
+#define RE_AND					0x4009
+#define RE_OR					0x400A
+#define RE_XOR					0x400B
+#define RE_NOTB					0x400C
+#define RE_ULDFLD				0x400D
+#define RE_SLDFLD				0x400E
+#define RE_USTFLD				0x400F
+#define RE_SSTFLD				0x4010
+#define RE_PUSH					0x4011
+#define RE_PUSHSK				0x4012
+#define RE_PUSHUK				0x4013
+#define RE_PUSHPC				0x4014
+#define RE_DUP					0x4015
+#define RE_XSTFLD				0x4016
+#define RE_PUSHSV				0xC011
+
 #include "coff/ti.h"
 
 /* c6000 uses 10 byte relocation struct (although its named v0): */
