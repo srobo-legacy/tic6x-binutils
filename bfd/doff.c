@@ -627,3 +627,11 @@ doff_free_internal_sectiondata(struct doff_internal_sectdata *data)
 	free(data);
 	return;
 }
+
+/* The big cheese: where we actually perform some doff content writing */
+bfd_boolean
+doff_write_object_contents(bfd *abfd)
+{
+
+	abort();
+}

@@ -67,7 +67,7 @@ const bfd_target tic64x_doff_vec =
 	/* Flush/write contents out */
 	{
 		bfd_false,
-		coff_write_object_contents,
+		doff_write_object_contents,
 		_bfd_write_archive_contents,
 		bfd_false
 	},

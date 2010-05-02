@@ -54,4 +54,6 @@ bfd_reloc_status_type ti_reloc_fail(bfd *abfd, arelent *reloc,
 				struct bfd_symbol *sym, void *what,
 				asection *sect, bfd *bfd2, char **what2);
 
+bfd_boolean doff_write_object_contents(bfd *abfd);
+
 #endif /* _BFD_LIBDOFF_H_ */
