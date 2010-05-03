@@ -795,7 +795,6 @@ doff_write_object_contents(bfd *abfd)
 	str_block = NULL;
 	raw_scns = NULL;
 	dsymbols = NULL;
-	dsyms = NULL;
 
 	/* Construct string table as we walk through things - means no time
 	 * glaring at the string table to work out what index we need. */
