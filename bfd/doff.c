@@ -1019,7 +1019,48 @@ doff_write_object_contents(bfd *abfd)
 	checksum = doff_checksum(&fhdr, sizeof(fhdr));
 	H_PUT_32(abfd, ~checksum, &fhdr.checksum);
 
-	return TRUE;
+	/* Pump everything out */
+	bfd_seek(abfd, 0, SEEK_SET);
+
+	if (bfd_bwrite(&fhdr, sizeof(fhdr), abfd) != sizeof(fhdr))
+		return TRUE;
+
+	if (bfd_bwrite(&checksums, sizeof(checksums), abfd) !=sizeof(checksums))
+		return TRUE;
+
+	if (bfd_bwrite(str_block, str_block_len, abfd) != str_block_len)
+		return TRUE;
+
+	/* Dump section hdrs */
+	for (i = 0; i < nscns; i++) {
+		if (bfd_bwrite(&(raw_scns + i)->hdr, sizeof(struct doff_scnhdr),
+					abfd) != sizeof(struct doff_scnhdr))
+			return TRUE;
+	}
+
+	if (bfd_bwrite(dsymbols, sizeof(*dsymbols) * abfd->symcount, abfd) !=
+					sizeof(*dsymbols) * abfd->symcount)
+		return TRUE;
+
+	/* Write section contents, 4 byte padded */
+	checksum = 0; /* We'll re-use these 4 byte */
+	for (i = 0; i < nscns; i++) {
+		cur_raw_scn = (raw_scns + i);
+		tmp = cur_raw_scn->raw_data_sz;
+		if (bfd_bwrite(cur_raw_scn->raw_scn_data, tmp, abfd) != tmp)
+			return TRUE;
+
+		if ((tmp & 3) == 0)
+			continue;
+
+		tmp &= 3;
+		tmp = 4 - tmp;
+		if (bfd_bwrite(&checksum, tmp, abfd) != tmp)
+			return TRUE;
+	}
+
+	abort();
+	return FALSE;
 
 	fail:
 	abort();
