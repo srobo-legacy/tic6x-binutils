@@ -776,9 +776,27 @@ doff_write_object_contents(bfd *abfd)
 	asection *curscn;
 	struct scn_swapout *raw_scns;
 	void *tmp_ptr;
-	char *str_block;
-	unsigned int nscns, max_scn_data, str_block_len;
+	char *str_block, *str_block_pos, *file_name;
+	unsigned int nscns, max_scn_data, str_block_len, max_str_sz;
 
+	/* Construct string table as we walk through things - means no time
+	 * glaring at the string table to work out what index we need. */
+	max_str_sz = 10000;
+	str_block_len = 0;
+	str_block = bfd_malloc(max_str_sz);
+	str_block_pos = str_block;
+	if (str_block == NULL)
+		return FALSE;
+
+	/* Start off by inserting the source file name. Which is a rather
+	 * pointless feature of doff. So fake it */
+	file_name = "myfaceisonfire.o";
+	strcpy(str_block_pos, file_name);
+	str_block_pos += strlen(file_name) + 1;
+	str_block_len += strlen(file_name) + 1;
+
+	/* This munges the symbol table and works out where symbols will
+	 * eventually lie in the symbol table (in terms of indexes) */
 	coff_mangle_symbols(abfd);
 
 	max_scn_data = 10;
@@ -800,6 +818,20 @@ doff_write_object_contents(bfd *abfd)
 
 			raw_scns = tmp_ptr;
 		}
+
+		/* Append section name into string table */
+		if (strlen(curscn->name) + str_block_len >= max_str_sz) {
+			max_str_sz += 10000;
+			tmp_ptr = bfd_realloc(str_block, max_str_sz);
+			if (tmp_ptr == NULL)
+				goto fail;
+
+			str_block = tmp_ptr;
+			str_block_pos = str_block + str_block_len;
+		}
+		strcpy(str_block_pos, curscn->name);
+		str_block_pos += strlen(curscn->name) + 1;
+		str_block_len += strlen(curscn->name) + 1;
 
 		/* Externalise section contents */
 		if (doff_externalise_section_data(curscn, raw_scns + nscns))
