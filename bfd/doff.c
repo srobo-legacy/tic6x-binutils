@@ -19,7 +19,6 @@ struct scn_swapout {
 
 bfd_boolean doff_externalise_section_data(asection *curscn,
 				struct scn_swapout *output);
-bfd_boolean doff_externalise_strings(bfd *abfd, char **block, unsigned int *sz);
 
 bfd_reloc_status_type
 ti_reloc_fail(bfd *abfd ATTRIBUTE_UNUSED, arelent *reloc ATTRIBUTE_UNUSED,
@@ -638,74 +637,6 @@ doff_free_internal_sectiondata(struct doff_internal_sectdata *data)
 	return;
 }
 
-/* Generate string table for the output file */
-bfd_boolean
-doff_externalise_strings(bfd *abfd, char **block, unsigned int *sz)
-{
-	asection *curscn;
-	asymbol **s;
-	const char *srcname;
-	char *str_start, *str_pos;
-	void *tmp_ptr;
-	unsigned int str_len, max_str_len, tmp, i;
-
-	str_len = 0;
-	max_str_len = 10000;
-	str_start = bfd_malloc(max_str_len);
-	str_pos = str_start;
-
-	/* Generate a block of string data with section and symbol names */
-	/* First string has to be the name of the source file though... which
-	 * seems increadibly weird. So don't honour this */
-	srcname = "myfaceisonfire.o";
-	strcpy(str_pos, srcname);
-	tmp = strlen(srcname) + 1;
-	str_pos += tmp;
-	str_len += tmp;
-
-	/* Iterate through sections */
-	for (curscn = abfd->sections; curscn != NULL; curscn = curscn->next) {
-		tmp = strlen(curscn->name) + 1;
-		if (tmp >= max_str_len) {
-			max_str_len += 10000;
-			tmp_ptr = bfd_realloc(str_start, max_str_len);
-			if (tmp_ptr == NULL) goto fail;
-			str_start = tmp_ptr;
-			str_pos = str_start + str_len;
-		}
-
-		strcpy(str_pos, curscn->name);
-		str_pos += tmp;
-		str_len += tmp;
-	}
-
-	/* Iterate through symbols */
-	for (s = abfd->outsymbols, i = 0; i < abfd->symcount; i++) {
-		tmp = strlen(s[i]->name) + 1;
-		if (tmp >= max_str_len) {
-			max_str_len += 10000;
-			tmp_ptr = bfd_realloc(str_start, max_str_len);
-			if (tmp_ptr == NULL) goto fail;
-			str_start = tmp_ptr;
-			str_pos = str_start + str_len;
-		}
-
-		strcpy(str_pos, s[i]->name);
-		str_pos += tmp;
-		str_len += tmp;
-	}
-
-	*block = str_start;
-	*sz = str_len;
-	return TRUE;
-
-	fail:
-	free(str_start);
-	*block = NULL;
-	*sz = 0;
-	return FALSE;
-}
-
 static int
 compare_arelent_ptr(const void *a, const void *b)
 {
@@ -849,9 +780,6 @@ doff_write_object_contents(bfd *abfd)
 	unsigned int nscns, max_scn_data, str_block_len;
 
 	coff_mangle_symbols(abfd);
-
-	if (doff_externalise_strings(abfd, &str_block, &str_block_len))
-		return FALSE;
 
 	max_scn_data = 10;
 	raw_scns = bfd_malloc(sizeof(*raw_scns) * max_scn_data);
