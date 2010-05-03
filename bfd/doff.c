@@ -863,15 +863,15 @@ doff_write_object_contents(bfd *abfd)
 		/* Generate some flags */
 		flags = 0;
 		if (curscn->flags & SEC_CODE)
-			flags |= DOFF_SCN_TYPE_TEX;
+			flags |= DOFF_SCN_TYPE_TEXT;
 		else if (curscn->flags & SEC_DATA)
 			flags |= DOFF_SCN_TYPE_DATA;
 		else if (!(curscn->flags & SEC_LOAD))
-			flags |= DOFF_sCN_TYPE_BSS;
+			flags |= DOFF_SCN_TYPE_BSS;
 		/* And we'll never generate any CINIT stuff, I think */
 
 		if (curscn->flags & SEC_ALLOC)
-			flags |= DOFF_SCN_FLAGS_ALLOC;
+			flags |= DOFF_SCN_FLAG_ALLOC;
 		if (curscn->flags & SEC_LOAD)
 			flags |= DOFF_SCN_FLAG_DOWNLOAD;
 
