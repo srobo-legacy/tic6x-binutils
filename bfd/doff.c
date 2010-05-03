@@ -792,6 +792,10 @@ doff_write_object_contents(bfd *abfd)
 
 	num_loadable_scns = 0;
 	entry_scn = 0xFFFFFFFF;
+	str_block = NULL;
+	raw_scns = NULL;
+	dsymbols = NULL;
+	dsyms = NULL;
 
 	/* Construct string table as we walk through things - means no time
 	 * glaring at the string table to work out what index we need. */
@@ -1059,10 +1063,28 @@ doff_write_object_contents(bfd *abfd)
 			return TRUE;
 	}
 
-	abort();
+	/* Cleanup */
+	free(str_block);
+	free(dsymbols);
+	for (i = 0; i < nscns; i++) {
+		cur_raw_scn = (raw_scns + i);
+		free(cur_raw_scn->raw_scn_data);
+	}
+	free(raw_scns);
+
 	return FALSE;
 
 	fail:
-	abort();
+	if (str_block)
+		free(str_block);
+	if (dsymbols)
+		free(dsymbols);
+	if (raw_scns) {
+		for (i = 0; i < nscns; i++) {
+			cur_raw_scn = (raw_scns + i);
+			free(cur_raw_scn->raw_scn_data);
+		}
+		free(raw_scns);
+	}
 	return FALSE;
 }
