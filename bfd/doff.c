@@ -11,6 +11,15 @@
 
 #define UNUSED(x) ((x) = (x))
 
+struct scn_swapout {
+	void *raw_scn_data;
+	int num_ipkts;
+	int raw_data_sz;
+};
+
+bfd_boolean doff_externalise_section_data(asection *curscn,
+				struct scn_swapout *output);
+
 bfd_reloc_status_type
 ti_reloc_fail(bfd *abfd ATTRIBUTE_UNUSED, arelent *reloc ATTRIBUTE_UNUSED,
 		struct bfd_symbol *sym ATTRIBUTE_UNUSED,
@@ -628,10 +637,53 @@ doff_free_internal_sectiondata(struct doff_internal_sectdata *data)
 	return;
 }
 
+bfd_boolean
+doff_externalise_section_data(asection *curscn, struct scn_swapout *output)
+{
+
+	UNUSED(curscn);
+	UNUSED(output);
+	abort();
+}
+
 /* The big cheese: where we actually perform some doff content writing */
 bfd_boolean
 doff_write_object_contents(bfd *abfd)
 {
 
+	asection *curscn;
+	struct scn_swapout *raw_scns;
+	void *tmp_ptr;
+	int nscns, max_scn_data;
+
+	max_scn_data = 10;
+	raw_scns = bfd_malloc(sizeof(*raw_scns) * max_scn_data);
+	if (raw_scns == NULL)
+		return FALSE;
+
+	/* Loop through all sections, converting raw contents to the benighted
+	 * doff format (packets with relocs squirted in) */
+	for (nscns = 0, curscn = abfd->sections; curscn != NULL;
+					curscn = curscn->next, nscns++) {
+		/* Ensure our scn data array is large enough */
+		if (nscns >= max_scn_data) {
+			max_scn_data += 10;
+			tmp_ptr = bfd_realloc(raw_scns, sizeof(*raw_scns) *
+								max_scn_data);
+			if (tmp_ptr == NULL)
+				goto fail;
+
+			raw_scns = tmp_ptr;
+		}
+
+		/* Externalise section contents */
+		if (doff_externalise_section_data(curscn, raw_scns + nscns))
+			goto fail;
+	}
+
 	abort();
+	return TRUE;
+
+	fail:
+	return FALSE;
 }
