@@ -679,7 +679,7 @@ doff_externalise_section_data(asection *curscn, struct scn_swapout *output)
 	 * header structs on the assumption that minimum packet size is 1024 */
 	max_sz = doff_tdata->size +
 			(curscn->reloc_count * sizeof(struct doff_reloc))
-					+ ((doff_tdata->size/1024) *
+					+ (((doff_tdata->size/1024) + 1) *
 					sizeof(struct doff_image_packet));
 
 	output->raw_scn_data = bfd_malloc(max_sz);
