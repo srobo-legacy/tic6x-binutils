@@ -726,6 +726,8 @@ doff_write_object_contents(bfd *abfd)
 	char *str_block;
 	unsigned int nscns, max_scn_data, str_block_len;
 
+	coff_mangle_symbols(abfd);
+
 	if (doff_externalise_strings(abfd, &str_block, &str_block_len))
 		return FALSE;
 
