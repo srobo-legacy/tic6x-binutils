@@ -800,7 +800,7 @@ doff_write_object_contents(bfd *abfd)
 	unsigned int nscns, max_scn_data, str_block_len, max_str_sz, tmp, i;
 	unsigned int scn_name_sz, largest_str, num_loadable_scns, entry_scn;
 	enum coff_symbol_classification sym_class;
-	uint16_t flags;
+	uint16_t flags, sclass;
 
 	num_loadable_scns = 0;
 	entry_scn = 0xFFFFFFFF;
@@ -931,19 +931,26 @@ doff_write_object_contents(bfd *abfd)
 	for (i = 0; i < abfd->symcount; i++) {
 		sym = abfd->outsymbols[i];
 
-		/* largely copy what coff_write_symbols does */
+		/* largely copy what coff_write_symbols does, and
+		 * coff_write_alien_symbol */
 		coff_sym = coff_symbol_from(abfd, sym);
-		if (coff_sym == NULL)
-			/* Apparently "alien" symbols can be handled here by
-			 * coff_write_symbols, but we shouldn't expect that
-			 * situation to occur */
-			goto fail;
-
-		sym_class = bfd_coff_classify_symbol(abfd,
+		if (coff_sym == NULL || coff_sym->native == NULL) {
+			/* Non-coff symbol, guess what storage class it should
+			 * be in */
+			if (sym->flags & BSF_LOCAL)
+				sclass = C_STAT;
+			else if (sym->flags & BSF_WEAK)
+				sclass = C_WEAKEXT;
+			else
+				sclass = C_EXT;
+			H_PUT_16(abfd, sclass, &dsym->storage_class);
+		} else {
+			sym_class = bfd_coff_classify_symbol(abfd,
 						&coff_sym->native->u.syment);
-
-		H_PUT_16(abfd, coff_sym->native->u.syment.n_sclass,
+			H_PUT_16(abfd, coff_sym->native->u.syment.n_sclass,
 						&dsym->storage_class);
+		}
+
 		H_PUT_16(abfd, sym->section->target_index, &dsym->scn_num);
 		H_PUT_32(abfd, sym->value, &dsym->value);
 
