@@ -784,6 +784,7 @@ doff_write_object_contents(bfd *abfd)
 	coff_symbol_type *coff_sym;
 	void *tmp_ptr;
 	char *str_block, *str_block_pos, *file_name;
+	uint32_t checksum;
 	unsigned int nscns, max_scn_data, str_block_len, max_str_sz, tmp, i;
 	enum coff_symbol_classification sym_class;
 	uint16_t flags;
@@ -964,6 +965,22 @@ doff_write_object_contents(bfd *abfd)
 		if (tmp & 3)
 			tmp = (tmp + 4) & ~3;
 	}
+
+	/* Calculate header checksums */
+	checksums.timestamp = 0; /* Nuts to that */
+	checksums.section_checksum = 0;
+	for (i = 0; i < nscns; i++) {
+		checksum = doff_checksum(&(raw_scns + i)->hdr,
+						sizeof(struct doff_scnhdr));
+	}
+	H_PUT_32(abfd, ~checksum, &checksums.section_checksum);
+
+	H_PUT_32(abfd, ~doff_checksum(str_block, str_block_len),
+				&checksums.strtable_checksum);
+	H_PUT_32(abfd, ~doff_checksum(dsymbols, sizeof(*dsymbols) *
+				abfd->symcount), &checksums.symbol_checksum);
+	H_PUT_32(abfd, ~doff_checksum(&checksums, sizeof(checksums)),
+				&checksums.self_checksum);
 
 	return TRUE;
 
