@@ -14,8 +14,8 @@
 struct scn_swapout {
 	struct doff_scnhdr hdr;
 	void *raw_scn_data;
-	int num_ipkts;
-	int raw_data_sz;
+	unsigned int num_ipkts;
+	unsigned int raw_data_sz;
 };
 
 bfd_boolean doff_externalise_section_data(asection *curscn,
@@ -848,7 +848,7 @@ doff_write_object_contents(bfd *abfd)
 		strcpy(str_block_pos, curscn->name);
 		str_block_pos += strlen(curscn->name) + 1;
 		str_block_len += strlen(curscn->name) + 1;
-		largest_str = max(strlen(curscn->name), largest_str);
+		largest_str = MAX(strlen(curscn->name), largest_str);
 
 		/* Externalise section contents */
 		cur_raw_scn = raw_scns + nscns;
@@ -942,11 +942,11 @@ doff_write_object_contents(bfd *abfd)
 			str_block = tmp_ptr;
 			str_block_pos = str_block + str_block_len;
 		}
-		tmp = str_block_pos;
+		tmp = str_block_len;
 		strcpy(str_block_pos, sym->name);
 		str_block_pos += strlen(sym->name) + 1;
 		str_block_len += strlen(sym->name) + 1;
-		largest_str = max(strlen(sym->name), largest_str);
+		largest_str = MAX(strlen(sym->name), largest_str);
 
 		H_PUT_32(abfd, tmp, &dsym->str_offset);
 
