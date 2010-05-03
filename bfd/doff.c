@@ -775,6 +775,8 @@ bfd_boolean
 doff_write_object_contents(bfd *abfd)
 {
 
+	struct doff_filehdr fhdr;
+	struct doff_checksum_rec checksums;
 	asection *curscn;
 	asymbol *sym;
 	struct scn_swapout *raw_scns, *cur_raw_scn;
@@ -937,7 +939,32 @@ doff_write_object_contents(bfd *abfd)
 		dsym++; /* Next symbol */
 	}
 
-	abort();
+	/* Ok, we now have all blocks of significant data, we now need to
+	 * stitch it together with headers. First, lets round the string table
+	 * up to four bytes. (We shouldn't need to worry about allocating more)
+	 */
+	if (str_block_len & 3) {
+		tmp = str_block_len & 3;
+		str_block_len &= ~3;
+		str_block_len += 4;
+		memset(str_block_pos, 0, tmp);
+	}
+
+	/* We need to know the offsets of section data - first size of headers*/
+	tmp = sizeof(struct doff_filehdr) + sizeof(struct doff_checksum_rec);
+	tmp += str_block_len;
+	tmp += sizeof(struct doff_scnhdr) * nscns;
+	tmp += sizeof(struct doff_symbol) * abfd->symcount;
+
+	/* Next start fixing section positions */
+	for (i = 0; i < nscns; i++) {
+		H_PUT_32(abfd, tmp, &(raw_scns + i)->hdr.first_pkt_offset);
+		tmp += (raw_scns + i)->raw_data_sz;
+		/* Align in file up to 4 bytes */
+		if (tmp & 3)
+			tmp = (tmp + 4) & ~3;
+	}
+
 	return TRUE;
 
 	fail:
