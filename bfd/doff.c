@@ -649,6 +649,7 @@ compare_arelent_ptr(const void *a, const void *b)
 	return (aaddr < baddr ? -1 : baddr < aaddr ? 1 : 0);
 }
 
+#define MIN(a,b) (((a) < (b)) ? (a) : (b))
 bfd_boolean
 doff_externalise_section_data(asection *curscn, struct scn_swapout *output)
 {
@@ -661,6 +662,7 @@ doff_externalise_section_data(asection *curscn, struct scn_swapout *output)
 	void *cur_pos;
 	uint32_t checksum;
 	unsigned int max_sz, sz, cur_data_offs, num_relocs, reloc_idx, i, idx;
+	unsigned int put_sz;
 
 	rels = NULL;
 	output->raw_scn_data = NULL;
@@ -705,6 +707,7 @@ doff_externalise_section_data(asection *curscn, struct scn_swapout *output)
 	while (cur_data_offs != curscn->size) {
 		/* Packet header - num relocs, amount of data, and checksum */
 		ipkt = cur_pos;
+		put_sz = MIN(1024, (curscn->size - cur_data_offs));
 		cur_pos += sizeof(struct doff_image_packet);
 
 		/* Look to see how many relocs we need to work on */
@@ -720,14 +723,14 @@ doff_externalise_section_data(asection *curscn, struct scn_swapout *output)
 
 		/* Write most of ipkt header, calculate checksum */
 		H_PUT_32(abfd, num_relocs, &ipkt->num_relocs);
-		H_PUT_32(abfd, 1024, &ipkt->packet_sz);
+		H_PUT_32(abfd, put_sz, &ipkt->packet_sz);
 		H_PUT_32(abfd, 0, &ipkt->checksum);
 		checksum = doff_checksum(ipkt, sizeof(*ipkt));
 
 		/* Copy in our block of memory */
-		memcpy(cur_pos, doff_tdata->raw_data + cur_data_offs, 1024);
-		checksum += doff_checksum(cur_pos, 1024);
-		cur_pos += 1024;
+		memcpy(cur_pos, doff_tdata->raw_data + cur_data_offs, put_sz);
+		checksum += doff_checksum(cur_pos, put_sz);
+		cur_pos += put_sz;
 
 		/* And write out relocations. Erk */
 		for (i = 0; i < num_relocs; i++) {
@@ -772,7 +775,7 @@ doff_externalise_section_data(asection *curscn, struct scn_swapout *output)
 		H_PUT_32(abfd, (0 - checksum), &ipkt->checksum);
 
 		output->num_ipkts++;
-		cur_data_offs += 1024;
+		cur_data_offs += put_sz;
 	}
 
 	/* Ok, I think we're done. Ish. */
