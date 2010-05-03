@@ -662,6 +662,7 @@ doff_externalise_section_data(asection *curscn, struct scn_swapout *output)
 	uint32_t checksum;
 	unsigned int max_sz, sz, cur_data_offs, num_relocs, reloc_idx, i, idx;
 
+	rels = NULL;
 	output->raw_scn_data = NULL;
 	output->num_ipkts = 0;
 	output->raw_data_sz = 0;
@@ -688,14 +689,17 @@ doff_externalise_section_data(asection *curscn, struct scn_swapout *output)
 
 	/* Grab our own copy of relocations and order them by addr */
 	sz = sizeof(arelent*) * curscn->reloc_count;
-	rels = bfd_malloc(sz);
-	if (rels == NULL) {
-		free(cur_pos);
-		return TRUE;
-	}
+	if (sz != 0) {
+		rels = bfd_malloc(sz);
+		if (rels == NULL) {
+			free(cur_pos);
+			return TRUE;
+		}
 
-	memcpy(rels, curscn->orelocation, sz);
-	qsort(rels, curscn->reloc_count, sizeof(arelent*), compare_arelent_ptr);
+		memcpy(rels, curscn->orelocation, sz);
+		qsort(rels, curscn->reloc_count, sizeof(arelent*),
+						compare_arelent_ptr);
+	}
 
 	/* Now loop through our blocks of data */
 	while (cur_data_offs != curscn->size) {
@@ -704,10 +708,15 @@ doff_externalise_section_data(asection *curscn, struct scn_swapout *output)
 		cur_pos += sizeof(struct doff_image_packet);
 
 		/* Look to see how many relocs we need to work on */
-		for (num_relocs = 0; rels[reloc_idx + num_relocs]->address <
+		if (rels != NULL) {
+			for (num_relocs = 0;
+					rels[reloc_idx + num_relocs]->address <
 					curscn->vma + cur_data_offs;
 					num_relocs++)
 			;
+		} else {
+			num_relocs = 0;
+		}
 
 		/* Write most of ipkt header, calculate checksum */
 		H_PUT_32(abfd, num_relocs, &ipkt->num_relocs);
