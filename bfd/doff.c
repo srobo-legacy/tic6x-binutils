@@ -786,11 +786,16 @@ doff_write_object_contents(bfd *abfd)
 	char *str_block, *str_block_pos, *file_name;
 	uint32_t checksum;
 	unsigned int nscns, max_scn_data, str_block_len, max_str_sz, tmp, i;
+	unsigned int scn_name_sz, largest_str, num_loadable_scns, entry_scn;
 	enum coff_symbol_classification sym_class;
 	uint16_t flags;
 
+	num_loadable_scns = 0;
+	entry_scn = 0xFFFFFFFF;
+
 	/* Construct string table as we walk through things - means no time
 	 * glaring at the string table to work out what index we need. */
+	largest_str = 0;
 	max_str_sz = 10000;
 	str_block_len = 0;
 	str_block = bfd_malloc(max_str_sz);
@@ -843,6 +848,7 @@ doff_write_object_contents(bfd *abfd)
 		strcpy(str_block_pos, curscn->name);
 		str_block_pos += strlen(curscn->name) + 1;
 		str_block_len += strlen(curscn->name) + 1;
+		largest_str = max(strlen(curscn->name), largest_str);
 
 		/* Externalise section contents */
 		cur_raw_scn = raw_scns + nscns;
@@ -857,6 +863,7 @@ doff_write_object_contents(bfd *abfd)
 			abfd->start_address < curscn->vma + curscn->size) {
 			H_PUT_32(abfd, abfd->start_address,
 				&cur_raw_scn->hdr.prog_addr);
+			entry_scn = nscns;
 		} else {
 			H_PUT_32(abfd, 0, &cur_raw_scn->hdr.prog_addr);
 		}
@@ -879,8 +886,10 @@ doff_write_object_contents(bfd *abfd)
 
 		if (curscn->flags & SEC_ALLOC)
 			flags |= DOFF_SCN_FLAG_ALLOC;
-		if (curscn->flags & SEC_LOAD)
+		if (curscn->flags & SEC_LOAD) {
 			flags |= DOFF_SCN_FLAG_DOWNLOAD;
+			num_loadable_scns++;
+		}
 
 		/* For the hell of it, align to 4096 byte pages. Dunno what the
 		 * c64x mmu can handle though */
@@ -890,6 +899,9 @@ doff_write_object_contents(bfd *abfd)
 		/* We don't have the file position yet */
 		H_PUT_32(abfd, 0, &cur_raw_scn->hdr.first_pkt_offset);
 	}
+
+	/* Store length of section string table for file hdr */
+	scn_name_sz = str_block_len;
 
 	/* Ok, we now have almost all of our data tied down, save juggling
 	 * some offsets, the file headers and the symbol table */
@@ -934,6 +946,7 @@ doff_write_object_contents(bfd *abfd)
 		strcpy(str_block_pos, sym->name);
 		str_block_pos += strlen(sym->name) + 1;
 		str_block_len += strlen(sym->name) + 1;
+		largest_str = max(strlen(sym->name), largest_str);
 
 		H_PUT_32(abfd, tmp, &dsym->str_offset);
 
@@ -981,6 +994,30 @@ doff_write_object_contents(bfd *abfd)
 				abfd->symcount), &checksums.symbol_checksum);
 	H_PUT_32(abfd, ~doff_checksum(&checksums, sizeof(checksums)),
 				&checksums.self_checksum);
+
+	/* Right, now produce the main file header */
+	H_PUT_32(abfd, str_block_len, &fhdr.strtab_size);
+	H_PUT_32(abfd, abfd->start_address, &fhdr.entry_point);
+	H_PUT_32(abfd, DOFF_BYTE_RESHUFFLE, &fhdr.byte_reshuffle);
+	H_PUT_32(abfd, scn_name_sz, &fhdr.scn_name_sz);
+	H_PUT_16(abfd, abfd->symcount, &fhdr.num_syms);
+	H_PUT_16(abfd, largest_str, &fhdr.max_str_len);
+	H_PUT_16(abfd, nscns, &fhdr.num_scns);
+	H_PUT_16(abfd, num_loadable_scns, &fhdr.target_scns);
+	H_PUT_16(abfd, 0, &fhdr.doff_version);
+	/* XXX - need to pull this out of the backend specific data somehow */
+	H_PUT_16(abfd, DOFF_PROC_TMS320C6000, &fhdr.target_id);
+	/* XXX - the same */
+	H_PUT_16(abfd, DOFF_LITTLE_ENDIAN, &fhdr.flags);
+	if (entry_scn == 0xFFFFFFFF)
+		H_PUT_16(abfd, DOFF_ENTRY_SCN_UNDEF, &fhdr.entry_scn);
+	else
+		H_PUT_16(abfd, entry_scn, &fhdr.entry_scn);
+
+	/* Checksum all of that */
+	H_PUT_32(abfd, 0, &fhdr.checksum);
+	checksum = doff_checksum(&fhdr, sizeof(fhdr));
+	H_PUT_32(abfd, ~checksum, &fhdr.checksum);
 
 	return TRUE;
 
