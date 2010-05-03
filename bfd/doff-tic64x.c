@@ -11,9 +11,9 @@
 
 /* Declare some functions in coff-tic64x we use */
 extern void tic64x_rtype2howto(arelent *internal, struct internal_reloc *dst);
-extern bfd_boolean tic64x_set_arch_mach(bfd *abfd, enum bfd_architecture arch,
+bfd_boolean tic64x_doff_set_arch_mach(bfd *abfd, enum bfd_architecture arch,
 					unsigned long machine);
-extern bfd_boolean tic64x_set_section_contents(bfd *abfd, sec_ptr section,
+bfd_boolean tic64x_doff_set_section_contents(bfd *abfd, sec_ptr section,
 					const PTR location, file_ptr offset,
 					bfd_size_type size);
 reloc_howto_type *tic64x_coff_reloc_type_lookup(bfd*, bfd_reloc_code_real_type);
@@ -27,6 +27,27 @@ reloc_howto_type *tic64x_coff_reloc_name_lookup (bfd *abfd, const char *name);
 #define coff_bfd_reloc_type_lookup tic64x_coff_reloc_type_lookup
 #define coff_bfd_reloc_name_lookup tic64x_coff_reloc_name_lookup
 #include "tidoff.h"
+
+bfd_boolean
+tic64x_doff_set_arch_mach(bfd *b, enum bfd_architecture arch,
+					unsigned long machine)
+{
+
+	if (arch == bfd_arch_unknown)
+		arch = bfd_arch_tic64x;
+	else if (arch != bfd_arch_tic64x)
+		return FALSE;
+
+	return bfd_default_set_arch_mach(b, arch, machine);
+}
+
+bfd_boolean
+tic64x_doff_set_section_contents(bfd *b, sec_ptr section, const PTR location,
+		file_ptr offset, bfd_size_type bytes)
+{
+
+	return doff_set_section_contents(b, section, location, offset, bytes);
+}
 
 const bfd_target tic64x_doff_vec =
 {
@@ -78,7 +99,7 @@ const bfd_target tic64x_doff_vec =
 	BFD_JUMP_TABLE_ARCHIVE(_bfd_archive_coff),
 	BFD_JUMP_TABLE_SYMBOLS(coff),
 	BFD_JUMP_TABLE_RELOCS(coff),
-	BFD_JUMP_TABLE_WRITE(tic64x),
+	BFD_JUMP_TABLE_WRITE(tic64x_doff),
 	BFD_JUMP_TABLE_LINK(coff),
 	BFD_JUMP_TABLE_DYNAMIC(_bfd_nodynamic),
 	NULL,
