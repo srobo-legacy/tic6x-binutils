@@ -706,13 +706,135 @@ doff_externalise_strings(bfd *abfd, char **block, unsigned int *sz)
 	return FALSE;
 }
 
+static int
+compare_arelent_ptr(const void *a, const void *b)
+{
+	const arelent **aa = (const arelent **) a;
+	const arelent **bb = (const arelent **) b;
+	bfd_size_type aaddr = (*aa)->address;
+	bfd_size_type baddr = (*bb)->address;
+
+	return (aaddr < baddr ? -1 : baddr < aaddr ? 1 : 0);
+}
+
 bfd_boolean
 doff_externalise_section_data(asection *curscn, struct scn_swapout *output)
 {
+	bfd *abfd;
+	arelent **rels;
+	asymbol *sym;
+	struct doff_image_packet *ipkt;
+	struct doff_reloc *reloc;
+	struct doff_internal_sectdata *doff_tdata;
+	void *cur_pos;
+	uint32_t checksum;
+	unsigned int max_sz, sz, cur_data_offs, num_relocs, reloc_idx, i, idx;
 
-	UNUSED(curscn);
-	UNUSED(output);
-	abort();
+	output->raw_scn_data = NULL;
+	output->num_ipkts = 0;
+	output->raw_data_sz = 0;
+	cur_data_offs = 0;
+	reloc_idx = 0;
+	abfd = curscn->owner;
+
+	doff_tdata = doff_get_internal_sectdata(curscn->owner, curscn,
+						write_direction, FALSE);
+	if (doff_tdata == NULL)
+		return TRUE;
+
+	/* Calculate maximum size - raw data, reloc structs, and image pkt
+	 * header structs on the assumption that minimum packet size is 1024 */
+	max_sz = doff_tdata->size +
+			(curscn->reloc_count * sizeof(struct doff_reloc))
+					+ ((doff_tdata->size/1024) *
+					sizeof(struct doff_image_packet));
+
+	output->raw_scn_data = bfd_malloc(max_sz);
+	cur_pos = output->raw_scn_data;
+	if (cur_pos == NULL)
+		return TRUE;
+
+	/* Grab our own copy of relocations and order them by addr */
+	sz = sizeof(arelent*) * curscn->reloc_count;
+	rels = bfd_malloc(sz);
+	if (rels == NULL) {
+		free(cur_pos);
+		return TRUE;
+	}
+
+	memcpy(rels, curscn->orelocation, sz);
+	qsort(rels, curscn->reloc_count, sizeof(arelent*), compare_arelent_ptr);
+
+	/* Now loop through our blocks of data */
+	while (cur_data_offs != curscn->size) {
+		/* Packet header - num relocs, amount of data, and checksum */
+		ipkt = cur_pos;
+		cur_pos += sizeof(struct doff_image_packet);
+
+		/* Look to see how many relocs we need to work on */
+		for (num_relocs = 0; rels[reloc_idx + num_relocs]->address <
+					curscn->vma + cur_data_offs;
+					num_relocs++)
+			;
+
+		/* Write most of ipkt header, calculate checksum */
+		H_PUT_32(abfd, num_relocs, &ipkt->num_relocs);
+		H_PUT_32(abfd, 1024, &ipkt->packet_sz);
+		H_PUT_32(abfd, 0, &ipkt->checksum);
+		checksum = doff_checksum(ipkt, sizeof(*ipkt));
+
+		/* Copy in our block of memory */
+		memcpy(cur_pos, doff_tdata->raw_data + cur_data_offs, 1024);
+		checksum += doff_checksum(cur_pos, 1024);
+		cur_pos += 1024;
+
+		/* And write out relocations. Erk */
+		for (i = 0; i < num_relocs; i++) {
+			reloc = cur_pos;
+			memset(reloc, 0, sizeof(*reloc));
+			H_PUT_32(abfd, rels[reloc_idx + i]->address,
+						&reloc->vaddr);
+
+			/* What kind of relocation? There are a bunch of formats
+			 * that TI have, based on what the type field is. For
+			 * the moment, afaik, we can just rely on having a
+			 * symbol based reloc for everything */
+
+			H_PUT_16(abfd, rels[reloc_idx + i]->howto->type,
+						&reloc->reloc.r_sym.type);
+
+			/* Symbol index - from reading coffcode.h's outputter,
+			 * undefined symbols don't get linked and so don't have
+			 * the correct bfd. Linked symbols do, and have the file
+			 * index of the symbol as udata.i. absolute refs are in
+			 * the absolute section */
+
+			idx = 0;
+			sym = *rels[reloc_idx + i]->sym_ptr_ptr;
+			if (sym->the_bfd != abfd) {
+				/* Unresolved */
+				idx = 0;
+			} else if (sym->section == bfd_abs_section_ptr) {
+				idx = -1;
+			} else {
+				idx = sym->udata.i;
+			}
+
+			H_PUT_16(abfd, idx, &reloc->reloc.r_sym.sym_idx);
+
+			/* Evaluate checksum on that */
+			checksum += doff_checksum(reloc, sizeof(*reloc));
+			cur_pos += sizeof(*reloc);
+		}
+
+		/* Mkay, thats the entire packet done, write back checksum */
+		H_PUT_32(abfd, (0 - checksum), &ipkt->checksum);
+
+		cur_data_offs += 1024;
+	}
+
+	/* Ok, I think we're done. Ish. */
+	return FALSE;
 }
 
 /* The big cheese: where we actually perform some doff content writing */
