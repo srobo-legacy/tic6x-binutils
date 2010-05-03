@@ -107,7 +107,7 @@ doff_get_internal_sectdata(bfd *abfd, asection *sect, int direction,
 						download,
 						sect->size, sect->filepos);
 		} else if (direction == write_direction && (
-					abfd->direction == read_direction
+					abfd->direction == write_direction
 					|| abfd->direction == both_direction)) {
 			doff_tdata = doff_blank_sectiondata(abfd,
 						download,
