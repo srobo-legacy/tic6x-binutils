@@ -12,6 +12,7 @@
 #define UNUSED(x) ((x) = (x))
 
 struct scn_swapout {
+	struct doff_scnhdr hdr;
 	void *raw_scn_data;
 	int num_ipkts;
 	int raw_data_sz;
@@ -774,10 +775,11 @@ doff_write_object_contents(bfd *abfd)
 {
 
 	asection *curscn;
-	struct scn_swapout *raw_scns;
+	struct scn_swapout *raw_scns, *cur_raw_scn;
 	void *tmp_ptr;
 	char *str_block, *str_block_pos, *file_name;
-	unsigned int nscns, max_scn_data, str_block_len, max_str_sz;
+	unsigned int nscns, max_scn_data, str_block_len, max_str_sz, tmp;
+	uint16_t flags;
 
 	/* Construct string table as we walk through things - means no time
 	 * glaring at the string table to work out what index we need. */
@@ -829,13 +831,56 @@ doff_write_object_contents(bfd *abfd)
 			str_block = tmp_ptr;
 			str_block_pos = str_block + str_block_len;
 		}
+		tmp = str_block_len;
 		strcpy(str_block_pos, curscn->name);
 		str_block_pos += strlen(curscn->name) + 1;
 		str_block_len += strlen(curscn->name) + 1;
 
 		/* Externalise section contents */
-		if (doff_externalise_section_data(curscn, raw_scns + nscns))
+		cur_raw_scn = raw_scns + nscns;
+		if (doff_externalise_section_data(curscn, cur_raw_scn))
 			goto fail;
+
+		/* Throw together section header details too - those we have */
+		/* Name index in string table, which we just grabbed */
+		H_PUT_32(abfd, tmp, &cur_raw_scn->hdr.str_offset);
+		/* Start/Run address... */
+		if (abfd->start_address >= curscn->vma &&
+			abfd->start_address < curscn->vma + curscn->size) {
+			H_PUT_32(abfd, abfd->start_address,
+				&cur_raw_scn->hdr.prog_addr);
+		} else {
+			H_PUT_32(abfd, 0, &cur_raw_scn->hdr.prog_addr);
+		}
+
+		H_PUT_32(abfd, curscn->vma, &cur_raw_scn->hdr.load_addr);
+		H_PUT_32(abfd, curscn->size, &cur_raw_scn->hdr.size);
+		H_PUT_16(abfd, 0, &cur_raw_scn->hdr.page); /* No idea */
+		H_PUT_16(abfd, cur_raw_scn->num_ipkts,
+					&cur_raw_scn->hdr.num_pkts);
+
+		/* Generate some flags */
+		flags = 0;
+		if (curscn->flags & SEC_CODE)
+			flags |= DOFF_SCN_TYPE_TEX;
+		else if (curscn->flags & SEC_DATA)
+			flags |= DOFF_SCN_TYPE_DATA;
+		else if (!(curscn->flags & SEC_LOAD))
+			flags |= DOFF_sCN_TYPE_BSS;
+		/* And we'll never generate any CINIT stuff, I think */
+
+		if (curscn->flags & SEC_ALLOC)
+			flags |= DOFF_SCN_FLAGS_ALLOC;
+		if (curscn->flags & SEC_LOAD)
+			flags |= DOFF_SCN_FLAG_DOWNLOAD;
+
+		/* For the hell of it, align to 4096 byte pages. Dunno what the
+		 * c64x mmu can handle though */
+		flags |= 12 << DOFF_SCN_FLAGS_ALIGN_SHIFT;
+		H_PUT_16(abfd, flags, &cur_raw_scn->hdr.flags);
+
+		/* We don't have the file position yet */
+		H_PUT_32(abfd, 0, &cur_raw_scn->hdr.first_pkt_offset);
 	}
 
 	abort();
