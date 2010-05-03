@@ -762,6 +762,7 @@ doff_externalise_section_data(asection *curscn, struct scn_swapout *output)
 		/* Mkay, thats the entire packet done, write back checksum */
 		H_PUT_32(abfd, (0 - checksum), &ipkt->checksum);
 
+		output->num_ipkts++;
 		cur_data_offs += 1024;
 	}
 
