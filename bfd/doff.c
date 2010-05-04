@@ -813,7 +813,7 @@ doff_write_object_contents(bfd *abfd)
 	/* Construct string table as we walk through things - means no time
 	 * glaring at the string table to work out what index we need. */
 	largest_str = 0;
-	max_str_sz = 10000;
+	max_str_sz = 0x2000;
 	str_block_len = 0;
 	str_block = bfd_malloc(max_str_sz);
 	str_block_pos = str_block;
@@ -853,7 +853,7 @@ doff_write_object_contents(bfd *abfd)
 
 		/* Append section name into string table */
 		if (strlen(curscn->name) + str_block_len >= max_str_sz) {
-			max_str_sz += 10000;
+			max_str_sz += 0x2000;
 			tmp_ptr = bfd_realloc(str_block, max_str_sz);
 			if (tmp_ptr == NULL)
 				goto fail;
@@ -958,7 +958,7 @@ doff_write_object_contents(bfd *abfd)
 
 		/* Squirt string into string table too */
 		if (strlen(sym->name) + str_block_len >= max_str_sz) {
-			max_str_sz += 10000;
+			max_str_sz += 0x2000;
 			tmp_ptr = bfd_realloc(str_block, max_str_sz);
 			if (tmp_ptr == NULL)
 				goto fail;
