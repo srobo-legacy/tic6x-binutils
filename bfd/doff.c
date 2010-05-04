@@ -778,6 +778,8 @@ doff_externalise_section_data(asection *curscn, struct scn_swapout *output)
 		cur_data_offs += put_sz;
 	}
 
+	output->raw_data_sz = (int)(cur_pos - output->raw_scn_data);
+
 	/* Ok, I think we're done. Ish. */
 	return FALSE;
 }
