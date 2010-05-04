@@ -772,7 +772,7 @@ doff_externalise_section_data(asection *curscn, struct scn_swapout *output)
 		}
 
 		/* Mkay, thats the entire packet done, write back checksum */
-		H_PUT_32(abfd, (0 - checksum), &ipkt->checksum);
+		H_PUT_32(abfd, (0xFFFFFFFF - checksum), &ipkt->checksum);
 
 		output->num_ipkts++;
 		cur_data_offs += put_sz;
@@ -1010,13 +1010,13 @@ doff_write_object_contents(bfd *abfd)
 		checksum = doff_checksum(&(raw_scns + i)->hdr,
 						sizeof(struct doff_scnhdr));
 	}
-	H_PUT_32(abfd, ~checksum, &checksums.section_checksum);
+	H_PUT_32(abfd, 0xFFFFFFFF - checksum, &checksums.section_checksum);
 
-	H_PUT_32(abfd, ~doff_checksum(str_block, str_block_len),
+	H_PUT_32(abfd, 0xFFFFFFFF - doff_checksum(str_block, str_block_len),
 				&checksums.strtable_checksum);
-	H_PUT_32(abfd, ~doff_checksum(dsymbols, sizeof(*dsymbols) *
+	H_PUT_32(abfd, 0xFFFFFFFF - doff_checksum(dsymbols, sizeof(*dsymbols) *
 				abfd->symcount), &checksums.symbol_checksum);
-	H_PUT_32(abfd, ~doff_checksum(&checksums, sizeof(checksums)),
+	H_PUT_32(abfd, 0xFFFFFFFF - doff_checksum(&checksums,sizeof(checksums)),
 				&checksums.self_checksum);
 
 	/* Right, now produce the main file header */
