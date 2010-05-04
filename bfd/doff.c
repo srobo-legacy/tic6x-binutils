@@ -73,12 +73,10 @@ doff_checksum(const void *data, unsigned int len)
 }
 
 static struct doff_internal_sectdata *
-doff_get_internal_sectdata(bfd *abfd, asection *sect, int direction,
-				bfd_boolean force_downloadable)
+doff_get_internal_sectdata(bfd *abfd, asection *sect, int direction)
 {
 	struct coff_section_tdata *coff_tdata;
 	struct doff_internal_sectdata *doff_tdata;
-	bfd_boolean download;
 
 	/* It appears coff tdata is only created on demand, ie when things
 	 * actually need to use it. So, we need to allocate it ourselves in
@@ -92,25 +90,17 @@ doff_get_internal_sectdata(bfd *abfd, asection *sect, int direction,
 		sect->used_by_bfd = coff_tdata;
 	}
 
-	/* Do we need to parse packet headers and the like in this section?
-	 * yes if this gets downloaded to the target, yes if there are no flags,
-	 * which in coff only seems to occur when we're padding. And if we're
-	 * padding, we have the ALLOC flag but not DOWNLOAD flag. Also, urgh */
-	download = (sect->flags & SEC_LOAD || force_downloadable);
-
 	doff_tdata = coff_tdata->tdata;
 	if (doff_tdata == NULL) {
 		if (direction == read_direction && (
 					abfd->direction == read_direction
 					|| abfd->direction == both_direction)) {
 			doff_tdata = doff_internalise_sectiondata(abfd,
-						download,
 						sect->size, sect->filepos);
 		} else if (direction == write_direction && (
 					abfd->direction == write_direction
 					|| abfd->direction == both_direction)) {
 			doff_tdata = doff_blank_sectiondata(abfd,
-						download,
 						sect->size);
 		} else {
 			bfd_set_error(bfd_error_invalid_operation);
@@ -218,7 +208,7 @@ doff_swap_scnhdr_in(bfd *abfd, void *src, void *dst)
 	 * this information, so we actually have to trawl the section data
 	 * looking for them */
 	if (flags & DOFF_SCN_FLAG_DOWNLOAD) {
-		sect = doff_internalise_sectiondata(abfd, TRUE, out->s_size,
+		sect = doff_internalise_sectiondata(abfd, out->s_size,
 							out->s_scnptr);
 		if (sect == NULL)
 			goto invalid;
@@ -372,8 +362,7 @@ doff_regurgitate_reloc(bfd *abfd, asection *sect, unsigned int idx,
 	struct doff_internal_sectdata *doff_tdata;
 	struct doff_internal_reloc *reloc;
 
-	doff_tdata = doff_get_internal_sectdata(abfd, sect, read_direction,
-						TRUE);
+	doff_tdata = doff_get_internal_sectdata(abfd, sect, read_direction);
 
 	if (idx >= doff_tdata->num_relocs) {
 		fprintf(stderr, "Invalid reloc index %d\n", idx);
@@ -398,8 +387,7 @@ doff_get_section_contents(bfd *abfd, asection *sect, void *data,
 	struct doff_internal_sectdata *doff_tdata;
 	void *src_data;
 
-	doff_tdata = doff_get_internal_sectdata(abfd, sect, read_direction,
-						FALSE);
+	doff_tdata = doff_get_internal_sectdata(abfd, sect, read_direction);
 	if (doff_tdata == NULL)
 		return FALSE;
 
@@ -425,8 +413,7 @@ doff_set_section_contents(bfd *abfd, asection *sect, const void *data,
 	struct doff_internal_sectdata *doff_tdata;
 	void *dst_data;
 
-	doff_tdata = doff_get_internal_sectdata(abfd, sect, write_direction,
-						FALSE);
+	doff_tdata = doff_get_internal_sectdata(abfd, sect, write_direction);
 	if (doff_tdata == NULL)
 		return FALSE;
 
@@ -492,7 +479,7 @@ doff_index_str_table(bfd *abfd ATTRIBUTE_UNUSED, struct doff_private_data *priv)
 
 #define MAX(a,b) (((a) > (b)) ? (a) : (b))
 struct doff_internal_sectdata *doff_internalise_sectiondata(bfd *abfd,
-				bfd_boolean download, bfd_size_type sect_size,
+				bfd_size_type sect_size,
 				file_ptr sect_offset)
 {
 	struct doff_image_packet pkt;
@@ -525,16 +512,8 @@ struct doff_internal_sectdata *doff_internalise_sectiondata(bfd *abfd,
 	record->num_relocs = 0;
 	record->max_num_relocs = 100;
 	record->relocs = reloc;
-	record->download = download;
 	
 	bfd_seek(abfd, sect_offset, SEEK_SET);
-
-	if (!download) {
-		if (bfd_bread(data, sect_size, abfd) != sect_size)
-			goto fail;
-
-		return record;
-	}
 
 	/* In theory we need the number of packets, but we know the size, and
 	 * can just read until we have enough. Exactly why the num_pkts field
@@ -604,8 +583,7 @@ struct doff_internal_sectdata *doff_internalise_sectiondata(bfd *abfd,
 }
 
 struct doff_internal_sectdata *
-doff_blank_sectiondata(bfd *abfd ATTRIBUTE_UNUSED, bfd_boolean download,
-					bfd_size_type size)
+doff_blank_sectiondata(bfd *abfd ATTRIBUTE_UNUSED, bfd_size_type size)
 {
 	struct doff_internal_sectdata *data;
 
@@ -624,7 +602,6 @@ doff_blank_sectiondata(bfd *abfd ATTRIBUTE_UNUSED, bfd_boolean download,
 	data->num_relocs = 0;
 	data->max_num_relocs = 0;
 	data->relocs = NULL;
-	data->download = download;
 	return data;
 }
 
@@ -673,7 +650,7 @@ doff_externalise_section_data(asection *curscn, struct scn_swapout *output)
 	abfd = curscn->owner;
 
 	doff_tdata = doff_get_internal_sectdata(curscn->owner, curscn,
-						write_direction, FALSE);
+						write_direction);
 	if (doff_tdata == NULL)
 		return TRUE;
 
