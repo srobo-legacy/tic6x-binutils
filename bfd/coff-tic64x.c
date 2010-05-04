@@ -32,6 +32,8 @@ reloc_howto_type *tic64x_coff_reloc_name_lookup (bfd *abfd, const char *name);
 #define coff_bfd_reloc_type_lookup tic64x_coff_reloc_type_lookup
 #define coff_bfd_reloc_name_lookup tic64x_coff_reloc_name_lookup
 
+#define COFF_LONG_SECTION_NAMES 1
+
 #include "coffcode.h"
 
 /* FIXME: coffcode defines ticoff{0,1}_swap_table, however we don't use
