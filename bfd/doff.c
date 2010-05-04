@@ -938,7 +938,7 @@ doff_write_object_contents(bfd *abfd)
 		coff_sym = coff_symbol_from(abfd, sym);
 		if (coff_sym == NULL || coff_sym->native == NULL) {
 			/* Non-coff symbol, guess what storage class it should
-			 * be in */
+			 * be in. Rules derived from doff_write_alien_symbol */
 			if (sym->flags & BSF_LOCAL)
 				sclass = C_STAT;
 			else if (sym->flags & BSF_WEAK)
