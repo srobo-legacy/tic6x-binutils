@@ -788,7 +788,6 @@ doff_externalise_section_data(asection *curscn, struct scn_swapout *output)
 bfd_boolean
 doff_write_object_contents(bfd *abfd)
 {
-
 	struct doff_filehdr fhdr;
 	struct doff_checksum_rec checksums;
 	asection *curscn;
