@@ -929,7 +929,8 @@ doff_write_object_contents(bfd *abfd)
 						&dsym->storage_class);
 		}
 
-		H_PUT_16(abfd, sym->section->target_index, &dsym->scn_num);
+		/* Section index: bfd does zero based, doff is one based */
+		H_PUT_16(abfd, sym->section->target_index + 1, &dsym->scn_num);
 		H_PUT_32(abfd, sym->value, &dsym->value);
 
 		/* Squirt string into string table too */
