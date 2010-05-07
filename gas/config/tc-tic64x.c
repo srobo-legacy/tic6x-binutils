@@ -1038,33 +1038,28 @@ tic64x_opreader_memaccess(char *line, struct tic64x_insn *insn,
 		 * leave it for the moment */
 		c = *line;
 		*line = 0;
-		tic64x_parse_expr(offs, &expr);
+
+/* XXX - use gas' built in register section / register symbols support,
+ * so that expression parsing can handle our detection of registers */
 
 		/* Need to know early whether this is a register or not - if it
 		 * is, should just be a single symbol that we can translate. */
-		if (expr.X_op == O_symbol) {
-			offsetreg = tic64x_sym_to_reg(offs);
-			if (offsetreg) {
-				/* woot, it's a register. Just check: */
-				if (expr.X_add_number != 0) {
-					as_bad("Cannot add/subtract from "
-						"register in offset field");
-					return;
-				}
-
-				off_reg = TIC64X_ADDRMODE_REGISTER;
-				/* Memory addr registers _have_ to come from the
-				 * side of the processor we're executing on */
-				if (((reg->num & TIC64X_REG_UNIT2) &&
-						insn->unit_num != 2) ||
-				    (!(reg->num & TIC64X_REG_UNIT2) &&
-						insn->unit_num != 1)) {
-					as_bad("Base address register must be "
-						"on same side of processor "
-						"as instruction");
-					return;
-				}
+		offsetreg = tic64x_sym_to_reg(offs);
+		if (offsetreg) {
+			/* joy */
+			off_reg = TIC64X_ADDRMODE_REGISTER;
+			/* Memory addr registers _have_ to come from the
+			 * side of the processor we're executing on */
+			if (((reg->num & TIC64X_REG_UNIT2) &&
+					insn->unit_num != 2) ||
+			    (!(reg->num & TIC64X_REG_UNIT2) &&
+					insn->unit_num != 1)) {
+				as_bad("Base address register must be on same "
+					"side of processor as instruction");
+				return;
 			}
+		} else {
+			tic64x_parse_expr(offs, &expr);
 		}
 	} else {
 		/* No offset, so set offs to constant zero */
