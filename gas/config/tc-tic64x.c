@@ -2443,7 +2443,8 @@ tic64x_output_insn(struct tic64x_insn *insn, char *out, fragS *frag, int pcoffs)
 	if (insn->templ->flags & TIC64X_OP_UNITNO)
 		tic64x_set_operand(&insn->opcode, tic64x_operand_y, y);
 
-	if (!(insn->templ->flags & TIC64X_OP_NOCOND)) {
+	if (!(insn->templ->flags & TIC64X_OP_NOCOND) &&
+					insn->cond_reg != 0) {
 		tic64x_set_operand(&insn->opcode, tic64x_operand_z,
 					(insn->cond_nz) ? 0 : 1);
 		tic64x_set_operand(&insn->opcode, tic64x_operand_creg,
