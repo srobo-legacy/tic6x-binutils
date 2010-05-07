@@ -23,34 +23,16 @@ SECTIONS
 {
 	.text :
 	{
-		___text__ = .;
-		*(.text)
-		etext = .;
-		___etext__ = .;
 	} > prog
 	.data :
 	{
-		___data__ = .;
-		__data = .;
-		*(.data)
-		__edata = .;
-		edata = .;
-		___edata__ = .;
 	} > prog
 	/* all other initialized sections should be allocated here */
 	.cinit :
 	{
-		*(.cinit)
 	} > prog
 	.bss :
 	{
-		___bss__ = .;
-		__bss = .;
-		*(.bss)
-		*(COMMON)
-		__ebss = .;
-		end = .;
-		___end__ = .;
 	} > data
 	/* all other uninitialized sections should be allocated here */
 }
