@@ -851,16 +851,12 @@ doff_write_object_contents(bfd *abfd)
 		/* Throw together section header details too - those we have */
 		/* Name index in string table, which we just grabbed */
 		H_PUT_32(abfd, tmp, &cur_raw_scn->hdr.str_offset);
-		/* Start/Run address... */
-		if (abfd->start_address >= curscn->vma &&
-			abfd->start_address < curscn->vma + curscn->size) {
-			H_PUT_32(abfd, abfd->start_address,
-				&cur_raw_scn->hdr.prog_addr);
-			entry_scn = nscns;
-		} else {
-			H_PUT_32(abfd, 0, &cur_raw_scn->hdr.prog_addr);
-		}
-
+		/* "prog" address - this doesn't appear to be as simple as the
+		 * the name suggests, as many symbols have their address
+		 * adjusted by this value in TIs doff loader - see
+		 * dynload/cload.c, dload_symbols in the dspbridge driver.
+		 * So for now make it the same as the load address */
+		H_PUT_32(abfd, curscn->vma, &cur_raw_scn->hdr.prog_addr);
 		H_PUT_32(abfd, curscn->vma, &cur_raw_scn->hdr.load_addr);
 		H_PUT_32(abfd, curscn->size, &cur_raw_scn->hdr.size);
 		H_PUT_16(abfd, 0, &cur_raw_scn->hdr.page); /* No idea */
