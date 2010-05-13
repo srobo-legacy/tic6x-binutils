@@ -1156,7 +1156,7 @@ tic64x_opreader_memaccess(char *line, struct tic64x_insn *insn,
 			return;
 		}
 
-		if (tmp > ((1 << offs_size) - 1) ||
+		if (tmp < ((1 << offs_size) - 1) ||
 			insn->templ->flags & TIC64X_OP_CONST_SCALE) {
 
 			/* If the instruction always scales the offset, or if
