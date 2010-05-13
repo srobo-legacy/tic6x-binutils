@@ -1157,7 +1157,7 @@ tic64x_opreader_memaccess(char *line, struct tic64x_insn *insn,
 		}
 
 		if (tmp > ((1 << offs_size) - 1) ||
-			insn->templ->flags & TIC64X_OP_MEMACC_SCALE) {
+			insn->templ->flags & TIC64X_OP_CONST_SCALE) {
 
 			/* If the instruction always scales the offset, or if
 			 * the offset is too large to fit, scale it. The
@@ -1200,7 +1200,7 @@ tic64x_opreader_memaccess(char *line, struct tic64x_insn *insn,
 
 	/* So, we may have decided to scale above... but can we? */
 	if (sc == 1 && !(insn->templ->flags & TIC64X_OP_MEMACC_SBIT) &&
-			!(insn->templ->flags & TIC64X_OP_MEMACC_SCALE)) {
+			!(insn->templ->flags & TIC64X_OP_CONST_SCALE)) {
 		/* We can't scale. Can't fit offset in field then */
 		as_bad("Constant offset too large");
 		return;
@@ -1208,7 +1208,7 @@ tic64x_opreader_memaccess(char *line, struct tic64x_insn *insn,
 		/* If we have that bit and must scale, do it here */
 		/* Unless the instruction always scales, that is */
 
-		if (!(insn->templ->flags & TIC64X_OP_MEMACC_SCALE)) {
+		if (!(insn->templ->flags & TIC64X_OP_CONST_SCALE)) {
 			err = tic64x_set_operand(&insn->opcode,
 						tic64x_operand_scale,
 						c);

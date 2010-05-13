@@ -136,14 +136,11 @@ struct tic64x_op_template {
 
 #define TIC64X_OP_XPATH_SRC1	0x2000	/* src1 is xpath */
 #define TIC64X_OP_XPATH_SRC2	0x4000	/* src2 is xpath */
-
-#define TIC64X_OP_MEMACC_SCALE	0x8000	/* Some memory access insns always
-					 * scale the operand by the size of
-					 * data access, instead of providing
-					 * a scale bit */
+/* 0x8000 rescinded and free */
 #define TIC64X_OP_MEMACC_SBIT	0x10000	/* Scale bit exists in this insn.
 					 * Needs a rename */
-#define TIC64X_OP_CONST_SCALE 	0x20000 /* branch instructions and the like
+#define TIC64X_OP_CONST_SCALE 	0x20000 /* branch instructions and the like,
+					 * particularly memory access insns
 					 * always scale their offsets by a
 					 * certain amount - use memsz flags
 					 * to specify by how much, and this

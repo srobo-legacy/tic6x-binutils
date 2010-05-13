@@ -501,7 +501,7 @@ print_op_memaccess(struct tic64x_op_template *t,
 	}
 
 	/* Check whether or not scaling is forced */
-	if (t->flags & TIC64X_OP_MEMACC_SCALE)
+	if (t->flags & TIC64X_OP_CONST_SCALE)
 		scale = 1;
 
 	/* If we scale, calculate by how much */

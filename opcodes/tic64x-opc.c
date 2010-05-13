@@ -721,7 +721,7 @@ struct tic64x_op_template tic64x_opcodes[] = {
 },
 {"lddw",	0x164,		0x17C,
 	TIC64X_OP_UNIT_D | TIC64X_OP_UNITNO | TIC64X_OP_MEMACCESS |
-	TIC64X_OP_MEMSZ_DWORD | TIC64X_OP_MEMACC_SCALE,
+	TIC64X_OP_MEMSZ_DWORD | TIC64X_OP_CONST_SCALE,
 	{ tic64x_optxt_memaccess, tic64x_optxt_dwdst, tic64x_optxt_none},
 	{ tic64x_operand_dwdst5, tic64x_operand_rcoffset }
 },
