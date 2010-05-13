@@ -1141,7 +1141,7 @@ tic64x_opreader_memaccess(char *line, struct tic64x_insn *insn,
 		offs_size = tic64x_operand_positions[tic64x_operand_rcoffset].size;
 		tmp = expr.X_add_number;
 
-		if (bracket == '[') {
+		if (bracket == ']') {
 			/* Programmer provides pre-scaled value within square
 			 * brackets - unscale it to meet our expectations */
 			i = insn->templ->flags & TIC64X_OP_MEMSZ_MASK;
