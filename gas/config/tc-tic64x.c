@@ -637,9 +637,10 @@ type_to_rtype(struct tic64x_insn *insn, enum tic64x_operand_type type)
 		/* One operand type, but semantics are different for mvk
 		 * and mvkh/mvklh (according to docs) */
 
-		if (!strcmp("mvk", insn->templ->mnemonic) ||
-			!strcmp("mvkl", insn->templ->mnemonic))
+		if (!strcmp("mvk", insn->templ->mnemonic))
 			return BFD_RELOC_TIC64X_S16;
+		else if (!strcmp("mvkl", insn->templ->mnemonic))
+			return BFD_RELOC_TIC64X_LO16;
 		else if (!strcmp("mvkh", insn->templ->mnemonic) ||
 			!strcmp("mvklh", insn->templ->mnemonic))
 			return BFD_RELOC_TIC64X_HI16;
