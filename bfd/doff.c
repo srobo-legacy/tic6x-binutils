@@ -990,7 +990,7 @@ doff_write_object_contents(bfd *abfd)
 
 	/* Calculate header checksums */
 	checksums.timestamp = 0; /* Nuts to that */
-	checksums.section_checksum = 0;
+	checksums.self_checksum = 0;
 	checksum = 0;
 	for (i = 0; i < nscns; i++) {
 		checksum += doff_checksum(&(raw_scns + i)->hdr,
