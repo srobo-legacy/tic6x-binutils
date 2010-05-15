@@ -779,6 +779,7 @@ doff_write_object_contents(bfd *abfd)
 	coff_symbol_type *coff_sym;
 	void *tmp_ptr;
 	char *str_block, *str_block_pos, *file_name;
+	int dummy;
 	uint32_t checksum;
 	unsigned int nscns, max_scn_data, str_block_len, max_str_sz, tmp, i;
 	unsigned int scn_name_sz, largest_str, num_loadable_scns, entry_scn;
@@ -809,6 +810,7 @@ doff_write_object_contents(bfd *abfd)
 
 	/* This munges the symbol table and works out where symbols will
 	 * eventually lie in the symbol table (in terms of indexes) */
+	coff_renumber_symbols(abfd, &dummy);
 	coff_mangle_symbols(abfd);
 
 	max_scn_data = 10;
