@@ -782,7 +782,6 @@ doff_write_object_contents(bfd *abfd)
 	uint32_t checksum;
 	unsigned int nscns, max_scn_data, str_block_len, max_str_sz, tmp, i;
 	unsigned int scn_name_sz, largest_str, num_loadable_scns, entry_scn;
-	enum coff_symbol_classification sym_class;
 	uint16_t flags, sclass;
 
 	num_loadable_scns = 0;
@@ -924,8 +923,6 @@ doff_write_object_contents(bfd *abfd)
 				sclass = C_EXT;
 			H_PUT_16(abfd, sclass, &dsym->storage_class);
 		} else {
-			sym_class = bfd_coff_classify_symbol(abfd,
-						&coff_sym->native->u.syment);
 			H_PUT_16(abfd, coff_sym->native->u.syment.n_sclass,
 						&dsym->storage_class);
 		}
