@@ -933,6 +933,8 @@ doff_write_object_contents(bfd *abfd)
 		 * cases where have an absolute symbol */
 		if (sym->section == bfd_abs_section_ptr)
 			H_PUT_16(abfd, -1, &dsym->scn_num);
+		else if (sym->section == bfd_und_section_ptr)
+			H_PUT_16(abfd, 0, &dsym->scn_num);
 		else
 			H_PUT_16(abfd, sym->section->target_index,
 						&dsym->scn_num);
