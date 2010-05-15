@@ -687,11 +687,16 @@ doff_externalise_section_data(asection *curscn, struct scn_swapout *output)
 		put_sz = MIN(1024, (curscn->size - cur_data_offs));
 		cur_pos += sizeof(struct doff_image_packet);
 
-		/* Look to see how many relocs we need to work on */
+		/* Look to see how many relocs we need to work on - they're in
+		 * order of vma, so go through list looking for those that are
+		 * between the current idx and the end of this instruction
+		 * packet, ie those in the packet */
 		if (rels != NULL) {
 			for (num_relocs = 0;
-					rels[reloc_idx + num_relocs]->address <
-					curscn->vma + cur_data_offs;
+					(reloc_idx + num_relocs <
+					curscn->reloc_count) &&
+					(rels[reloc_idx + num_relocs]->address <
+					curscn->vma + cur_data_offs + 1024);
 					num_relocs++)
 			;
 		} else {
