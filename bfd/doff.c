@@ -729,19 +729,35 @@ doff_externalise_section_data(asection *curscn, struct scn_swapout *output)
 			H_PUT_16(abfd, rels[reloc_idx + i]->howto->type,
 						&reloc->reloc.r_sym.type);
 
-			/* Symbol index - from reading coffcode.h's outputter,
-			 * undefined symbols don't get linked and so don't have
-			 * the correct bfd. Linked symbols do, and have the file
-			 * index of the symbol as udata.i. absolute refs are in
-			 * the absolute section */
+			/* Symbol index - we assume that coff_renumber_symbols
+			 * has already run and make our lives a lot easier */
+
 
 			idx = 0;
 			sym = *rels[reloc_idx + i]->sym_ptr_ptr;
 			if (sym->the_bfd != abfd) {
-				/* Unresolved */
-				idx = 0;
-			} else if (sym->section == bfd_abs_section_ptr) {
-				idx = -1;
+				/* See coff_write_relocs - this was unresolved,
+				 * and didn't have its symbol location
+				 * rejiggled at the right time. So it points
+				 * into the wrong bfd, so it's the wrong symbol
+				 * to get an index from. Lookup in output bfd
+				 * symbol table */
+				for (idx = 0; idx < abfd->symcount; idx++) {
+					if (!strcmp(sym->name,
+						abfd->outsymbols[idx]->name))
+						break;
+				}
+
+				if (idx == abfd->symcount) {
+					fprintf(stderr, "doff backend: when "
+						"writing file, relocation has "
+						"magically gained a nonexistant"
+						" symbol\n");
+					exit(1);
+					/* XXX - correct error handing */
+				}
+
+				idx = abfd->outsymbols[idx]->udata.i;
 			} else {
 				idx = sym->udata.i;
 			}
