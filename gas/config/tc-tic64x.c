@@ -523,9 +523,19 @@ md_apply_fix(fixS *fixP, valueT *valP, segT seg ATTRIBUTE_UNUSED)
 	value = *valP;
 	shift = 0;
 
-	if (fixP->fx_pcrel && (S_GET_SEGMENT(fixP->fx_addsy) == seg ||
-			S_GET_SEGMENT(fixP->fx_addsy) == absolute_section)) {
-		value += md_pcrel_from_seg(fixP, seg);
+	/* Unpleasent goo - gas is quite fine at generating the pcrel offset
+	 * between this position and some other symbol that we're branching
+	 * too, or whatever. However, it all goes to pieces when you start
+	 * involving undefined and absolute symbols that need to be relocated,
+	 * because this step squirts some invalid numbers into the offset field,
+	 * a reloc is tied to it, and the runtime linker biases the reloc by
+	 * the constant it finds in the field. So, if this field is going to
+	 * be relocated (not in this segment, absolute or undefined) just write
+	 * the pcoffset instead. Does any of that make sense? */
+	if (fixP->fx_pcrel && (S_GET_SEGMENT(fixP->fx_addsy) != seg ||
+			S_GET_SEGMENT(fixP->fx_addsy) == absolute_section ||
+			S_GET_SEGMENT(fixP->fx_addsy) == undefined_section)) {
+		value = fixP->fx_pcrel_adjust;
 	}
 
 	switch(fixP->fx_r_type) {
