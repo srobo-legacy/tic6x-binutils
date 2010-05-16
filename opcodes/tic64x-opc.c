@@ -1897,10 +1897,55 @@ bad_scaleup(uint16_t opcode ATTRIBUTE_UNUSED, uint32_t hdr ATTRIBUTE_UNUSED,
 	return ENODEV;
 }
 
+static void
+scaleup_mem_access_opcopde(uint32_t *out_opcode, uint16_t opcode, int sz,
+				int dsz, int ls, int reg)
+{
+	int i;
+
+	if (sz) {
+		i = dsz << 1;
+		i |= ls;
+		*out_opcode |= compact_d_scaleup_codes[i];
+	} else if (!(dsz & 4)) {
+		/* Either stw or ldw */
+		i = 8;
+		i |= ls;
+		*out_opcode |= compact_d_scaleup_codes[i];
+	} else {
+		i = ls;
+		i |= (opcode & 0x10) ? 2 : 0; /* non-aligned bit */
+		if (opcode & 0x10) {
+
+			/* ??NDW insns only have 4 bit field for dest reg */
+			tic64x_set_operand(out_opcode, tic64x_operand_dwdst4,
+								reg >> 1);
+			tic64x_set_operand(out_opcode, tic64x_operand_scale, 0);
+		}
+
+		switch (i) {
+		case 0:
+			*out_opcode |= 0x144;	/* stdw */
+			break;
+		case 1:
+			*out_opcode |= 0x164;	/* lddw */
+			break;
+		case 2:
+			*out_opcode |= 0x174;	/* stndw */
+			break;
+		case 3:
+			*out_opcode |= 0x124;	/* ldndw */
+			break;
+		}
+	}
+
+	return;
+}
+
 int
 scaleup_doff4(uint16_t opcode, uint32_t hdr, uint32_t *out_opcode)
 {
-	int dsz, i, reg, base, offs, s, t, sz, ls;
+	int dsz, reg, base, offs, s, t, sz, ls;
 
 	*out_opcode = 0;
 
@@ -1950,41 +1995,7 @@ scaleup_doff4(uint16_t opcode, uint32_t hdr, uint32_t *out_opcode)
 	tic64x_set_operand(out_opcode, tic64x_operand_y, s);
 	tic64x_set_operand(out_opcode, tic64x_operand_s, t);
 
-	if (sz) {
-		i = dsz << 1;
-		i |= ls;
-		*out_opcode |= compact_d_scaleup_codes[i];
-	} else if (!(dsz & 4)) {
-		/* Either stw or ldw */
-		i = 8;
-		i |= ls;
-		*out_opcode |= compact_d_scaleup_codes[i];
-	} else {
-		i = ls;
-		i |= (opcode & 0x10) ? 2 : 0; /* non-aligned bit */
-		if (opcode & 0x10) {
-
-			/* ??NDW insns only have 4 bit field for dest reg */
-			tic64x_set_operand(out_opcode, tic64x_operand_dwdst4,
-								reg >> 1);
-			tic64x_set_operand(out_opcode, tic64x_operand_scale, 0);
-		}
-
-		switch (i) {
-		case 0:
-			*out_opcode |= 0x144;	/* stdw */
-			break;
-		case 1:
-			*out_opcode |= 0x164;	/* lddw */
-			break;
-		case 2:
-			*out_opcode |= 0x174;	/* stndw */
-			break;
-		case 3:
-			*out_opcode |= 0x124;	/* ldndw */
-			break;
-		}
-	}
+	scaleup_mem_access_opcopde(out_opcode, opcode, sz, dsz, ls, reg);
 
 	return 0;
 }
@@ -1993,7 +2004,7 @@ scaleup_doff4(uint16_t opcode, uint32_t hdr, uint32_t *out_opcode)
 int
 scaleup_dind(uint16_t opcode, uint32_t hdr, uint32_t *out_opcode)
 {
-	int dsz, i, reg, base, idx, s, t, sz, ls;
+	int dsz, reg, base, idx, s, t, sz, ls;
 
 	*out_opcode = 0;
 
@@ -2042,40 +2053,11 @@ scaleup_dind(uint16_t opcode, uint32_t hdr, uint32_t *out_opcode)
 	tic64x_set_operand(out_opcode, tic64x_operand_y, s);
 	tic64x_set_operand(out_opcode, tic64x_operand_s, t);
 
-	if (sz) {
-		i = dsz << 1;
-		i |= ls;
-		*out_opcode |= compact_d_scaleup_codes[i];
-	} else if (!(dsz & 4)) {
-		/* Either stw or ldw */
-		i = 8;
-		i |= ls;
-		*out_opcode |= compact_d_scaleup_codes[i];
-	} else {
-		i = ls;
-		i |= (opcode & 0x10) ? 2 : 0; /* non-aligned bit */
-		if (opcode & 0x10) {
+	scaleup_mem_access_opcopde(out_opcode, opcode, sz, dsz, ls, reg);
 
-			/* ??NDW insns only have 4 bit field for dest reg */
-			tic64x_set_operand(out_opcode, tic64x_operand_dwdst4,
-								reg >> 1);
-			tic64x_set_operand(out_opcode, tic64x_operand_scale, 0);
-		}
+	return 0;
+}
 
-		switch (i) {
-		case 0:
-			*out_opcode |= 0x144;	/* stdw */
-			break;
-		case 1:
-			*out_opcode |= 0x164;	/* lddw */
-			break;
-		case 2:
-			*out_opcode |= 0x174;	/* stndw */
-			break;
-		case 3:
-			*out_opcode |= 0x124;	/* ldndw */
-			break;
-		}
 	}
 
 	return 0;
