@@ -492,6 +492,7 @@ tc_gen_reloc(asection *section ATTRIBUTE_UNUSED, fixS *fixP)
 	sym = symbol_get_bfdsym(fixP->fx_addsy);
 	rel = malloc(sizeof(*rel));
 	rel->sym_ptr_ptr = malloc(sizeof(asymbol *));
+	rel->addend = 0;
 	*rel->sym_ptr_ptr = sym;
 	rel->address = fixP->fx_frag->fr_address + fixP->fx_where;
 
