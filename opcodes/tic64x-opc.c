@@ -1802,6 +1802,8 @@ static int bad_scaleup(uint16_t opcode, uint32_t hdr, uint32_t *out_opcode);
 
 static int scaleup_doff4(uint16_t opcode, uint32_t hdr, uint32_t *out_opcode);
 static int scaleup_dind(uint16_t opcode, uint32_t hdr, uint32_t *out_opcode);
+static int scaleup_ddec(uint16_t opcode, uint32_t hdr, uint32_t *out_opcode);
+static int scaleup_dstk(uint16_t opcode, uint32_t hdr, uint32_t *out_opcode);
 static int scaleup_sbs7(uint16_t opcode, uint32_t hdr, uint32_t *out_opcode);
 static int scaleup_sx1b(uint16_t opcode, uint32_t hdr, uint32_t *out_opcode);
 static int scaleup_s3(uint16_t opcode, uint32_t hdr, uint32_t *out_opcode);
@@ -1812,8 +1814,8 @@ struct tic64x_compact_table tic64x_compact_formats[] = {
 {0x4,		0x406,	bad_scaledown, scaleup_doff4},	/* doff4 */
 {0x404,		0xC06,	bad_scaledown, scaleup_dind},	/* dind */
 {0xC04,		0xCC06,	bad_scaledown, bad_scaleup},	/* dinc */
-{0x4C04,	0x4C06,	bad_scaledown, bad_scaleup},	/* ddec */
-{0x8C04,	0x8C06,	bad_scaledown, bad_scaleup},	/* dstk */
+{0x4C04,	0x4C06,	bad_scaledown, scaleup_ddec},	/* ddec */
+{0x8C04,	0x8C06,	bad_scaledown, scaleup_dstk},	/* dstk */
 {0x36,		0x47E,	bad_scaledown, bad_scaleup},	/* dx2op */
 {0x436,		0x47E,	bad_scaledown, bad_scaleup},	/* dx5 */
 {0xC77,		0x1C7F,	bad_scaledown, bad_scaleup},	/* dx5p */
@@ -2058,7 +2060,82 @@ scaleup_dind(uint16_t opcode, uint32_t hdr, uint32_t *out_opcode)
 	return 0;
 }
 
+int
+scaleup_ddec(uint16_t opcode, uint32_t hdr, uint32_t *out_opcode)
+{
+	int dsz, s, ls, reg, ptr, sz, t, cst;
+
+	dsz = hdr >> 16;
+	dsz &= 7;
+	s = opcode & 1;
+	ls = (opcode & 8) ? 1 : 0;
+	reg = (opcode >> 4) & 7;
+	ptr = (opcode >> 7) & 3;
+	sz = (opcode & 0x200) ? 1 : 0;
+	t = (opcode & 0x1000) ? 1 : 0;
+	cst = (opcode & 0x2000) ? 1 : 0;
+	cst += 1; /* See footnote in datasheet */
+
+	if (hdr & 0x80000) {
+		reg += 16;
+		ptr += 16;
 	}
+
+	ptr += 4; /* See death-notice in dind */
+
+	*out_opcode = 0;
+	tic64x_set_operand(out_opcode, tic64x_operand_addrmode,
+				TIC64X_ADDRMODE_MODIFY|
+				TIC64X_ADDRMODE_OFFSET |
+				TIC64X_ADDRMODE_PRE |
+				TIC64X_ADDRMODE_NEG);
+	tic64x_set_operand(out_opcode, tic64x_operand_rcoffset, cst);
+	tic64x_set_operand(out_opcode, tic64x_operand_dstreg, reg);
+	tic64x_set_operand(out_opcode, tic64x_operand_basereg, ptr);
+	tic64x_set_operand(out_opcode, tic64x_operand_z, 0);
+	tic64x_set_operand(out_opcode, tic64x_operand_creg, 0);
+	tic64x_set_operand(out_opcode, tic64x_operand_y, s);
+	tic64x_set_operand(out_opcode, tic64x_operand_s, t);
+
+	scaleup_mem_access_opcopde(out_opcode, opcode, sz, dsz, ls, reg);
+
+	return 0;
+}
+
+int
+scaleup_dstk(uint16_t opcode, uint32_t hdr, uint32_t *out_opcode)
+{
+	int s, ls, reg, t, ucst;
+
+	s = opcode & 1;
+	ls = (opcode & 8) ? 1 : 0;
+	reg = (opcode >> 4) & 7;
+	t = (opcode & 0x1000) ? 1 : 0;
+	ucst = (opcode >> 13) & 3;
+	ucst |= (opcode >> 5) & 0x1C;
+
+	if (hdr & 0x80000)
+		reg += 16;
+
+	*out_opcode = 0;
+	tic64x_set_operand(out_opcode, tic64x_operand_dstreg, reg);
+	/* Base register is always B15 according to datasheet */
+	tic64x_set_operand(out_opcode, tic64x_operand_basereg, 0xF);
+	tic64x_set_operand(out_opcode, tic64x_operand_z, 0);
+	tic64x_set_operand(out_opcode, tic64x_operand_creg, 0);
+	/* XXX - while datasheet says the base is always on the B side, theres
+	 * still an s bit present in the instruction. */
+	if (s != 1) {
+		fprintf(stderr, "dstk insn with wrong s bit: I'm covered in bees\n");
+	}
+	tic64x_set_operand(out_opcode, tic64x_operand_y, t);
+	tic64x_set_operand(out_opcode, tic64x_operand_s, t);
+	tic64x_set_operand(out_opcode, tic64x_operand_const15, ucst);
+
+	if (ls)
+		*out_opcode |= 0x6C; /* load */
+	else
+		*out_opcode |= 0x7C; /* Store */
 
 	return 0;
 }
