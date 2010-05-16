@@ -1598,7 +1598,7 @@ tic64x_opreader_constant(char *line, struct tic64x_insn *insn,
 		}
 
 		err = tic64x_set_operand(&insn->opcode, realtype,
-						expr.X_add_number << shift);
+						expr.X_add_number >> shift);
 
 		/* Trying to set operand that's too big: that's an error, unless
 		 * it's an instruction that expects this and that has set the
