@@ -1805,6 +1805,7 @@ static int scaleup_dind(uint16_t opcode, uint32_t hdr, uint32_t *out_opcode);
 static int scaleup_sbs7(uint16_t opcode, uint32_t hdr, uint32_t *out_opcode);
 static int scaleup_sx1b(uint16_t opcode, uint32_t hdr, uint32_t *out_opcode);
 static int scaleup_s3(uint16_t opcode, uint32_t hdr, uint32_t *out_opcode);
+static int scaleup_unop(uint16_t opcode, uint32_t hdr, uint32_t *out_opcode);
 
 struct tic64x_compact_table tic64x_compact_formats[] = {
 {0,		0xFFFF,	bad_scaledown, bad_scaleup},	/* invalid */
@@ -1857,7 +1858,7 @@ itself can't tell the difference, I assume a datasheet bug */
 {0x1C66,	0x3C7E,	bad_scaledown, bad_scaleup},	/* uspk */
 {0x2C66,	0x2C7E,	bad_scaledown, bad_scaleup},	/* uspm */
 /* This should cover spmask and spmaskr, see p670 */
-{0xC6E,		0x1FFF,	bad_scaledown, bad_scaleup},	/* unop */
+{0xC6E,		0x1FFF,	bad_scaledown, scaleup_unop},	/* unop */
 {0,		0,	NULL,		NULL	}
 };
 
@@ -2168,5 +2169,16 @@ scaleup_s3(uint16_t opcode, uint32_t hdr, uint32_t *out_opcode)
 	tic64x_set_operand(out_opcode, tic64x_operand_srcreg2, src2);
 	tic64x_set_operand(out_opcode, tic64x_operand_dstreg, dst);
 
+	return 0;
+}
+
+static int
+scaleup_unop(uint16_t opcode, uint32_t hdr ATTRIBUTE_UNUSED,
+					uint32_t *out_opcode)
+{
+
+	/* Enjoyably simple: top 3 bits are a number of nops, the end. */
+	*out_opcode = 0;
+	tic64x_set_operand(out_opcode, tic64x_operand_nops, opcode >> 13);
 	return 0;
 }
