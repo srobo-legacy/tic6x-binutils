@@ -453,10 +453,14 @@ md_pcrel_from_seg (fixS *fixP, segT segment)
 
 	/* NB: I have nothing to test against, but I assume this offset
 	 * is _supposed_ to be negative */
+
+	/* Turns out that actually, pcrel offsets are against the fetch packet
+	 * address. So, truncate the lower four bits */
 	addr = fixP->fx_frag->fr_address;
 	addr -= segment->vma;
 	addr += fixP->fx_where;
 	addr -= fixP->fx_pcrel_adjust;
+	addr &= ~0x1F;
 	return (long)addr;
 }
 
