@@ -1021,6 +1021,14 @@ tic64x_opreader_memaccess(char *line, struct tic64x_insn *insn,
 		}
 	}
 
+	if (nomod_modify == -1 || pos_neg == -1 || pre_post == -1) {
+		/* No pluses or minuses before or after base register - default
+		 * to a positive offset/reg */
+		nomod_modify = TIC64X_ADDRMODE_NOMODIFY;
+		pos_neg = TIC64X_ADDRMODE_POS;
+		pre_post = TIC64X_ADDRMODE_PRE;
+	}
+
 	/* Look for offset register of constant */
 	offsetreg = NULL;
 	bracket = '\0';
@@ -1093,14 +1101,6 @@ tic64x_opreader_memaccess(char *line, struct tic64x_insn *insn,
 			as_bad("Cannot have + and - modes after base register");
 			return;
 		}
-
-		/* Otherwise, just make sure the mode we have is consistent */
-		/* Which I can't quite work my mind around right now */
-	} else if (nomod_modify == TIC64X_ADDRMODE_NOMODIFY) {
-		/* Had just + or -, but no offset */
-		as_bad("Can't specify + or - with no offset for base address "
-								"register");
-		return;
 	}
 	/* Someone with more sleep needs to think up more checks */
 
