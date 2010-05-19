@@ -537,36 +537,36 @@ as_fatal("FIXME: relocations of const15s need to know memory access size");
 		break;
 	case BFD_RELOC_TIC64X_PCR21:
 		type = tic64x_operand_const21;
-		shift = 1;
+		shift = 2;
 		break;
 	case BFD_RELOC_TIC64X_PCR10:
 		type = tic64x_operand_const10;
-		shift = 1;
+		shift = 2;
 		break;
 	case BFD_RELOC_TIC64X_LO16:
-	case BFD_RELOC_TIC64X_HI16:
 	case BFD_RELOC_TIC64X_S16:
 		type = tic64x_operand_const16;
 		break;
+	case BFD_RELOC_TIC64X_HI16:
+		type = tic64x_operand_const16;
+		shift = 16;
+		break;
 	case BFD_RELOC_TIC64X_PCR7:
 		type = tic64x_operand_const7;
-		shift = 1;
+		shift = 2;
 		break;
 	case BFD_RELOC_TIC64X_PCR12:
 		type = tic64x_operand_const12;
-		shift = 1;
+		shift = 2;
 		break;
 	case BFD_RELOC_TIC64X_BYTE:
 		type = tic64x_operand_data8;
-		shift = 0;
 		break;
 	case BFD_RELOC_TIC64X_WORD:
 		type = tic64x_operand_data16;
-		shift = 0;
 		break;
 	case BFD_RELOC_TIC64X_LONG:
 		type = tic64x_operand_data32;
-		shift = 0;
 		break;
 	default:
 		as_fatal("Bad relocation type 0x%X\n", fixP->fx_r_type);
@@ -580,13 +580,17 @@ as_fatal("FIXME: relocations of const15s need to know memory access size");
 	size = tic64x_operand_positions[type].size;
 
 	/* If operand gets shifted, actual data encoded is 2 bits larger */
-	if (shift)
-		size += 2;
 
-	value &= ((1 << size) - 1);
+	value &= ((1 << (size+shift)) - 1);
+
+	/* And mask out the lower portion of the operand that will be dropped
+	 * if any shifting occurs */
+	if (shift != 0)
+		value &= ~((1 << shift) - 1);
 
 	opcode = bfd_get_32(stdoutput, loc);
-	ret = tic64x_set_operand(&opcode, type, (shift) ? value >> 2 : value);
+	ret = tic64x_set_operand(&opcode, type, (shift) ? value >> shift
+								: value);
 	bfd_put_32(stdoutput, opcode, loc);
 
 	/* XXX FIXME: Ensure that too-large relocs are handled somehow. Test. */
