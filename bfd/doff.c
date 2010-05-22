@@ -955,7 +955,8 @@ doff_write_object_contents(bfd *abfd)
 			H_PUT_16(abfd, sym->section->target_index,
 						&dsym->scn_num);
 
-		H_PUT_32(abfd, sym->value, &dsym->value);
+		H_PUT_32(abfd, sym->value + sym->section->output_offset,
+							&dsym->value);
 
 		/* Squirt string into string table too */
 		if (strlen(sym->name) + str_block_len >= max_str_sz) {
