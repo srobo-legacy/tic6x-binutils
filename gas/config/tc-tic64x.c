@@ -590,7 +590,7 @@ as_fatal("FIXME: relocations of const15s need to know memory access size");
 
 	opcode = bfd_get_32(stdoutput, loc);
 	ret = tic64x_set_operand(&opcode, type, (shift) ? value >> shift
-								: value);
+						: value, 0);
 	bfd_put_32(stdoutput, opcode, loc);
 
 	/* XXX FIXME: Ensure that too-large relocs are handled somehow. Test. */
@@ -1109,7 +1109,7 @@ tic64x_opreader_memaccess(char *line, struct tic64x_insn *insn,
 	/* So - we have a base register, addressing mode, offset and maybe scale
 	 * bit, which we need to fill out in insn. Simple ones first */
 	err = tic64x_set_operand(&insn->opcode, tic64x_operand_basereg,
-							reg->num & 0x1F);
+						reg->num & 0x1F, 0);
 	if (err)
 		abort_setop_fail(insn, "tic64x_operand_basereg");
 
@@ -1126,7 +1126,8 @@ tic64x_opreader_memaccess(char *line, struct tic64x_insn *insn,
 	if (nomod_modify > 0)
 		tmp |= nomod_modify;
 
-	err = tic64x_set_operand(&insn->opcode, tic64x_operand_addrmode, tmp);
+	err = tic64x_set_operand(&insn->opcode, tic64x_operand_addrmode, tmp,
+									0);
 	if (err)
 		abort_setop_fail(insn, "tic64x_operand_addrmode");
 
@@ -1218,13 +1219,14 @@ tic64x_opreader_memaccess(char *line, struct tic64x_insn *insn,
 		if (!(insn->templ->flags & TIC64X_OP_CONST_SCALE)) {
 			err = tic64x_set_operand(&insn->opcode,
 						tic64x_operand_scale,
-						c);
+						c, 0);
 			if (err)
 				abort_setop_fail(insn, "tic64x_operand_scale");
 		}
 	}
 
-	err = tic64x_set_operand(&insn->opcode, tic64x_operand_rcoffset, tmp);
+	err = tic64x_set_operand(&insn->opcode, tic64x_operand_rcoffset, tmp,
+									0);
 	if (err)
 		abort_setop_fail(insn, "tic64x_operand_r/c");
 
@@ -1261,7 +1263,7 @@ tic64x_opreader_memrel15(char *line, struct tic64x_insn *insn,
 		as_bad("memrel15 operand must use B14 or B15 base register");
 		return;
 	}
-	err = tic64x_set_operand(&insn->opcode, tic64x_operand_y, y);
+	err = tic64x_set_operand(&insn->opcode, tic64x_operand_y, y, 0);
 	if (err)
 		as_fatal("Error setting y bit in memrel15 operand");
 
@@ -1312,7 +1314,7 @@ tic64x_opreader_memrel15(char *line, struct tic64x_insn *insn,
 		}
 
 		err = tic64x_set_operand(&insn->opcode, tic64x_operand_const15,
-									val);
+									val, 0);
 		if (err) {
 			as_bad("Memory offset exceeds size of 15bit field");
 			return;
@@ -1367,7 +1369,7 @@ tic64x_opreader_register(char *line, struct tic64x_insn *insn,
 		return;
 	}
 
-	err = tic64x_set_operand(&insn->opcode, t2, reg->num & 0x1F);
+	err = tic64x_set_operand(&insn->opcode, t2, reg->num & 0x1F, 0);
 	if (err)
 		abort_setop_fail(insn, "{register}");
 
@@ -1421,7 +1423,8 @@ tic64x_opreader_register(char *line, struct tic64x_insn *insn,
 			return;
 		}
 
-		err = tic64x_set_operand(&insn->opcode, tic64x_operand_x, tmp);
+		err = tic64x_set_operand(&insn->opcode, tic64x_operand_x, tmp,	
+									0);
 		if (err)
 			abort_setop_fail(insn, "tic64x_operand_x");
 	}
@@ -1528,7 +1531,7 @@ void tic64x_opreader_double_register(char *line, struct tic64x_insn *insn,
 		return;
 	}
 
-	err = tic64x_set_operand(&insn->opcode, type, tmp);
+	err = tic64x_set_operand(&insn->opcode, type, tmp, 0);
 	if (err)
 		abort_setop_fail(insn, "dwreg");
 
@@ -1603,7 +1606,9 @@ tic64x_opreader_constant(char *line, struct tic64x_insn *insn,
 		}
 
 		err = tic64x_set_operand(&insn->opcode, realtype,
-						expr.X_add_number >> shift);
+					expr.X_add_number >> shift,
+					(type == tic64x_optxt_sconstant)
+					? 1 : 0);
 
 		/* Trying to set operand that's too big: that's an error, unless
 		 * it's an instruction that expects this and that has set the
@@ -1652,8 +1657,8 @@ tic64x_opreader_bfield(char *line, struct tic64x_insn *insn,
 		return;
 	}
 
-	tic64x_set_operand(&insn->opcode, tic64x_operand_const5, val1);
-	tic64x_set_operand(&insn->opcode, tic64x_operand_bitfldb, val2);
+	tic64x_set_operand(&insn->opcode, tic64x_operand_const5, val1, 0);
+	tic64x_set_operand(&insn->opcode, tic64x_operand_bitfldb, val2, 0);
 
 	return;
 }
@@ -2296,7 +2301,7 @@ tic64x_output_insn_packet()
 				insn->unit_num = side;
 				tic64x_set_operand(&insn->opcode,
 						tic64x_operand_s,
-						(side == 1) ? 0 : 1);
+						(side == 1) ? 0 : 1, 0);
 				if (insn->mvfail_op2[0] != insn->mvfail_op1[0]){
 					insn->uses_xpath = 1;
 				} else {
@@ -2442,20 +2447,20 @@ tic64x_output_insn(struct tic64x_insn *insn, char *out, fragS *frag, int pcoffs)
 
 	/* From bottom to top, fixed fields, the other operands */
 	if (insn->parallel)
-		tic64x_set_operand(&insn->opcode, tic64x_operand_p, 1);
+		tic64x_set_operand(&insn->opcode, tic64x_operand_p, 1, 0);
 
 	if (!(insn->templ->flags & TIC64X_OP_NOSIDE))
-		tic64x_set_operand(&insn->opcode, tic64x_operand_s, s);
+		tic64x_set_operand(&insn->opcode, tic64x_operand_s, s, 0);
 
 	if (insn->templ->flags & TIC64X_OP_UNITNO)
-		tic64x_set_operand(&insn->opcode, tic64x_operand_y, y);
+		tic64x_set_operand(&insn->opcode, tic64x_operand_y, y, 0);
 
 	if (!(insn->templ->flags & TIC64X_OP_NOCOND) &&
 					insn->cond_reg != 0) {
 		tic64x_set_operand(&insn->opcode, tic64x_operand_z,
-					(insn->cond_nz) ? 0 : 1);
+					(insn->cond_nz) ? 0 : 1, 0);
 		tic64x_set_operand(&insn->opcode, tic64x_operand_creg,
-					insn->cond_reg);
+					insn->cond_reg, 0);
 	}
 
 	for (i = 0; i < TIC64X_MAX_OPERANDS; i++) {

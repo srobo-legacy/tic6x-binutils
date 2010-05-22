@@ -205,7 +205,8 @@ print_insn_tic64x(bfd_vma addr, struct disassemble_info *info)
 
 			sz = 2;
 			if (p)
-				tic64x_set_operand(&opcode, tic64x_operand_p,1);
+				tic64x_set_operand(&opcode, tic64x_operand_p,
+									1, 0);
 		}
 	}
 

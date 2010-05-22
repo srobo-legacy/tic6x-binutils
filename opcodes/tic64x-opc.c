@@ -1922,8 +1922,9 @@ scaleup_mem_access_opcopde(uint32_t *out_opcode, uint16_t opcode, int sz,
 
 			/* ??NDW insns only have 4 bit field for dest reg */
 			tic64x_set_operand(out_opcode, tic64x_operand_dwdst4,
-								reg >> 1);
-			tic64x_set_operand(out_opcode, tic64x_operand_scale, 0);
+								reg >> 1, 0);
+			tic64x_set_operand(out_opcode, tic64x_operand_scale, 0,
+									0);
 		}
 
 		switch (i) {
@@ -1984,19 +1985,19 @@ scaleup_doff4(uint16_t opcode, uint32_t hdr, uint32_t *out_opcode)
 				TIC64X_ADDRMODE_NOMODIFY |
 				TIC64X_ADDRMODE_OFFSET |
 				TIC64X_ADDRMODE_PRE |
-				TIC64X_ADDRMODE_POS);
-	tic64x_set_operand(out_opcode, tic64x_operand_rcoffset, offs);
-	tic64x_set_operand(out_opcode, tic64x_operand_dstreg, reg);
-	tic64x_set_operand(out_opcode, tic64x_operand_basereg, base);
-	tic64x_set_operand(out_opcode, tic64x_operand_z, 0);
-	tic64x_set_operand(out_opcode, tic64x_operand_creg, 0);
+				TIC64X_ADDRMODE_POS, 0);
+	tic64x_set_operand(out_opcode, tic64x_operand_rcoffset, offs, 0);
+	tic64x_set_operand(out_opcode, tic64x_operand_dstreg, reg, 0);
+	tic64x_set_operand(out_opcode, tic64x_operand_basereg, base, 0);
+	tic64x_set_operand(out_opcode, tic64x_operand_z, 0, 0);
+	tic64x_set_operand(out_opcode, tic64x_operand_creg, 0, 0);
 
 	/* Need to set y and s bit - in compact insns, s is side of base ptr,
 	 * and t is the side of the "src/dst", for us the destination ptr.
 	 * normal l/s's use y to select the basereg, s to select the dest, so
 	 * we set 16 -> 32 as s -> y, t -> s */
-	tic64x_set_operand(out_opcode, tic64x_operand_y, s);
-	tic64x_set_operand(out_opcode, tic64x_operand_s, t);
+	tic64x_set_operand(out_opcode, tic64x_operand_y, s, 0);
+	tic64x_set_operand(out_opcode, tic64x_operand_s, t, 0);
 
 	scaleup_mem_access_opcopde(out_opcode, opcode, sz, dsz, ls, reg);
 
@@ -2042,19 +2043,19 @@ scaleup_dind(uint16_t opcode, uint32_t hdr, uint32_t *out_opcode)
 				TIC64X_ADDRMODE_NOMODIFY |
 				TIC64X_ADDRMODE_OFFSET |
 				TIC64X_ADDRMODE_PRE |
-				TIC64X_ADDRMODE_POS);
-	tic64x_set_operand(out_opcode, tic64x_operand_rcoffset, idx);
-	tic64x_set_operand(out_opcode, tic64x_operand_dstreg, reg);
-	tic64x_set_operand(out_opcode, tic64x_operand_basereg, base);
-	tic64x_set_operand(out_opcode, tic64x_operand_z, 0);
-	tic64x_set_operand(out_opcode, tic64x_operand_creg, 0);
+				TIC64X_ADDRMODE_POS, 0);
+	tic64x_set_operand(out_opcode, tic64x_operand_rcoffset, idx, 0);
+	tic64x_set_operand(out_opcode, tic64x_operand_dstreg, reg, 0);
+	tic64x_set_operand(out_opcode, tic64x_operand_basereg, base, 0);
+	tic64x_set_operand(out_opcode, tic64x_operand_z, 0, 0);
+	tic64x_set_operand(out_opcode, tic64x_operand_creg, 0, 0);
 
 	/* Need to set y and s bit - in compact insns, s is side of base ptr,
 	 * and t is the side of the "src/dst", for us the destination ptr.
 	 * normal l/s's use y to select the basereg, s to select the dest, so
 	 * we set 16 -> 32 as s -> y, t -> s */
-	tic64x_set_operand(out_opcode, tic64x_operand_y, s);
-	tic64x_set_operand(out_opcode, tic64x_operand_s, t);
+	tic64x_set_operand(out_opcode, tic64x_operand_y, s, 0);
+	tic64x_set_operand(out_opcode, tic64x_operand_s, t, 0);
 
 	scaleup_mem_access_opcopde(out_opcode, opcode, sz, dsz, ls, reg);
 
@@ -2089,14 +2090,14 @@ scaleup_ddec(uint16_t opcode, uint32_t hdr, uint32_t *out_opcode)
 				TIC64X_ADDRMODE_MODIFY|
 				TIC64X_ADDRMODE_OFFSET |
 				TIC64X_ADDRMODE_PRE |
-				TIC64X_ADDRMODE_NEG);
-	tic64x_set_operand(out_opcode, tic64x_operand_rcoffset, cst);
-	tic64x_set_operand(out_opcode, tic64x_operand_dstreg, reg);
-	tic64x_set_operand(out_opcode, tic64x_operand_basereg, ptr);
-	tic64x_set_operand(out_opcode, tic64x_operand_z, 0);
-	tic64x_set_operand(out_opcode, tic64x_operand_creg, 0);
-	tic64x_set_operand(out_opcode, tic64x_operand_y, s);
-	tic64x_set_operand(out_opcode, tic64x_operand_s, t);
+				TIC64X_ADDRMODE_NEG, 0);
+	tic64x_set_operand(out_opcode, tic64x_operand_rcoffset, cst, 0);
+	tic64x_set_operand(out_opcode, tic64x_operand_dstreg, reg, 0);
+	tic64x_set_operand(out_opcode, tic64x_operand_basereg, ptr, 0);
+	tic64x_set_operand(out_opcode, tic64x_operand_z, 0, 0);
+	tic64x_set_operand(out_opcode, tic64x_operand_creg, 0, 0);
+	tic64x_set_operand(out_opcode, tic64x_operand_y, s, 0);
+	tic64x_set_operand(out_opcode, tic64x_operand_s, t, 0);
 
 	scaleup_mem_access_opcopde(out_opcode, opcode, sz, dsz, ls, reg);
 
@@ -2119,19 +2120,19 @@ scaleup_dstk(uint16_t opcode, uint32_t hdr, uint32_t *out_opcode)
 		reg += 16;
 
 	*out_opcode = 0;
-	tic64x_set_operand(out_opcode, tic64x_operand_dstreg, reg);
+	tic64x_set_operand(out_opcode, tic64x_operand_dstreg, reg, 0);
 	/* Base register is always B15 according to datasheet */
-	tic64x_set_operand(out_opcode, tic64x_operand_basereg, 0xF);
-	tic64x_set_operand(out_opcode, tic64x_operand_z, 0);
-	tic64x_set_operand(out_opcode, tic64x_operand_creg, 0);
+	tic64x_set_operand(out_opcode, tic64x_operand_basereg, 0xF, 0);
+	tic64x_set_operand(out_opcode, tic64x_operand_z, 0, 0);
+	tic64x_set_operand(out_opcode, tic64x_operand_creg, 0, 0);
 	/* XXX - while datasheet says the base is always on the B side, theres
 	 * still an s bit present in the instruction. */
 	if (s != 1) {
 		fprintf(stderr, "dstk insn with wrong s bit: I'm covered in bees\n");
 	}
-	tic64x_set_operand(out_opcode, tic64x_operand_y, t);
-	tic64x_set_operand(out_opcode, tic64x_operand_s, t);
-	tic64x_set_operand(out_opcode, tic64x_operand_const15, ucst);
+	tic64x_set_operand(out_opcode, tic64x_operand_y, t, 0);
+	tic64x_set_operand(out_opcode, tic64x_operand_s, t, 0);
+	tic64x_set_operand(out_opcode, tic64x_operand_const15, ucst, 0);
 
 	if (ls)
 		*out_opcode |= 0x6C; /* load */
@@ -2153,13 +2154,13 @@ scaleup_sbs7(uint16_t opcode, uint32_t hdr ATTRIBUTE_UNUSED,
 	*out_opcode |= 0x120;
 
 	offs = get_operand(opcode, 6, 7, 1); /* Read const field, sign extend */
-	tic64x_set_operand(out_opcode, tic64x_operand_const12, offs);
+	tic64x_set_operand(out_opcode, tic64x_operand_const12, offs, 0);
 	nops = get_operand(opcode, 13, 3, 0);
-	tic64x_set_operand(out_opcode, tic64x_operand_nops, nops);
-	tic64x_set_operand(out_opcode, tic64x_operand_z, 0);
-	tic64x_set_operand(out_opcode, tic64x_operand_creg, 0);
+	tic64x_set_operand(out_opcode, tic64x_operand_nops, nops, 0);
+	tic64x_set_operand(out_opcode, tic64x_operand_z, 0, 0);
+	tic64x_set_operand(out_opcode, tic64x_operand_creg, 0, 0);
 	s = get_operand(opcode, 0, 1, 0);
-	tic64x_set_operand(out_opcode, tic64x_operand_s, s);
+	tic64x_set_operand(out_opcode, tic64x_operand_s, s, 0);
 
 	return 0;
 }
@@ -2172,10 +2173,11 @@ scaleup_sx1b(uint16_t opcode, uint32_t hdr ATTRIBUTE_UNUSED,
 	/* This only applies to BNOP */
 	/* It's also unconditional */
 	*out_opcode = 0x800362;
-	tic64x_set_operand(out_opcode, tic64x_operand_nops, (opcode >> 13) & 7);
+	tic64x_set_operand(out_opcode, tic64x_operand_nops, (opcode >> 13) & 7,
+									0);
 	/* Comment on p659 says src2 is from B0 -> B15 */
 	tic64x_set_operand(out_opcode, tic64x_operand_srcreg2,
-					(opcode >> 7) & 0xF);
+					(opcode >> 7) & 0xF, 0);
 
 	/* XXX XXX XXX - compact opcode apparently has side bit, but only
 	 * mapped opcode is fixed on unit S2 */
@@ -2223,11 +2225,11 @@ scaleup_s3(uint16_t opcode, uint32_t hdr, uint32_t *out_opcode)
 	}
 
 	/* Unconditional, etc */
-	tic64x_set_operand(out_opcode, tic64x_operand_s, s);
-	tic64x_set_operand(out_opcode, tic64x_operand_x, x);
-	tic64x_set_operand(out_opcode, tic64x_operand_srcreg1, src1);
-	tic64x_set_operand(out_opcode, tic64x_operand_srcreg2, src2);
-	tic64x_set_operand(out_opcode, tic64x_operand_dstreg, dst);
+	tic64x_set_operand(out_opcode, tic64x_operand_s, s, 0);
+	tic64x_set_operand(out_opcode, tic64x_operand_x, x, 0);
+	tic64x_set_operand(out_opcode, tic64x_operand_srcreg1, src1, 0);
+	tic64x_set_operand(out_opcode, tic64x_operand_srcreg2, src2, 0);
+	tic64x_set_operand(out_opcode, tic64x_operand_dstreg, dst, 0);
 
 	return 0;
 }
@@ -2239,6 +2241,6 @@ scaleup_unop(uint16_t opcode, uint32_t hdr ATTRIBUTE_UNUSED,
 
 	/* Enjoyably simple: top 3 bits are a number of nops, the end. */
 	*out_opcode = 0;
-	tic64x_set_operand(out_opcode, tic64x_operand_nops, opcode >> 13);
+	tic64x_set_operand(out_opcode, tic64x_operand_nops, opcode >> 13, 0);
 	return 0;
 }
