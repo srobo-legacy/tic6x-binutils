@@ -941,6 +941,7 @@ tic64x_opreader_memaccess(char *line, struct tic64x_insn *insn,
 		} else {
 			nomod_modify = TIC64X_ADDRMODE_NOMODIFY;
 			pos_neg = TIC64X_ADDRMODE_POS;
+			pre_post = TIC64X_ADDRMODE_PRE;
 			line++;
 		}
 	} else if (*line == '-') {
@@ -952,6 +953,7 @@ tic64x_opreader_memaccess(char *line, struct tic64x_insn *insn,
 		} else {
 			nomod_modify = TIC64X_ADDRMODE_NOMODIFY;
 			pos_neg = TIC64X_ADDRMODE_NEG;
+			pre_post = TIC64X_ADDRMODE_PRE;
 			line++;
 		}
 	}
