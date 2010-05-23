@@ -68,18 +68,61 @@ tic64x_set_section_contents(bfd *b, sec_ptr section, const PTR location,
 static bfd_reloc_status_type
 tic64x_pcr_reloc_special_func(bfd *abfd, arelent *rel, struct bfd_symbol *sym,
 				void *data, asection *input_section,
-				bfd *output_bfd, char **error_msg)
+				bfd *output_bfd ATTRIBUTE_UNUSED,
+				char **error_msg ATTRIBUTE_UNUSED)
 {
+	long val, in_insn_val;
+	bfd_reloc_status_type ret;
 
-#define UNUSED(x) ((x) = (x))
-	UNUSED(abfd);
-	UNUSED(rel);
-	UNUSED(sym);
-	UNUSED(data);
-	UNUSED(input_section);
-	UNUSED(output_bfd);
-	UNUSED(error_msg);
-	return bfd_reloc_continue;
+	/* So - doffs keep addends in the instruction field. We can convince
+	 * bfd to take this into account, however it won't round the offset to
+	 * be relative to the fetch packet address. So, we twiddle with that
+	 * explicitly here instead */
+
+	if (bfd_is_und_section(sym->section)) {
+		/* Store here the offset between the relocations fetch packet
+		 * address and the start of the section - that way if this
+		 * ends up being fed to the dspbridge loader it'll correctly
+		 * adjust the offset to something being linked in */
+		val = input_section->output_offset + rel->address;
+		val &= ~0x1F;
+		val = -val;
+
+		goto calculated; /* Har */
+	}
+
+	/* Address of instruction */
+	val = input_section->output_offset + rel->address + input_section->vma;
+	/* Round that down to the fetch packet address */
+	val &= ~0x1F;
+	/* Offset from there to symbol */
+	val = (sym->value + sym->section->output_offset + sym->section->vma)
+			- val;
+
+	/* Now we need to write this value into the instruction. This portion
+	 * largely copied from bfd_perform_relocation */
+	if (rel->howto->complain_on_overflow != complain_overflow_dont)
+	ret = bfd_check_overflow (rel->howto->complain_on_overflow,
+				rel->howto->bitsize, rel->howto->rightshift,
+				bfd_arch_bits_per_address (abfd), val);
+	if (ret != bfd_reloc_ok)
+		return ret;
+
+calculated:
+
+	val >>= rel->howto->rightshift;
+	val <<= rel->howto->bitpos;
+
+	/* Seeing how we have all the information we need available to us,
+	 * instead of adding to what already exists in the instruction addend
+	 * and thus causing pain, just update with our new value */
+	in_insn_val = bfd_get_32(abfd, data + rel->address);
+	long x = (in_insn_val & ~rel->howto->dst_mask);
+	in_insn_val = rel->howto->src_mask & val;
+	in_insn_val |= x;
+	bfd_put_32(abfd, in_insn_val, data + rel->address);
+
+	return bfd_reloc_ok;
 }
 
 reloc_howto_type tic64x_howto_table[] = {
