@@ -838,7 +838,7 @@ print_op_constant(struct tic64x_op_template *t,
 	if (t->flags & TIC64X_OP_CONST_PCREL) {
 		/* Seeing how it's pcrel, we can attempt to print an address */
 		priv = info->private_data;
-		addr = priv->packet_start + val;
+		addr = (priv->packet_start & ~0x1F) + val;
 		priv->symbol_addr = addr;
 		return PRINT_ADDR;
 	} else {
