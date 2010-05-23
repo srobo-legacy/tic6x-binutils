@@ -365,6 +365,12 @@ tic64x_sect(int x ATTRIBUTE_UNUSED)
 	int len, sz;
 	char c;
 
+	/* Pad all sections so that they start on 0x20 alignments. Later on in
+	 * linking it becomes highly painful to recalculate a bunch of PC
+	 * relative addresses because the whole section has shifted by 4 bytes
+	 * or something like that */
+	frag_align(5, 0, 0);
+
 	if (*input_line_pointer == '"') {
 		name = demand_copy_C_string(&len);
 		name = strdup(name);
@@ -2116,6 +2122,13 @@ md_after_pass_hook()
 	memset(read_insns, 0, sizeof(read_insns));
 	memset(read_insns_loc, 0, sizeof(read_insns));
 	read_insns_index = 0;
+
+	/* Ensure that the last section in the file pads out to a size thats
+	 * aligned to 0x20 - linking and recalculating a bunch of PCR addresses
+	 * will not be fun if sections are stitched together and shift by some
+	 * value that changes alignments */
+	frag_align(5, 0, 0);
+
 	return;
 }
 
