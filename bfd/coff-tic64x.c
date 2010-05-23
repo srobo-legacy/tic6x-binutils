@@ -65,6 +65,23 @@ tic64x_set_section_contents(bfd *b, sec_ptr section, const PTR location,
 	return coff_set_section_contents(b, section, location, offset, bytes);
 }
 
+static bfd_reloc_status_type
+tic64x_pcr_reloc_special_func(bfd *abfd, arelent *rel, struct bfd_symbol *sym,
+				void *data, asection *input_section,
+				bfd *output_bfd, char **error_msg)
+{
+
+#define UNUSED(x) ((x) = (x))
+	UNUSED(abfd);
+	UNUSED(rel);
+	UNUSED(sym);
+	UNUSED(data);
+	UNUSED(input_section);
+	UNUSED(output_bfd);
+	UNUSED(error_msg);
+	return bfd_reloc_continue;
+}
+
 reloc_howto_type tic64x_howto_table[] = {
 	HOWTO(R_C60BASE, 0, 2, 32, FALSE, 0, complain_overflow_bitfield,
 		NULL, "RBASE", FALSE, 0xFFFFFFFF, 0xFFFFFFFF, FALSE),
@@ -75,11 +92,13 @@ reloc_howto_type tic64x_howto_table[] = {
 	/* 21 bits pcrels: must be branch, shr by 2, pcrel_offset stored in
 	 * offset slot... */
 	HOWTO(R_C60PCR21, 2, 2, 21, TRUE, 7, complain_overflow_bitfield,
-		NULL, "RPCR21", TRUE, 0x1FFFFF, 0x1FFFFF, TRUE),
+		tic64x_pcr_reloc_special_func, "RPCR21", TRUE, 0x1FFFFF,
+		0x1FFFFF, TRUE),
 
 	/* similar */
 	HOWTO(R_C60PCR10, 2, 2, 10, TRUE, 13, complain_overflow_bitfield,
-		NULL, "RPCR10", TRUE, 0x3FF, 0x3FF, TRUE),
+		tic64x_pcr_reloc_special_func, "RPCR10", TRUE, 0x3FF,
+		0x3FF, TRUE),
 
 	HOWTO(R_C60LO16, 0, 2, 16, FALSE, 7, complain_overflow_bitfield,
 		NULL, "RLO16", TRUE, 0xFFFF, 0xFFFF, FALSE),
@@ -93,10 +112,11 @@ reloc_howto_type tic64x_howto_table[] = {
 		NULL, "RS16", TRUE, 0xFFFF, 0xFFFF, FALSE),
 
 	HOWTO(R_C60PCR7, 2, 2, 7, TRUE, 16, complain_overflow_bitfield,
-		NULL, "RPCR7", TRUE, 0x7F, 0x7F, TRUE),
+		tic64x_pcr_reloc_special_func, "RPCR7", TRUE, 0x7F, 0x7F, TRUE),
 
 	HOWTO(R_C60PCR12, 2, 2, 12, TRUE, 16, complain_overflow_bitfield,
-		NULL, "RPCR12", TRUE, 0xFFF, 0xFFF, TRUE),
+		tic64x_pcr_reloc_special_func, "RPCR12", TRUE, 0xFFF, 0xFFF,
+		TRUE),
 
 	HOWTO(R_RELBYTE, 0, 2, 8, FALSE, 0, complain_overflow_bitfield,
 		NULL, "RELBYTE", FALSE, 0xFF, 0xFF, FALSE),
