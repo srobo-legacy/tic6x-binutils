@@ -887,7 +887,8 @@ tic64x_optest_constant(char *line, struct tic64x_insn *insn ATTRIBUTE_UNUSED,
 		return 0;
 
 	tic64x_parse_expr(line, &expr);
-	return (expr.X_op == O_constant || expr.X_op == O_symbol);
+	return (expr.X_op == O_constant || expr.X_op == O_symbol) ? OPTEST_MATCH
+							: OPTEST_NOMATCH;
 }
 
 int
