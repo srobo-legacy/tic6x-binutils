@@ -1356,7 +1356,7 @@ struct tic64x_op_template tic64x_opcodes[] = {
 {"shru",	0x9A0,		0xFFC,
 	TIC64X_OP_UNIT_S | TIC64X_OP_XPATH_SRC2,
 	{ tic64x_optxt_srcreg2, tic64x_optxt_uconstant, tic64x_optxt_dstreg },
-	{ tic64x_operand_invalid, tic64x_operand_invalid }
+	{ tic64x_operand_const5, tic64x_operand_invalid }
 },
 {"shru",	0x920,		0xFFC,
 	TIC64X_OP_UNIT_S,
