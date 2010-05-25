@@ -191,6 +191,7 @@ static void generate_d_mv(struct tic64x_insn *insn);
 static void generate_l_mv(struct tic64x_insn *insn, int isdw);
 static void generate_s_mv(struct tic64x_insn *insn);
 static int parse_operands(char **operands, struct tic64x_insn *insn);
+static int apply_conditional(struct tic64x_insn *insn);
 
 int
 md_parse_option(int c, char *arg)
@@ -1761,8 +1762,14 @@ validation_and_conditions(struct tic64x_insn *insn)
 		}
 	}
 
-	/* Did pre-read hook see a condition statement? Done here to allow
-	 * more checking against unit/unit-no */
+	return apply_conditional(insn);
+}
+
+static int
+apply_conditional(struct tic64x_insn *insn)
+{
+
+	/* Did pre-read hook see a condition statement? */
 	if (tic64x_line_had_cond) {
 		if (insn->templ->flags & TIC64X_OP_NOCOND) {
 			as_bad("Instruction does not have condition field");
@@ -2411,6 +2418,9 @@ tic64x_output_insn_packet()
 				}
 				free(insn->mvfail_op1);
 				free(insn->mvfail_op2);
+
+				/* If needs be, pump in conditional data */
+				apply_conditional(insn);
 			} else if (insn->unit_num != 0 || insn->unit != 0) {
 				as_fatal("Patching up mv, have partial unit "
 					"specifier, not complete");
