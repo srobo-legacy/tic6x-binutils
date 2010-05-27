@@ -882,7 +882,7 @@ doff_write_object_contents(bfd *abfd)
 		H_PUT_32(abfd, curscn->vma, &cur_raw_scn->hdr.load_addr);
 		H_PUT_32(abfd, curscn->size, &cur_raw_scn->hdr.size);
 		H_PUT_16(abfd, 0, &cur_raw_scn->hdr.page); /* No idea */
-		H_PUT_16(abfd, cur_raw_scn->num_ipkts,
+		H_PUT_32(abfd, cur_raw_scn->num_ipkts,
 					&cur_raw_scn->hdr.num_pkts);
 
 		/* Generate some flags */
