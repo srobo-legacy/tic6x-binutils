@@ -123,9 +123,9 @@ calculated:
 	in_insn_val |= x;
 	bfd_put_32(abfd, in_insn_val, data + rel->address);
 
-	/* XXX death - if this gets externalised it needs to end up with
-	 * the correct address (for applying reloc to). And for no particular
-	 * reason bfd does that here. */
+	/* Adjust address of where this relocation is - because we're
+	 * overriding what perform_relocation does, we have to do this
+	 * manually here */
 	rel->address += input_section->output_offset;
 
 	return ret;
