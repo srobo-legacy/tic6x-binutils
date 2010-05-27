@@ -88,6 +88,7 @@ tic64x_pcr_reloc_special_func(bfd *abfd, arelent *rel, struct bfd_symbol *sym,
 		val &= ~0x1F;
 		val = -val;
 
+		ret = bfd_reloc_ok;
 		goto calculated; /* Har */
 	}
 
@@ -122,7 +123,12 @@ calculated:
 	in_insn_val |= x;
 	bfd_put_32(abfd, in_insn_val, data + rel->address);
 
-	return bfd_reloc_ok;
+	/* XXX death - if this gets externalised it needs to end up with
+	 * the correct address (for applying reloc to). And for no particular
+	 * reason bfd does that here. */
+	rel->address += input_section->output_offset;
+
+	return ret;
 }
 
 reloc_howto_type tic64x_howto_table[] = {
