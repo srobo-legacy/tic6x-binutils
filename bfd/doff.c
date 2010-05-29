@@ -769,6 +769,8 @@ doff_externalise_section_data(asection *curscn, struct scn_swapout *output)
 			cur_pos += sizeof(*reloc);
 		}
 
+		reloc_idx += i; /* Move past relocs we just wrote out */
+
 		/* Mkay, thats the entire packet done, write back checksum */
 		H_PUT_32(abfd, (0xFFFFFFFF - checksum), &ipkt->checksum);
 
