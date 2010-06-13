@@ -718,7 +718,11 @@ doff_externalise_section_data(asection *curscn, struct scn_swapout *output)
 		for (i = 0; i < num_relocs; i++) {
 			reloc = cur_pos;
 			memset(reloc, 0, sizeof(*reloc));
-			H_PUT_32(abfd, rels[reloc_idx + i]->address,
+
+			/* NB - the address field is the addr _within_ the
+			 * image packet - we always write out 1024 sized pkts,
+			 * so we can just mask out the top portion of the addr*/
+			H_PUT_32(abfd, rels[reloc_idx + i]->address & 1023,
 						&reloc->vaddr);
 
 			/* What kind of relocation? There are a bunch of formats
