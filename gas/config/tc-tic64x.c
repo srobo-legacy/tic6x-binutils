@@ -1282,7 +1282,7 @@ tic64x_opreader_memrel15(char *line, struct tic64x_insn *insn,
 	while (ISSPACE(*line))
 		line++;
 
-	if (*line != '[' || *line != '(') {
+	if (*line != '[' && *line != '(') {
 		as_bad("Unexpected character when looking for '['");
 		return;
 	}
