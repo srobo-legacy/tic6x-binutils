@@ -2316,18 +2316,18 @@ tic64x_output_insn_packet()
 				side = 1;
 
 			if (side != insn->unit_num) {
-#if 0
-				as_warn("llvm failery 1, fixing a mv");
-#endif
 				insn->unit_num = side;
 				tic64x_set_operand(&insn->opcode,
 						tic64x_operand_s,
 						(side == 1) ? 0 : 1, 0);
-				if (insn->mvfail_op2[0] != insn->mvfail_op1[0]){
-					insn->uses_xpath = 1;
-				} else {
-					insn->uses_xpath = 0;
-				}
+			}
+
+			/* llvm-generated mv's are also unaware of whether
+			 * the X path should be used, so work that out here */
+			if (insn->mvfail_op2[0] != insn->mvfail_op1[0]){
+				insn->uses_xpath = 1;
+			} else {
+				insn->uses_xpath = 0;
 			}
 
 			src2 = tic64x_sym_to_reg(insn->mvfail_op1);
