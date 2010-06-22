@@ -29,7 +29,7 @@ struct sidespec {
 	int8_t		unit;		/* Character (ie 'L') or -1 */
 	int8_t		unit_num;	/* 0 -> side 1, 1 -> side 2, or -1 */
 	int8_t		mem_path;	/* 0 -> T1, 1 -> T2, not set: -1 */
-	bool		uses_xpath;
+	bfd_boolean	uses_xpath;
 };
 
 struct tic64x_insn {
@@ -139,7 +139,7 @@ struct opdetail_memaccess {
 		tic64x_register *reg;
 		uint32_t const;
 	} offs;
-	bool const_offs;
+	bfd_boolean const_offs;
 };
 
 struct opdetail_register {
@@ -148,7 +148,7 @@ struct opdetail_register {
 
 struct opdetail_constant {
 	uin32_t const;
-	bool signed;
+	bfd_boolean is_signed;
 };
 
 struct read_operand {
@@ -161,7 +161,7 @@ struct read_operand {
 };
 
 /* Read operand from line into read register struct */
-typedef int (opreader) (char *line, bool print_error,
+typedef int (opreader) (char *line, bfd_boolean print_error,
 				enum tic64x_text_operand optype,
 				struct read_operand *out);
 /* Some values for this to return: */
@@ -173,9 +173,10 @@ typedef int (opreader) (char *line, bool print_error,
  * instruction. If get_unitspec is set, inspect any fixed unit details in the
  * instruction and if it's possible for this situation to be valid, output any
  * further unitspec restrictions this operand would impose */
-typedef int (opvalidate) (struct read_operand *in, bool print_error,
+typedef int (opvalidate) (struct read_operand *in, bfd_boolean print_error,
 				enum tic64x_text_operand optype,
-				struct tic64x_insn *insn, bool gen_unitspec,
+				struct tic64x_insn *insn,
+				bfd_boolean gen_unitspec,
 				struct unitspec *spec);
 
 /* Once we've actually decided to use a particular operand, we need a routine
@@ -2500,10 +2501,10 @@ opreader_bfield(char *line, struct tic64x_insn *insn,
 
 int
 opvalidate_none(struct read_operand *in ATTRIBUTE_UNUSED,
-			bool print_error ATTRIBUTE_UNUSED,
+			bfd_boolean  print_error ATTRIBUTE_UNUSED,
 			enum tic64x_text_operand optype ATTRIBUTE_UNUSED,
 			struct tic64x_insn *insn ATTRIBUTE_UNUSED,
-			bool gen_unitspec ATTRIBUTE_UNUSED,
+			bfd_boolean gen_unitspec ATTRIBUTE_UNUSED,
 			struct unitspec *spec ATTRIBUTE_UNUSED)
 {
 
@@ -2512,9 +2513,9 @@ opvalidate_none(struct read_operand *in ATTRIBUTE_UNUSED,
 }
 
 int
-opvalidate_memaccess(struct read_operand *in, bool print_error,
+opvalidate_memaccess(struct read_operand *in, bfd_boolean print_error,
 			enum tic64x_text_operand optype,
-			struct tic64x_insn *insn, bool gen_unitspec,
+			struct tic64x_insn *insn, bfd_boolean gen_unitspec,
 			struct unitspec *spec)
 {
 
@@ -2529,9 +2530,9 @@ opvalidate_memaccess(struct read_operand *in, bool print_error,
 }
 
 int
-opvalidate_memrel15(struct read_operand *in, bool print_error,
+opvalidate_memrel15(struct read_operand *in, bfd_boolean print_error,
 			enum tic64x_text_operand optype,
-			struct tic64x_insn *insn, bool gen_unitspec,
+			struct tic64x_insn *insn, bfd_boolean gen_unitspec,
 			struct unitspec *spec)
 {
 
@@ -2546,9 +2547,9 @@ opvalidate_memrel15(struct read_operand *in, bool print_error,
 }
 
 int
-opvalidate_register(struct read_operand *in, bool print_error,
+opvalidate_register(struct read_operand *in, bfd_boolean print_error,
 			enum tic64x_text_operand optype,
-			struct tic64x_insn *insn, bool gen_unitspec,
+			struct tic64x_insn *insn, bfd_boolean gen_unitspec,
 			struct unitspec *spec)
 {
 
@@ -2563,9 +2564,9 @@ opvalidate_register(struct read_operand *in, bool print_error,
 }
 
 int
-opvalidate_double_register(struct read_operand *in, bool print_error,
+opvalidate_double_register(struct read_operand *in, bfd_boolean print_error,
 			enum tic64x_text_operand optype,
-			struct tic64x_insn *insn, bool gen_unitspec,
+			struct tic64x_insn *insn, bfd_boolean gen_unitspec,
 			struct unitspec *spec)
 {
 
@@ -2580,9 +2581,9 @@ opvalidate_double_register(struct read_operand *in, bool print_error,
 }
 
 int
-opvalidate_constant (struct read_operand *in, bool print_error,
+opvalidate_constant (struct read_operand *in, bfd_boolean print_error,
 			enum tic64x_text_operand optype,
-			struct tic64x_insn *insn, bool gen_unitspec,
+			struct tic64x_insn *insn, bfd_boolean gen_unitspec,
 			struct unitspec *spec)
 {
 
