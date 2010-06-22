@@ -104,19 +104,12 @@ static struct tic64x_register *tic64x_sym_to_reg(char *name);
 static int find_operand_index(struct tic64x_op_template *templ,
 			enum tic64x_operand_type type);
 static opreader tic64x_opreader_none;
-static optester tic64x_optest_none;
 static opreader tic64x_opreader_memaccess;
-static optester tic64x_optest_memaccess;
 static opreader tic64x_opreader_memrel15;
-static optester tic64x_optest_memrel15;
 static opreader tic64x_opreader_register;
-static optester tic64x_optest_register;
 static opreader tic64x_opreader_double_register;
-static optester tic64x_optest_double_register;
 static opreader tic64x_opreader_constant;
-static optester tic64x_optest_constant;
 static opreader tic64x_opreader_bfield;
-static optester tic64x_optest_bfield;
 
 static int tic64x_compare_operands(struct tic64x_insn *insn,
 			struct tic64x_op_template *templ, char **operands);
@@ -879,152 +872,6 @@ tic64x_start_line_hook(void)
 	}
 
 	return;
-}
-
-int
-tic64x_optest_none(char *line ATTRIBUTE_UNUSED,
-		struct tic64x_insn *insn ATTRIBUTE_UNUSED,
-		enum tic64x_text_operand op ATTRIBUTE_UNUSED)
-
-{
-
-	return 0; /* Never matches */
-}
-
-int
-tic64x_optest_register(char *line, struct tic64x_insn *insn,
-				enum tic64x_text_operand type)
-{
-	struct tic64x_register *reg;
-
-	reg = tic64x_sym_to_reg(line);
-	if (!reg)
-		return OPTEST_NOMATCH;
-
-	if (((reg->num & TIC64X_REG_UNIT2) && insn->unit_num == 1) ||
-	    (!(reg->num & TIC64X_REG_UNIT2) && insn->unit_num == 2)) {
-		/* Register doesn't match the side of processor we're using.
-		 * There are a few circumstances where this permittable though*/
-
-		/* Is xpath on, and does it match our register */
-		if (TXTOPERAND_CAN_XPATH(insn, type)) {
-			/* Xpath on, matches us, we're valid. */
-			return OPTEST_MATCH;
-		/* We're also excused if we're dest/src of a load/store */
-		} else if (insn->mem_unit_num != -1 &&
-		(((reg->num & TIC64X_REG_UNIT2) && insn->mem_unit_num == 2) ||
-		(!(reg->num & TIC64X_REG_UNIT2) && insn->mem_unit_num == 1))) {
-			return OPTEST_MATCH;
-		} else {
-			/* Wrong side, no excuse, doesn't match */
-			return OPTEST_WRONGREGSIDE;
-		}
-	}
-
-	/* On right side, it's good */
-	return OPTEST_MATCH;
-}
-
-int
-tic64x_optest_double_register(char *line,
-				struct tic64x_insn *insn ATTRIBUTE_UNUSED,
-				enum tic64x_text_operand op ATTRIBUTE_UNUSED)
-{
-	char *reg1, *reg2;
-	int tmp;
-
-	if (!strchr(line, ':'))
-		return 0;
-
-	reg1 = strdup(line);
-	reg2 = strchr(reg1, ':');
-	*reg2++ = 0;
-
-	tmp = (tic64x_sym_to_reg(reg1) && tic64x_sym_to_reg(reg2));
-	free(reg1);
-	return tmp;
-}
-
-int
-tic64x_optest_memaccess(char *line, struct tic64x_insn *insn ATTRIBUTE_UNUSED,
-				enum tic64x_text_operand op ATTRIBUTE_UNUSED)
-{
-
-	/* Difficult to validate - instead check if the first char is '*',
-	 * nothing else has any business doing so */
-	return (*line == '*');
-}
-
-int
-tic64x_optest_memrel15(char *line, struct tic64x_insn *insn,
-				enum tic64x_text_operand op ATTRIBUTE_UNUSED)
-{
-	expressionS expr;
-
-	/* Unit D2 only */
-	if (insn->unit != 'D' || insn->unit_num != 2)
-		return 0;
-
-	/* Need to be able to distinguish between this and memaccess */
-	if (*line++ != '*' || *line++ != '+' || *line++ != 'B' || *line++ !='1')
-		return 0;
-
-	/* That checks the operand starts with "*+B1"... which is mandatory
-	 * for memrel15. Register has to be B14 or B15. */
-
-	if (*line != '5' && *line != '4')
-		return 0;
-
-	line++;
-
-	/* Hopefully no-one puts whitespace between the base reg and offset,
-	 * but just in case */
-	while (ISSPACE(*line))
-		line++;
-
-	if (*line != '[' && *line != '(')
-		return 0;
-
-	line++;
-	while (ISSPACE(*line))
-		line++;
-
-	/* So, now some expression */
-	tic64x_parse_expr(line, &expr);
-
-	if (expr.X_add_number < 0)
-		return 0;	/* No subtractions */
-
-	/* Needs to be constant or symbol based */
-	return (expr.X_op == O_constant || expr.X_op == O_symbol);
-}
-
-int
-tic64x_optest_constant(char *line, struct tic64x_insn *insn ATTRIBUTE_UNUSED,
-				enum tic64x_text_operand op ATTRIBUTE_UNUSED)
-{
-	expressionS expr;
-
-	/* Constants can either be an actual constant, or a symbol that'll
-	 * eventually become an offset / whatever. However because we aren't
-	 * telling gas about registers, first check we're not one of those */
-	if (tic64x_sym_to_reg(line))
-		return 0;
-
-	tic64x_parse_expr(line, &expr);
-	return (expr.X_op == O_constant || expr.X_op == O_symbol) ? OPTEST_MATCH
-							: OPTEST_NOMATCH;
-}
-
-int
-tic64x_optest_bfield(char *line, struct tic64x_insn *insn ATTRIBUTE_UNUSED,
-				enum tic64x_text_operand op ATTRIBUTE_UNUSED)
-{
-
-	if (strchr(line, ',') != NULL)
-		return 1;
-	else
-		return 0;
 }
 
 void
