@@ -254,13 +254,13 @@ struct {
 	opread_double_register,
 	opvalidate_double_register,
 	opwrite_double_register
-}
+},
 {
 	tic64x_optxt_dwsrc,
 	opread_double_register,
 	opvalidate_double_register,
 	opwrite_double_register
-}
+},
 {
 	tic64x_optxt_dwsrc2,
 	opread_double_register,
@@ -295,7 +295,7 @@ struct {
 	NULL,
 	NULL,
 	NULL
-};
+}};
 
 
 /* So, with gas at the moment, we can't detect the end of an instruction
