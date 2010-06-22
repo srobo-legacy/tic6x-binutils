@@ -895,14 +895,6 @@ apply_conditional(struct tic64x_insn *insn)
 		insn->cond_nz = tic64x_line_had_nz_cond;
 		insn->cond_reg = tic64x_line_had_cond_reg->num;
 
-		if ((insn->unit_num == 1 && (insn->cond_reg & TIC64X_REG_UNIT2))
-		||(insn->unit_num == 2 && !(insn->cond_reg & TIC64X_REG_UNIT2)))
-			if (insn->uses_xpath)
-				as_warn("Caution: condition register on "
-					"opposite side of processor, and xpath "
-					"is used in instruction; author is "
-					"uncertain whether this is permitted");
-
 		/* See creg format */
 		switch (insn->cond_reg) {
 		case TIC64X_REG_UNIT2 | 0:
