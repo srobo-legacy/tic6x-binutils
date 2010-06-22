@@ -192,6 +192,20 @@ static opreader opreader_double_register;
 static opreader opreader_constant;
 static opreader opreader_bfield;
 
+static opvalidate opvalidate_none;
+static opvalidate opvalidate_memaccess;
+static opvalidate opvalidate_memrel15;
+static opvalidate opvalidate_register;
+static opvalidate opvalidate_double_register;
+static opvalidate opvalidate_constant;
+
+static opwrite opwrite_none;
+static opwrite opwrite_memaccess;
+static opwrite opwrite_memrel15;
+static opwrite opwrite_register;
+static opwrite opwrite_double_register;
+static opwrite opwrite_constant;
+
 struct {
 	enum tic64x_text_operand type;
 	opreader *reader;
