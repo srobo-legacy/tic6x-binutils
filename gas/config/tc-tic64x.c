@@ -29,7 +29,7 @@ struct unitspec {
 	int8_t		unit;		/* Character (ie 'L') or -1 */
 	int8_t		unit_num;	/* 0 -> side 1, 1 -> side 2, or -1 */
 	int8_t		mem_path;	/* 0 -> T1, 1 -> T2, not set: -1 */
-	bfd_boolean	uses_xpath;
+	int8_t		uses_xpath;	/* 0 -> No, 1-> Yes, not set: -1 */
 };
 
 struct tic64x_insn {
