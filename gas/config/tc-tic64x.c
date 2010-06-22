@@ -31,17 +31,24 @@
 		as_fatal("Couldn't set operand " type " for "		\
 			"instruction %s", insn->templ->mnemonic);
 
+struct sidespec {
+	int8_t		unit;		/* Character (ie 'L') or -1 */
+	int8_t		unit_num;	/* 0 -> side 1, 1 -> side 2, or -1 */
+	int8_t		mem_path;	/* 0 -> T1, 1 -> T2, not set: -1 */
+	bool		uses_xpath;
+};
+
 struct tic64x_insn {
 	struct tic64x_op_template *templ;
-	uint32_t opcode;			/* Code, filled with operands
-						 * as we parse them */
-	char unit;				/* Unit character ie 'L' */
-	int8_t unit_num;			/* Unit number, 1 or 2 */
-	int8_t mem_unit_num;			/* Memory data path, 1 or 2 */
-	int8_t uses_xpath;			/* Unit specifier had X suffix*/
-	int8_t parallel;			/* || prefix? */
-	int8_t cond_nz;				/* Condition flag, zero or nz?*/
-	int16_t cond_reg;			/* Register for comparison */
+	uint32_t opcode;		/* The opcode itself to be emitted,
+					 * gets filled with operands as we
+					 * work out what template to use */
+	struct sidespec unitspec;	/* Details about this instruction, what
+					 * unit, side, datapath etc that it
+					 * happens to use */
+	int8_t parallel;		/* || prefix? */
+	int8_t cond_nz;			/* Condition flag, zero or nz?*/
+	int16_t cond_reg;		/* Register for comparison */
 
 	/* Template holds everything needed to build the instruction, but
 	 * we need some data to actually build with. Each entry in operands
@@ -61,12 +68,6 @@ struct tic64x_insn {
 	char *mvfail_op1;
 	char *mvfail_op2;
 };
-
-typedef int (optester) (char *line, struct tic64x_insn *insn,
-                                        enum tic64x_text_operand optype);
-typedef void (opreader) (char *line, struct tic64x_insn *insn,
-                                        enum tic64x_text_operand optype);
-
 
 const char comment_chars[] = ";";
 const char line_comment_chars[] = ";*#";
@@ -149,27 +150,150 @@ const pseudo_typeS md_pseudo_table[] =
 	{NULL, 		NULL,			0}
 };
 
-/* Parser routines to read a particularly kind of operand */
+/* Parser stuff to read a particularly kind of operand */
+
+/* First a series of structs for storing the fundemental values of an operand */
+struct opdetail_memaccess {
+	tic64x_register *base;
+	union {
+		tic64x_register *reg;
+		uint32_t const;
+	} offs;
+	bool const_offs;
+};
+
+struct opdetail_register {
+	tic64x_register *base;
+};
+
+struct opdetail_constant {
+	uin32_t const;
+	bool signed;
+};
+
+struct read_operand {
+	enum tic64x_text_operand type;
+	union {
+		struct opdetail_memaccess mem;
+		struct opdetail_register reg;
+		struct opdetail_constant const;
+	} u;
+};
+
+/* Read operand from line into read register struct */
+typedef int (opreader) (char *line, bool print_error,
+				enum tic64x_text_operand optype,
+				struct read_operand *out);
+/* Some values for this to return: */
+#define OPREADER_OK		0
+#define OPREADER_BAD		1	/* Operand simply doesn't match */
+#define OPREADER_PARTIAL_MATCH	2	/* _Could_ match, but not quite */
+
+/* Take a parsed instruction and decide whether it's valid for a particular
+ * instruction. If get_unitspec is set, inspect any fixed unit details in the
+ * instruction and if it's possible for this situation to be valid, output any
+ * further unitspec restrictions this operand would impose */
+typedef int (opvalidate) (struct read_operand *in, bool print_error,
+				enum tic64x_text_operand optype,
+				struct tic64x_insn *insn, bool gen_unitspec,
+				struct unitspec *spec);
+
+/* Once we've actually decided to use a particular operand, we need a routine
+ * to actually take it and write some bitfields in the opcode */
+typedef void (opwrite) (struct read_operand *in,
+				enum tic64x_text_operand optype,
+				struct tic64x_insn *insn);
+
 struct {
 	enum tic64x_text_operand type;
 	opreader *reader;
-	optester *test;
+	opvalidate *validate;
+	opwrite *write;
 } tic64x_operand_readers[] = {
-{tic64x_optxt_none,	tic64x_opreader_none,	tic64x_optest_none},
-{tic64x_optxt_memaccess,tic64x_opreader_memaccess,tic64x_optest_memaccess},
-{tic64x_optxt_memrel15,	tic64x_opreader_memrel15,tic64x_optest_memrel15},
-{tic64x_optxt_dstreg,	tic64x_opreader_register,tic64x_optest_register},
-{tic64x_optxt_srcreg1,	tic64x_opreader_register,tic64x_optest_register},
-{tic64x_optxt_srcreg2,	tic64x_opreader_register,tic64x_optest_register},
-{tic64x_optxt_dwdst,	tic64x_opreader_double_register,tic64x_optest_double_register},
-{tic64x_optxt_dwsrc,	tic64x_opreader_double_register,tic64x_optest_double_register},
-{tic64x_optxt_dwsrc2,	tic64x_opreader_double_register,tic64x_optest_double_register},
-{tic64x_optxt_uconstant,tic64x_opreader_constant,tic64x_optest_constant},
-{tic64x_optxt_sconstant,tic64x_opreader_constant,tic64x_optest_constant},
-{tic64x_optxt_nops,	tic64x_opreader_constant,tic64x_optest_constant},
-{tic64x_optxt_bfield,	tic64x_opreader_bfield,	tic64x_optest_bfield },
-{tic64x_optxt_none,	NULL, NULL}
+{
+	tic64x_optxt_none,
+	opread_none,
+	opvalidate_none,
+	opwrite_none
+},
+{
+	tic64x_optxt_memaccess,
+	opread_memaccess,
+	opvalidate_memaccess,
+	opwrite_memaccess
+},
+{
+	tic64x_optxt_memrel15,
+	opread_memrel15,
+	opvalidate_memrel15,
+	opwrite_memrel15
+},
+{
+	tic64x_optxt_dstreg,
+	opread_register,
+	opvalidate_register,
+	opwrite_register
+},
+{
+	tic64x_optxt_srcreg1,
+	opread_register,
+	opvalidate_register,
+	opwrite_register
+},
+{
+	tic64x_optxt_srcreg2,
+	opread_register,
+	opvalidate_register,
+	opwrite_register
+},
+{
+	tic64x_optxt_dwdst,
+	opread_double_register,
+	opvalidate_double_register,
+	opwrite_double_register
+}
+{
+	tic64x_optxt_dwsrc,
+	opread_double_register,
+	opvalidate_double_register,
+	opwrite_double_register
+}
+{
+	tic64x_optxt_dwsrc2,
+	opread_double_register,
+	opvalidate_double_register,
+	opwrite_double_register
+},
+{
+	tic64x_optxt_uconstant,
+	opread_constant,
+	opvalidate_constant,
+	opwrite_constant
+},
+{
+	tic64x_optxt_sconstant,
+	opread_constant,
+	opvalidate_constant,
+	opwrite_constant
+},
+{
+	tic64x_optxt_nops,
+	opread_constant,
+	opvalidate_constant,
+	opwrite_constant
+},
+#if 0
+/* At least for the moment, lets ignore the special case of bitfield operands,
+ * they wreck havok with the nice abstractions I have worked out ;_; */
+{tic64x_optxt_bfield,	opread_bfield,		opvalidate_constant},
+#endif
+{
+	tic64x_optxt_none,
+	NULL,
+	NULL,
+	NULL
 };
+
 
 /* So, with gas at the moment, we can't detect the end of an instruction
  * packet until there's been a line without a || at the start. And we can't
