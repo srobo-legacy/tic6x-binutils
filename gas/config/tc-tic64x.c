@@ -882,55 +882,6 @@ tic64x_start_line_hook(void)
 }
 
 static int
-validation_and_conditions(struct tic64x_insn *insn)
-{
-
-	if (!(UNITCHAR_2_FLAG(insn->unit) & insn->templ->flags) &&
-		!(insn->templ->flags & TIC64X_OP_ALL_UNITS)) {
-		as_bad("Instruction \"%s\" can't go in unit %C. XXX - currently"
-			" have no way of representing instructions that go "
-			"in multiple units", insn->templ->mnemonic, insn->unit);
-		return 1;
-	}
-
-	if (insn->templ->flags & TIC64X_OP_FIXED_UNITNO) {
-		if (((insn->templ->flags & TIC64X_OP_FIXED_UNIT2) &&
-					insn->unit_num != 2) ||
-		    (!(insn->templ->flags & TIC64X_OP_FIXED_UNIT2) &&
-					insn->unit_num != 1)) {
-			as_bad("\"%s\" can't execute on unit %d ",
-				insn->templ->mnemonic, insn->unit_num);
-			return 1;
-		}
-	}
-
-	if (insn->templ->flags & TIC64X_OP_MEMACCESS) {
-		if (insn->mem_unit_num == -1) {
-			as_bad("Expected memory datapath T1/T2 in unit "
-				"specifier for \"%s\"", insn->templ->mnemonic);
-			return 1;
-		}
-	} else {
-		if (insn->mem_unit_num != -1) {
-			as_bad("Memory datapath T1/T2 specifier found for "
-				"non-memory access instruction");
-			return 1;
-		}
-	}
-
-	if (!(insn->templ->flags & TIC64X_OP_XPATH_SRC1) &&
-				!(insn->templ->flags & TIC64X_OP_XPATH_SRC2)) {
-		if (insn->uses_xpath != 0) {
-			as_bad("Unexpected 'X' in unit specifier for "
-				"instruction that does not use cross-path");
-			return 1;
-		}
-	}
-
-	return apply_conditional(insn);
-}
-
-static int
 apply_conditional(struct tic64x_insn *insn)
 {
 
@@ -1165,7 +1116,10 @@ md_assemble(char *line)
 	/* Now that we have an insn, validate a few general parts of it,
 	 * also apply a conditional if the pre-read hook caught it */
 #endif
-	if (validation_and_conditions(insn))
+
+	/* If pre-assemble hook saw a conditional, place that information in
+	 * the instruction record */
+	if (apply_conditional(insn))
 		return;
 
 	if (parse_operands(operands, insn))
