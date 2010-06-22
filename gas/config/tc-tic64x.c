@@ -97,13 +97,6 @@ static void tic64x_fail(int x);
 static struct tic64x_register *tic64x_sym_to_reg(char *name);
 static int find_operand_index(struct tic64x_op_template *templ,
 			enum tic64x_operand_type type);
-static opreader tic64x_opreader_none;
-static opreader tic64x_opreader_memaccess;
-static opreader tic64x_opreader_memrel15;
-static opreader tic64x_opreader_register;
-static opreader tic64x_opreader_double_register;
-static opreader tic64x_opreader_constant;
-static opreader tic64x_opreader_bfield;
 
 static int tic64x_compare_operands(struct tic64x_insn *insn,
 			struct tic64x_op_template *templ, char **operands);
@@ -190,6 +183,14 @@ typedef int (opvalidate) (struct read_operand *in, bool print_error,
 typedef void (opwrite) (struct read_operand *in,
 				enum tic64x_text_operand optype,
 				struct tic64x_insn *insn);
+
+static opreader opreader_none;
+static opreader opreader_memaccess;
+static opreader opreader_memrel15;
+static opreader opreader_register;
+static opreader opreader_double_register;
+static opreader opreader_constant;
+static opreader opreader_bfield;
 
 struct {
 	enum tic64x_text_operand type;
@@ -869,7 +870,7 @@ tic64x_start_line_hook(void)
 }
 
 void
-tic64x_opreader_none(char *line, struct tic64x_insn *insn,
+opreader_none(char *line, struct tic64x_insn *insn,
 				enum tic64x_text_operand type)
 {
 
@@ -881,7 +882,7 @@ tic64x_opreader_none(char *line, struct tic64x_insn *insn,
 }
 
 void
-tic64x_opreader_memaccess(char *line, struct tic64x_insn *insn,
+opreader_memaccess(char *line, struct tic64x_insn *insn,
 			enum tic64x_text_operand type ATTRIBUTE_UNUSED)
 {
 	expressionS expr;
@@ -1209,7 +1210,7 @@ tic64x_opreader_memaccess(char *line, struct tic64x_insn *insn,
 }
 
 void
-tic64x_opreader_memrel15(char *line, struct tic64x_insn *insn,
+opreader_memrel15(char *line, struct tic64x_insn *insn,
 				enum tic64x_text_operand type ATTRIBUTE_UNUSED)
 {
 	expressionS expr;
@@ -1305,7 +1306,7 @@ tic64x_opreader_memrel15(char *line, struct tic64x_insn *insn,
 }
 
 void
-tic64x_opreader_register(char *line, struct tic64x_insn *insn,
+opreader_register(char *line, struct tic64x_insn *insn,
 				enum tic64x_text_operand type)
 {
 	struct tic64x_register *reg;
@@ -1330,7 +1331,7 @@ tic64x_opreader_register(char *line, struct tic64x_insn *insn,
 		t2 = tic64x_operand_dstreg;
 		break;
 	default:
-		as_bad("Unexpected operand type in tic64x_opreader_register");
+		as_bad("Unexpected operand type in opreader_register");
 		return;
 	}
 
@@ -1405,7 +1406,7 @@ tic64x_opreader_register(char *line, struct tic64x_insn *insn,
 	return;
 }
 
-void tic64x_opreader_double_register(char *line, struct tic64x_insn *insn,
+void opreader_double_register(char *line, struct tic64x_insn *insn,
 			enum tic64x_text_operand optype)
 {
 	struct tic64x_register *reg1, *reg2;
@@ -1489,7 +1490,7 @@ void tic64x_opreader_double_register(char *line, struct tic64x_insn *insn,
 			type = tic64x_operand_dwdst5;
 			tmp = (reg2->num & 0x1F);
 			if (tmp & 1) as_fatal(
-				"tic64x_opreader_double_register: low "
+				"opreader_double_register: low "
 				"bit set in register address");
 		}
 		insn->operand_values[i].resolved = 1;
@@ -1500,7 +1501,7 @@ void tic64x_opreader_double_register(char *line, struct tic64x_insn *insn,
 		type = tic64x_operand_srcreg1;
 		tmp = (reg2->num & 0x1F);
 	} else {
-		as_bad("tic64x_opreader_double_register: unknown operand type");
+		as_bad("opreader_double_register: unknown operand type");
 		return;
 	}
 
@@ -1534,7 +1535,7 @@ static const enum tic64x_operand_type constant_types[] = {
 	tic64x_operand_const4, tic64x_operand_invalid };
 
 void
-tic64x_opreader_constant(char *line, struct tic64x_insn *insn,
+opreader_constant(char *line, struct tic64x_insn *insn,
 			enum tic64x_text_operand type)
 {
 	expressionS expr;
@@ -1602,7 +1603,7 @@ tic64x_opreader_constant(char *line, struct tic64x_insn *insn,
 }
 
 void
-tic64x_opreader_bfield(char *line, struct tic64x_insn *insn,
+opreader_bfield(char *line, struct tic64x_insn *insn,
 			enum tic64x_text_operand type ATTRIBUTE_UNUSED)
 {
 	expressionS expr1, expr2;
