@@ -98,8 +98,6 @@ static struct tic64x_register *tic64x_sym_to_reg(char *name);
 static int find_operand_index(struct tic64x_op_template *templ,
 			enum tic64x_operand_type type);
 
-static int tic64x_compare_operands(struct tic64x_insn *insn,
-			struct tic64x_op_template *templ, char **operands);
 static void tic64x_output_insn(struct tic64x_insn *insn, char *out, fragS *f,
 								int pcoffs);
 
@@ -883,51 +881,6 @@ tic64x_start_line_hook(void)
 
 	return;
 }
-
-int
-tic64x_compare_operands(struct tic64x_insn *insn,
-			struct tic64x_op_template *templ,
-						char **ops)
-{
-	enum tic64x_text_operand type;
-	int i, j, ret;
-
-	/* Loop through all operands, looking up expected type and calling
-	 * test function for that type. Return true if they all match. Expects
-	 * that there's at least one operand */
-
-	for (i = 0; i < TIC64X_MAX_TXT_OPERANDS; i++) {
-		if (ops[i] == NULL)
-			/* Wherever in loop we are, we haven't errored out, so
-			 * it looks like this matches */
-			return OPTEST_MATCH;
-
-		type = templ->textops[i];
-		for (j = 0; tic64x_operand_readers[j].test; j++) {
-			if (tic64x_operand_readers[j].type == type) {
-				ret = tic64x_operand_readers[j].test(ops[i],
-								insn, type);
-				break;
-			}
-		}
-
-		if (tic64x_operand_readers[j].test == NULL) {
-			/* We hit a bad opcode record */
-			as_fatal("tic64x_compare_operands: \"%s\" opcode has "
-				"textop operand not in readers",
-						templ->mnemonic);
-		}
-
-		if (ret != OPTEST_MATCH)
-			return ret;
-
-		/* Otherwise, move along to next operand */
-	}
-
-	/* If we ran out of operands, they must have all matched */
-	return OPTEST_MATCH;
-}
-
 
 static int
 validation_and_conditions(struct tic64x_insn *insn)
