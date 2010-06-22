@@ -310,7 +310,7 @@ static segT packet_seg;
 static int packet_subseg;
 
 static void tic64x_output_insn_packet(void);
-static int read_execution_unit(char **curline, struct tic64x_insn *insn);
+static int read_execution_unit(char **curline, struct unitspec *spec);
 static void generate_d_mv(struct tic64x_insn *insn);
 static void generate_l_mv(struct tic64x_insn *insn, int isdw);
 static void generate_s_mv(struct tic64x_insn *insn);
@@ -925,7 +925,7 @@ apply_conditional(struct tic64x_insn *insn)
 }
 
 int
-read_execution_unit(char **curline, struct tic64x_insn *insn)
+read_execution_unit(char **curline, struct unitspec *spec)
 {
 	char *line;
 
@@ -933,25 +933,26 @@ read_execution_unit(char **curline, struct tic64x_insn *insn)
 	/* Expect ".xn" where x is {D,L,S,M}, and n is {1,2}. Can be followed
 	 * by 'T' specifier saying which memory data path is being used */
 	if (*line++ != '.') {
-		/* No execution unit may be fine */
+		/* No execution unit */
+		spec->unit = -1;
+		spec->unit_num = -1;
+		spec->mem_path = -1;
+		spec->uses_xpath = -1;
 		return 0;
 	}
 
 	/* Stuff from here on should be an execution unit, so error if it's
 	 * wrong */
-	insn->unit = *line++;
-	if (insn->unit != 'D' && insn->unit != 'L' && insn->unit != 'S' &&
-							insn->unit != 'M') {
-		as_bad("Unrecognised execution unit %C after \"%s\"",
-					insn->unit, insn->templ->mnemonic);
+	spec->unit = *line++;
+	if (spec->unit != 'D' && spec->unit != 'L' && spec->unit != 'S' &&
+							spec->unit != 'M') {
+		as_bad("Unrecognised execution unit %C", spec->unit);
 		return -1;
 	}
 
-	/* I will scream if someone says "what if it isn't ascii" */
-	insn->unit_num = *line++ - 0x30;
-	if (insn->unit_num != 1 && insn->unit_num != 2) {
-		as_bad("Bad execution unit number %d after \"%s\"",
-					insn->unit_num, insn->templ->mnemonic);
+	spec->unit_num = *line++ - 0x30;
+	if (spec->unit_num != 1 && spec->unit_num != 2) {
+		as_bad("Bad execution unit number %d", spec->unit_num);
 		return -1;
 	}
 
@@ -959,27 +960,25 @@ read_execution_unit(char **curline, struct tic64x_insn *insn)
 	 * which data path the loaded/stored data will travel through */
 	if (*line == 'T') {
 		line++;
-		insn->mem_unit_num = *line++ - 0x30;
-		if (insn->mem_unit_num != 1 && insn->mem_unit_num != 2) {
-			as_bad("%d not a valid unit number for memory data path"
-					" in \"%s\"", insn->mem_unit_num,
-							insn->templ->mnemonic);
+		spec->mem_path = *line++ - 0x30;
+		if (spec->mem_path != 1 && spec->mem_path != 2) {
+			as_bad("'%d' is not a valid unit number for memory data"					" path\n", spec->mem_path);
 			return -1;
 		}
 	} else {
-		insn->mem_unit_num = -1;
+		spec->mem_path = -1;
 	}
 
 	/* There's also an 'X' suffix used to indicate we're using the cross
 	 * path. */
 	if (*line == 'X') {
 		line++;
-		insn->uses_xpath = 1;
+		spec->uses_xpath = 1;
 	} else {
-		insn->uses_xpath = 0;
+		spec->uses_xpath = 0;
 	}
 
-	/* Nom any leading spaces */
+	/* Nom any following spaces */
 	while (ISSPACE(*line))
 		line++;
 
@@ -1053,7 +1052,7 @@ md_assemble(char *line)
 		return;
 	}
 
-	ret = read_execution_unit(&line, insn);
+	ret = read_execution_unit(&line, &insn->unitspecs);
 	if (ret < 0) {
 		return;
 	} else if (ret == 0) {
