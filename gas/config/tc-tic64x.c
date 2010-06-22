@@ -47,7 +47,7 @@
 			"instruction %s", insn->templ->mnemonic);
 
 struct tic64x_insn {
-	struct tic64x_op_template *templ;
+	const struct tic64x_op_template *templ;
 	uint32_t opcode;			/* Code, filled with operands
 						 * as we parse them */
 	char unit;				/* Unit character ie 'L' */
@@ -115,7 +115,7 @@ static void tic64x_comm(int x);
 static void tic64x_sect(int x);
 static void tic64x_fail(int x);
 static struct tic64x_register *tic64x_sym_to_reg(char *name);
-static int find_operand_index(struct tic64x_op_template *templ,
+static int find_operand_index(const struct tic64x_op_template *templ,
 			enum tic64x_operand_type type);
 static opreader tic64x_opreader_none;
 static optester tic64x_optest_none;
@@ -133,7 +133,8 @@ static opreader tic64x_opreader_bfield;
 static optester tic64x_optest_bfield;
 
 static int tic64x_compare_operands(struct tic64x_insn *insn,
-			struct tic64x_op_template *templ, char **operands);
+			const struct tic64x_op_template *templ,
+			char **operands);
 static void tic64x_output_insn(struct tic64x_insn *insn, char *out, fragS *f,
 								int pcoffs);
 
@@ -228,8 +229,8 @@ md_show_usage(FILE *stream ATTRIBUTE_UNUSED)
 void
 md_begin()
 {
-	struct tic64x_op_template *op;
-	struct tic64x_register *reg;
+	const struct tic64x_op_template *op;
+	const struct tic64x_register *reg;
 
 	read_insns_index = 0;
 	memset(read_insns, 0, sizeof(read_insns));
@@ -689,7 +690,7 @@ type_to_rtype(struct tic64x_insn *insn, enum tic64x_operand_type type)
 }
 
 int
-find_operand_index(struct tic64x_op_template *templ,
+find_operand_index(const struct tic64x_op_template *templ,
 			enum tic64x_operand_type type)
 {
 	int i;
@@ -1688,7 +1689,7 @@ tic64x_opreader_bfield(char *line, struct tic64x_insn *insn,
 
 int
 tic64x_compare_operands(struct tic64x_insn *insn,
-			struct tic64x_op_template *templ,
+			const struct tic64x_op_template *templ,
 						char **ops)
 {
 	enum tic64x_text_operand type;
@@ -1897,7 +1898,7 @@ read_execution_unit(char **curline, struct tic64x_insn *insn)
 int
 guess_insn_type(struct tic64x_insn *insn, char **operands)
 {
-	struct tic64x_op_template *multi;
+	const struct tic64x_op_template *multi;
 	int i, j, ret;
 
 	/* For each insn, test length and probe each operand */
