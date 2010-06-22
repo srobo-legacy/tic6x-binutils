@@ -25,7 +25,7 @@
 		as_fatal("Couldn't set operand " type " for "		\
 			"instruction %s", insn->templ->mnemonic);
 
-struct sidespec {
+struct unitspec {
 	int8_t		unit;		/* Character (ie 'L') or -1 */
 	int8_t		unit_num;	/* 0 -> side 1, 1 -> side 2, or -1 */
 	int8_t		mem_path;	/* 0 -> T1, 1 -> T2, not set: -1 */
@@ -37,7 +37,7 @@ struct tic64x_insn {
 	uint32_t opcode;		/* The opcode itself to be emitted,
 					 * gets filled with operands as we
 					 * work out what template to use */
-	struct sidespec unitspec;	/* Details about this instruction, what
+	struct unitspec unitspecs;	/* Details about this instruction, what
 					 * unit, side, datapath etc that it
 					 * happens to use */
 	int8_t parallel;		/* || prefix? */
@@ -134,20 +134,20 @@ const pseudo_typeS md_pseudo_table[] =
 
 /* First a series of structs for storing the fundemental values of an operand */
 struct opdetail_memaccess {
-	tic64x_register *base;
+	const struct tic64x_register *base;
 	union {
-		tic64x_register *reg;
-		uint32_t const;
+		const struct tic64x_register *reg;
+		uint32_t const_offs;
 	} offs;
 	bfd_boolean const_offs;
 };
 
 struct opdetail_register {
-	tic64x_register *base;
+	const struct tic64x_register *base;
 };
 
 struct opdetail_constant {
-	uin32_t const;
+	uint32_t const_val;
 	bfd_boolean is_signed;
 };
 
@@ -156,7 +156,7 @@ struct read_operand {
 	union {
 		struct opdetail_memaccess mem;
 		struct opdetail_register reg;
-		struct opdetail_constant const;
+		struct opdetail_constant constant;
 	} u;
 };
 
