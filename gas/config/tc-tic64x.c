@@ -1148,6 +1148,8 @@ md_assemble(char *line)
 		goto wrapup;
 	}
 
+#if 0
+/* Again let's avoid supporting bitfields for the moment, it doesn't quite fit*/
 	/* Set mode nightmare: if insn has bitfield, congeal middle two
 	 * operands back into one. Highly unpleasent, but saves having to
 	 * patch up everything to support four operands. */
@@ -1162,6 +1164,7 @@ md_assemble(char *line)
 
 	/* Now that we have an insn, validate a few general parts of it,
 	 * also apply a conditional if the pre-read hook caught it */
+#endif
 	if (validation_and_conditions(insn))
 		return;
 
