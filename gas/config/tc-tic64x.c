@@ -185,13 +185,13 @@ typedef void (opwrite) (struct read_operand *in,
 				enum tic64x_text_operand optype,
 				struct tic64x_insn *insn);
 
-static opreader opreader_none;
-static opreader opreader_memaccess;
-static opreader opreader_memrel15;
-static opreader opreader_register;
-static opreader opreader_double_register;
-static opreader opreader_constant;
-static opreader opreader_bfield;
+static opreader opread_none;
+static opreader opread_memaccess;
+static opreader opread_memrel15;
+static opreader opread_register;
+static opreader opread_double_register;
+static opreader opread_constant;
+static opreader opread_bfield;
 
 static opvalidate opvalidate_none;
 static opvalidate opvalidate_memaccess;
@@ -1732,7 +1732,7 @@ tic64x_output_insn(struct tic64x_insn *insn, char *out, fragS *frag, int pcoffs)
 }
 
 void
-opreader_none(char *line, struct tic64x_insn *insn,
+opread_none(char *line, struct tic64x_insn *insn,
 				enum tic64x_text_operand type)
 {
 
@@ -1744,7 +1744,7 @@ opreader_none(char *line, struct tic64x_insn *insn,
 }
 
 void
-opreader_memaccess(char *line, struct tic64x_insn *insn,
+opread_memaccess(char *line, struct tic64x_insn *insn,
 			enum tic64x_text_operand type ATTRIBUTE_UNUSED)
 {
 	expressionS expr;
@@ -2072,7 +2072,7 @@ opreader_memaccess(char *line, struct tic64x_insn *insn,
 }
 
 void
-opreader_memrel15(char *line, struct tic64x_insn *insn,
+opread_memrel15(char *line, struct tic64x_insn *insn,
 				enum tic64x_text_operand type ATTRIBUTE_UNUSED)
 {
 	expressionS expr;
@@ -2168,7 +2168,7 @@ opreader_memrel15(char *line, struct tic64x_insn *insn,
 }
 
 void
-opreader_register(char *line, struct tic64x_insn *insn,
+opread_register(char *line, struct tic64x_insn *insn,
 				enum tic64x_text_operand type)
 {
 	struct tic64x_register *reg;
@@ -2193,7 +2193,7 @@ opreader_register(char *line, struct tic64x_insn *insn,
 		t2 = tic64x_operand_dstreg;
 		break;
 	default:
-		as_bad("Unexpected operand type in opreader_register");
+		as_bad("Unexpected operand type in opread_register");
 		return;
 	}
 
@@ -2268,7 +2268,7 @@ opreader_register(char *line, struct tic64x_insn *insn,
 	return;
 }
 
-void opreader_double_register(char *line, struct tic64x_insn *insn,
+void opread_double_register(char *line, struct tic64x_insn *insn,
 			enum tic64x_text_operand optype)
 {
 	struct tic64x_register *reg1, *reg2;
@@ -2352,7 +2352,7 @@ void opreader_double_register(char *line, struct tic64x_insn *insn,
 			type = tic64x_operand_dwdst5;
 			tmp = (reg2->num & 0x1F);
 			if (tmp & 1) as_fatal(
-				"opreader_double_register: low "
+				"opread_double_register: low "
 				"bit set in register address");
 		}
 		insn->operand_values[i].resolved = 1;
@@ -2363,7 +2363,7 @@ void opreader_double_register(char *line, struct tic64x_insn *insn,
 		type = tic64x_operand_srcreg1;
 		tmp = (reg2->num & 0x1F);
 	} else {
-		as_bad("opreader_double_register: unknown operand type");
+		as_bad("opread_double_register: unknown operand type");
 		return;
 	}
 
@@ -2397,7 +2397,7 @@ static const enum tic64x_operand_type constant_types[] = {
 	tic64x_operand_const4, tic64x_operand_invalid };
 
 void
-opreader_constant(char *line, struct tic64x_insn *insn,
+opread_constant(char *line, struct tic64x_insn *insn,
 			enum tic64x_text_operand type)
 {
 	expressionS expr;
@@ -2465,7 +2465,7 @@ opreader_constant(char *line, struct tic64x_insn *insn,
 }
 
 void
-opreader_bfield(char *line, struct tic64x_insn *insn,
+opread_bfield(char *line, struct tic64x_insn *insn,
 			enum tic64x_text_operand type ATTRIBUTE_UNUSED)
 {
 	expressionS expr1, expr2;
