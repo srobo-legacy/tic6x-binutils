@@ -2497,3 +2497,174 @@ opreader_bfield(char *line, struct tic64x_insn *insn,
 
 	return;
 }
+
+int
+opvalidate_none(struct read_operand *in ATTRIBUTE_UNUSED,
+			bool print_error ATTRIBUTE_UNUSED,
+			enum tic64x_text_operand optype ATTRIBUTE_UNUSED,
+			struct tic64x_insn *insn ATTRIBUTE_UNUSED,
+			bool gen_unitspec ATTRIBUTE_UNUSED,
+			struct unitspec *spec ATTRIBUTE_UNUSED)
+{
+
+	as_bad("Attempted to validate excess operand");
+	return 1;
+}
+
+int
+opvalidate_memaccess(struct read_operand *in, bool print_error,
+			enum tic64x_text_operand optype,
+			struct tic64x_insn *insn, bool gen_unitspec,
+			struct unitspec *spec)
+{
+
+	UNUSED(in);
+	UNUSED(print_error);
+	UNUSED(optype);
+	UNUSED(insn);
+	UNUSED(gen_unitspec);
+	UNUSED(spec);
+	as_fatal("Unimplemented opvalidate_memaccess\n");
+	return 1;
+}
+
+int
+opvalidate_memrel15(struct read_operand *in, bool print_error,
+			enum tic64x_text_operand optype,
+			struct tic64x_insn *insn, bool gen_unitspec,
+			struct unitspec *spec)
+{
+
+	UNUSED(in);
+	UNUSED(print_error);
+	UNUSED(optype);
+	UNUSED(insn);
+	UNUSED(gen_unitspec);
+	UNUSED(spec);
+	as_fatal("Unimplemented opvalidate_memrel15\n");
+	return 1;
+}
+
+int
+opvalidate_register(struct read_operand *in, bool print_error,
+			enum tic64x_text_operand optype,
+			struct tic64x_insn *insn, bool gen_unitspec,
+			struct unitspec *spec)
+{
+
+	UNUSED(in);
+	UNUSED(print_error);
+	UNUSED(optype);
+	UNUSED(insn);
+	UNUSED(gen_unitspec);
+	UNUSED(spec);
+	as_fatal("Unimplemented opvalidate_register\n");
+	return 1;
+}
+
+int
+opvalidate_double_register(struct read_operand *in, bool print_error,
+			enum tic64x_text_operand optype,
+			struct tic64x_insn *insn, bool gen_unitspec,
+			struct unitspec *spec)
+{
+
+	UNUSED(in);
+	UNUSED(print_error);
+	UNUSED(optype);
+	UNUSED(insn);
+	UNUSED(gen_unitspec);
+	UNUSED(spec);
+	as_fatal("Unimplemented opvalidate_double_register\n");
+	return 1;
+}
+
+int
+opvalidate_constant (struct read_operand *in, bool print_error,
+			enum tic64x_text_operand optype,
+			struct tic64x_insn *insn, bool gen_unitspec,
+			struct unitspec *spec)
+{
+
+	UNUSED(in);
+	UNUSED(print_error);
+	UNUSED(optype);
+	UNUSED(insn);
+	UNUSED(gen_unitspec);
+	UNUSED(spec);
+	as_fatal("Unimplemented opvalidate_constant\n");
+	return 1;
+}
+
+void
+opwrite_none(struct read_operand *in, enum tic64x_text_operand optype,
+			struct tic64x_insn *insn)
+{
+
+	UNUSED(in);
+	UNUSED(optype);
+	UNUSED(insn);
+	as_bad("Attempted to write out excess operand\n");
+	return;
+}
+
+void
+opwrite_memaccess(struct read_operand *in, enum tic64x_text_operand optype,
+			struct tic64x_insn *insn)
+{
+
+	UNUSED(in);
+	UNUSED(optype);
+	UNUSED(insn);
+	as_fatal("Unimplemented opwrite_memaccess\n");
+	return;
+}
+
+void
+opwrite_memrel15(struct read_operand *in, enum tic64x_text_operand optype,
+			struct tic64x_insn *insn)
+{
+
+	UNUSED(in);
+	UNUSED(optype);
+	UNUSED(insn);
+	as_fatal("Unimplemented opwrite_memrel15\n");
+	return;
+}
+
+void
+opwrite_register(struct read_operand *in, enum tic64x_text_operand optype,
+			struct tic64x_insn *insn)
+{
+
+	UNUSED(in);
+	UNUSED(optype);
+	UNUSED(insn);
+	as_fatal("Unimplemented opwrite_register\n");
+	return;
+}
+
+void
+opwrite_double_register(struct read_operand *in,
+			enum tic64x_text_operand optype,
+			struct tic64x_insn *insn)
+{
+
+	UNUSED(in);
+	UNUSED(optype);
+	UNUSED(insn);
+	as_fatal("Unimplemented opwrite_double_register\n");
+	return;
+}
+
+void
+opwrite_constant(struct read_operand *in, enum tic64x_text_operand optype,
+			struct tic64x_insn *insn)
+{
+
+	UNUSED(in);
+	UNUSED(optype);
+	UNUSED(insn);
+	as_fatal("Unimplemented opwrite_constant\n");
+	return;
+}
