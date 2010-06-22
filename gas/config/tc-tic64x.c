@@ -311,7 +311,6 @@ static int packet_subseg;
 
 static void tic64x_output_insn_packet(void);
 static int read_execution_unit(char **curline, struct tic64x_insn *insn);
-static int guess_insn_type(struct tic64x_insn *insn, char **operands);
 static void generate_d_mv(struct tic64x_insn *insn);
 static void generate_l_mv(struct tic64x_insn *insn, int isdw);
 static void generate_s_mv(struct tic64x_insn *insn);
@@ -1046,87 +1045,6 @@ read_execution_unit(char **curline, struct tic64x_insn *insn)
 }
 
 int
-guess_insn_type(struct tic64x_insn *insn, char **operands)
-{
-	struct tic64x_op_template *multi;
-	int i, j, ret;
-
-	/* For each insn, test length and probe each operand */
-	/* Count number of text operands... */
-	for (i = 0; i < TIC64X_MAX_TXT_OPERANDS && operands[i]; i++)
-		;
-
-	if (i == 0) {
-		as_bad("Cowardly refusing to try and match instruction "
-			"with no operands against multiple opcodes for "
-			"that opcode");
-		return 1;
-	}
-
-	/* Loop through each insn template - warning, pointer abuse.
-	 * assumes that templ pointed into tic64x_opcodes, and that
-	 * the first one is marked with the MULTI_MNEMONIC flag */
-	ret = OPTEST_NOMATCH;
-	for (multi = insn->templ; !strcmp(multi->mnemonic,
-				insn->templ->mnemonic); multi++) {
-		for (j = 0; j < TIC64X_MAX_TXT_OPERANDS; j++)
-			if (multi->textops[j] == tic64x_optxt_none)
-				break;
-
-		if (j != i)
-			continue;
-
-		if (j == 0) {
-			as_fatal("tic64x md_assemble: instruction "
-				"\"%s\" with zero operands and "
-				"sharing mnemonics matches everything",
-				multi->mnemonic);
-		}
-
-		/* Reject template if it doesn't support the execution
-		 * unit specified by the user */
-		if (!(UNITCHAR_2_FLAG(insn->unit) & multi->flags))
-			continue;
-
-		/* No such luck - probe each operand to see if it's
-		 * what we expect it to be. So ugly it has to go in
-		 * a different function */
-		ret = tic64x_compare_operands(insn, multi, operands);
-		if (ret == OPTEST_MATCH)
-			break;
-	}
-
-	if (ret != OPTEST_MATCH) { // was mnemonic strcmp
-		const char *reason;
-		switch (ret) {
-		case OPTEST_NOMATCH:
-			reason = "Unrecognised instruction format for \"%s\"";
-			break;
-		case OPTEST_WRONGREGSIDE:
-			reason = "Register operand on wrong side of processor "
-				"in \"%s\"";
-			break;
-		case OPTEST_WRONGUNIT:
-			reason = "Instruction \"%s\" of this form cannot run "
-				"on specified side of processor / unit";
-			break;
-		case OPTEST_NOSUBTRACT:
-			reason = "Cannot have negative operand to \"%s\"";
-			break;
-		default:
-			as_fatal("Failed to recognize fail reason in "
-				"guess_insn_type");
-		}
-	
-		as_bad(reason, insn->templ->mnemonic);
-		return 1;
-	}
-
-	insn->templ = multi;	/* Swap type of instruction */
-	return 0;
-}
-
-int
 parse_operands(char **operands, struct tic64x_insn *insn)
 {
 	int i, j;
@@ -1228,14 +1146,6 @@ md_assemble(char *line)
 		/* And because we need to handle it being 'mv' elsewhere,
 		 * a goto. */
 		goto wrapup;
-	}
-
-	/* Horror: if we have multiple operations for this mnemonic,
-	 * start guessing which one we are. Grrr. */
-	if (insn->templ->flags & TIC64X_OP_MULTI_MNEMONIC) {
-		ret = guess_insn_type(insn, operands);
-		if (ret != 0)
-			return;
 	}
 
 	/* Set mode nightmare: if insn has bitfield, congeal middle two
