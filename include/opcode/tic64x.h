@@ -30,7 +30,7 @@ struct tic64x_operand_pos {
 	int position;
 	int size;
 };
-extern struct tic64x_operand_pos tic64x_operand_positions[];
+extern const struct tic64x_operand_pos tic64x_operand_positions[];
 
 /* Caution - this enum is used as an index to a table in tic64x-opc.c, if
  * adding a new operand type or changing ordering, also modify operand
@@ -182,8 +182,8 @@ struct tic64x_op_template {
 	enum tic64x_operand_type operands[TIC64X_MAX_OPERANDS];
 };
 
-extern struct tic64x_op_template tic64x_opcodes[];
-extern struct tic64x_register tic64x_regs[];
+extern const struct tic64x_op_template tic64x_opcodes[];
+extern const struct tic64x_register tic64x_regs[];
 
 /* get/set calls for actual operands. Returns nonzero if value is too large */
 int tic64x_set_operand(uint32_t *opcode, enum tic64x_operand_type type,

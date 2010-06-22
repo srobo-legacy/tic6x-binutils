@@ -21,7 +21,7 @@
 #include "dis-asm.h"
 #include "opcode/tic64x.h"
 
-struct tic64x_register tic64x_regs[] = {
+const struct tic64x_register tic64x_regs[] = {
 	{"A0",	0},	{"A1",	1},	{"A2",	2},	{"A3",	3},
 	{"A4",	4},	{"A5",	5},	{"A6",	6},	{"A7",	7},
 	{"A8",	8},	{"A9",	9},	{"A10",	10},	{"A11",	11},
@@ -49,7 +49,7 @@ struct tic64x_register tic64x_regs[] = {
 	{NULL,	0}
 };
 
-struct tic64x_operand_pos tic64x_operand_positions [] = {
+const struct tic64x_operand_pos tic64x_operand_positions [] = {
 /* Note - this array indexed by tic64x_operand_type, if ordering is changed
  * here, you need to change that enum definition */
 {	0,	0	},	/* invalid */
@@ -146,7 +146,7 @@ tic64x_get_operand(uint32_t opcode,  enum tic64x_operand_type t, int signx)
  * comments about which way around operands are (ie, src1 and src2). Doesn't
  * matter functionally because it's add, but this may need to be fixed in the
  * future */
-struct tic64x_op_template tic64x_opcodes[] = {
+const struct tic64x_op_template tic64x_opcodes[] = {
 {"abs",		0x358,		0x3EFFC,
 	TIC64X_OP_UNIT_L | TIC64X_OP_XPATH_SRC2 | TIC64X_OP_MULTI_MNEMONIC,
 	{ tic64x_optxt_srcreg2, tic64x_optxt_dstreg, tic64x_optxt_none },

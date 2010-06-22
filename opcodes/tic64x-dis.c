@@ -31,11 +31,11 @@
 					(type) == tic64x_optxt_srcreg1))
 
 
-static void print_insn(struct tic64x_op_template *templ, uint32_t opcode,
+static void print_insn(const struct tic64x_op_template *templ, uint32_t opcode,
 					struct disassemble_info *info,
 					int double_bar);
 
-typedef int (op_printer) (struct tic64x_op_template *t,
+typedef int (op_printer) (const struct tic64x_op_template *t,
 				struct disassemble_info *i,
 				uint32_t opcode, enum tic64x_text_operand type,
 				char *buffer, int len);
@@ -85,7 +85,7 @@ static int in_compact_insn;
 int
 print_insn_tic64x(bfd_vma addr, struct disassemble_info *info)
 {
-	struct tic64x_op_template *templ;
+	const struct tic64x_op_template *templ;
 	struct tic64x_compact_table *ctable;
 	struct tic64x_disasm_priv *priv;
 	bfd_byte opbuf[4];
@@ -255,7 +255,7 @@ print_insn_tic64x(bfd_vma addr, struct disassemble_info *info)
 }
 
 void
-print_insn(struct tic64x_op_template *templ, uint32_t opcode,
+print_insn(const struct tic64x_op_template *templ, uint32_t opcode,
 		struct disassemble_info *info, int double_bar)
 {
 	const char *tchar, *memnum, *xpath;
@@ -426,7 +426,7 @@ print_insn(struct tic64x_op_template *templ, uint32_t opcode,
 }
 
 int
-print_op_none(struct tic64x_op_template *t ATTRIBUTE_UNUSED,
+print_op_none(const struct tic64x_op_template *t ATTRIBUTE_UNUSED,
 		struct disassemble_info *i ATTRIBUTE_UNUSED,
 		uint32_t opcode ATTRIBUTE_UNUSED,
 		enum tic64x_text_operand type ATTRIBUTE_UNUSED,
@@ -437,7 +437,7 @@ print_op_none(struct tic64x_op_template *t ATTRIBUTE_UNUSED,
 }
 
 int
-print_op_memaccess(struct tic64x_op_template *t,
+print_op_memaccess(const struct tic64x_op_template *t,
 		struct disassemble_info *i ATTRIBUTE_UNUSED, uint32_t opcode,
 		enum tic64x_text_operand type ATTRIBUTE_UNUSED, char *buffer,
 		int len)
@@ -561,7 +561,7 @@ print_op_memaccess(struct tic64x_op_template *t,
 }
 
 int
-print_op_memrel15(struct tic64x_op_template *t,
+print_op_memrel15(const struct tic64x_op_template *t,
 		struct disassemble_info *i ATTRIBUTE_UNUSED, uint32_t opcode,
 		enum tic64x_text_operand type ATTRIBUTE_UNUSED, char *buffer,
 		int len)
@@ -585,7 +585,7 @@ print_op_memrel15(struct tic64x_op_template *t,
 }
 
 int
-print_op_register(struct tic64x_op_template *t,
+print_op_register(const struct tic64x_op_template *t,
 		struct disassemble_info *i ATTRIBUTE_UNUSED, uint32_t opcode,
 		enum tic64x_text_operand type, char *buffer, int len)
 {
@@ -701,7 +701,7 @@ print_op_register(struct tic64x_op_template *t,
 }
 
 int
-print_op_dwreg(struct tic64x_op_template *t,
+print_op_dwreg(const struct tic64x_op_template *t,
 		struct disassemble_info *info ATTRIBUTE_UNUSED, uint32_t opcode,
 		enum tic64x_text_operand type, char *buffer, int len)
 {
@@ -793,7 +793,7 @@ print_op_dwreg(struct tic64x_op_template *t,
 }
 
 int
-print_op_constant(struct tic64x_op_template *t,
+print_op_constant(const struct tic64x_op_template *t,
 		struct disassemble_info *info, uint32_t opcode,
 		enum tic64x_text_operand type, char *buffer, int len)
 {
