@@ -883,774 +883,6 @@ tic64x_start_line_hook(void)
 	return;
 }
 
-void
-opreader_none(char *line, struct tic64x_insn *insn,
-				enum tic64x_text_operand type)
-{
-
-	UNUSED(line);
-	UNUSED(insn);
-	UNUSED(type);
-	as_bad("Excess operand");
-	return;
-}
-
-void
-opreader_memaccess(char *line, struct tic64x_insn *insn,
-			enum tic64x_text_operand type ATTRIBUTE_UNUSED)
-{
-	expressionS expr;
-	char *regname, *offs;
-	struct tic64x_register *reg, *offsetreg;
-	int off_reg, pos_neg, pre_post, nomod_modify, has_offset, i, tmp, sc;
-	int offs_operand, offs_size, err;
-	char c, bracket;
-
-	off_reg = -1;
-	pos_neg = -1;
-	pre_post = -1;
-	nomod_modify = -1;
-	has_offset = -1;
-
-	/* We expect firstly to start wih a '*' */
-	if (*line++ != '*') {
-		as_bad("expected '*' before memory operand");
-		return;
-	}
-
-	/* See page 79 of spru732h for table of address modes */
-	if (*line == '+') {
-		if (*(line+1) == '+') {
-			/* Preincrement */
-			nomod_modify = TIC64X_ADDRMODE_MODIFY;
-			pos_neg = TIC64X_ADDRMODE_POS;
-			pre_post = TIC64X_ADDRMODE_PRE;
-			line += 2;
-		} else {
-			nomod_modify = TIC64X_ADDRMODE_NOMODIFY;
-			pos_neg = TIC64X_ADDRMODE_POS;
-			pre_post = TIC64X_ADDRMODE_PRE;
-			line++;
-		}
-	} else if (*line == '-') {
-		if (*(line+1) == '-') {
-			nomod_modify = TIC64X_ADDRMODE_MODIFY;
-			pos_neg = TIC64X_ADDRMODE_NEG;
-			pre_post = TIC64X_ADDRMODE_PRE;
-			line += 2;
-		} else {
-			nomod_modify = TIC64X_ADDRMODE_NOMODIFY;
-			pos_neg = TIC64X_ADDRMODE_NEG;
-			pre_post = TIC64X_ADDRMODE_PRE;
-			line++;
-		}
-	}
-
-	/* We should now have an alpha-num register name, possibly .asg'd */
-	regname = line;
-	while (ISALPHA(*line) || ISDIGIT(*line) || *line == '_')
-		line++;
-
-	if (regname == line) { /* Invalid register name */
-		as_bad("Expected register name in memory operand of \"%s\"",
-						insn->templ->mnemonic);
-		return;
-	}
-
-	c = *line;
-	*line = 0;
-	reg = tic64x_sym_to_reg(regname);
-	*line = c;
-	if (!reg) {
-		as_bad("\"%s\" is not a register", regname);
-		return;
-	}
-
-	/* Memory addr registers _have_ to come from the side of the processor
-	 * we're executing on */
-	if (((reg->num & TIC64X_REG_UNIT2) && insn->unit_num != 2) ||
-	    (!(reg->num & TIC64X_REG_UNIT2) && insn->unit_num != 1)) {
-		as_bad("Base address register must be on same side of processor"
-			" as instruction");
-		return;
-	}
-
-	/* We should now have a register to work with - it can be suffixed
-	 * with a postdecrement/increment, offset constant or register */
-	if (*line == '-') {
-		if (*(line+1) == '-') {
-			if (pos_neg != -1 || nomod_modify != -1) {
-				as_bad("Can't specify both pre and post "
-					"operators on address register");
-				return;
-			}
-
-			nomod_modify = TIC64X_ADDRMODE_MODIFY;
-			pos_neg = TIC64X_ADDRMODE_NEG;
-			pre_post = TIC64X_ADDRMODE_POST;
-			line += 2;
-		} else {
-			as_bad("Bad operator following address register");
-			return;
-		}
-	} else if (*line == '+') {
-		if (*(line+1) == '+') {
-			if (pos_neg != -1 || nomod_modify != -1) {
-				as_bad("Can't specify both pre and post "
-					"operators on address register");
-				return;
-			}
-
-			nomod_modify = TIC64X_ADDRMODE_MODIFY;
-			pos_neg = TIC64X_ADDRMODE_POS;
-			pre_post = TIC64X_ADDRMODE_POST;
-			line += 2;
-		} else {
-			as_bad("Bad operator following address register");
-			return;
-		}
-	}
-
-	if (nomod_modify == -1 || pos_neg == -1 || pre_post == -1) {
-		/* No pluses or minuses before or after base register - default
-		 * to a positive offset/reg */
-		nomod_modify = TIC64X_ADDRMODE_NOMODIFY;
-		pos_neg = TIC64X_ADDRMODE_POS;
-		pre_post = TIC64X_ADDRMODE_PRE;
-	}
-
-	/* Look for offset register of constant */
-	offsetreg = NULL;
-	bracket = '\0';
-	if (*line == '[' || *line == '(') {
-		has_offset = 1;
-		c = (*line++ == '[') ? ']' : ')';
-		bracket = c;
-		offs = line;
-
-		while (*line != c && !is_end_of_line[(int)*line])
-			line++;
-
-		if (is_end_of_line[(int)*line]) {
-			as_bad("Unexpected end of file while reading address "
-				"register offset");
-			return;
-		}
-
-		/* We have an offset - read it into an expr, then
-		 * leave it for the moment */
-		c = *line;
-		*line = 0;
-
-/* XXX - use gas' built in register section / register symbols support,
- * so that expression parsing can handle our detection of registers */
-
-		/* Need to know early whether this is a register or not - if it
-		 * is, should just be a single symbol that we can translate. */
-		offsetreg = tic64x_sym_to_reg(offs);
-		if (offsetreg) {
-			/* joy */
-			off_reg = TIC64X_ADDRMODE_REGISTER;
-			/* Memory addr registers _have_ to come from the
-			 * side of the processor we're executing on */
-			if (((reg->num & TIC64X_REG_UNIT2) &&
-					insn->unit_num != 2) ||
-			    (!(reg->num & TIC64X_REG_UNIT2) &&
-					insn->unit_num != 1)) {
-				as_bad("Base address register must be on same "
-					"side of processor as instruction");
-				return;
-			}
-		} else {
-			tic64x_parse_expr(offs, &expr);
-		}
-	} else {
-		/* No offset, so set offs to constant zero */
-		has_offset = 0;
-		off_reg = TIC64X_ADDRMODE_OFFSET;
-	}
-
-	/* For completeness, we could/should replace the (possibly) trailing
-	 * bracket here */
-	if (c)
-		*line++ = c;
-
-	/* Offset / reg should be the last thing we (might) read - ensure that
-	 * we're at the end of the string we were passed */
-	if (*line != 0) {
-		as_bad("Trailing rubbish at end of address operand");
-		return;
-	}
-
-	/* There are a million and one ways this operand could have been
-	 * constructed - try and make sense of all this */
-	if (has_offset) {
-		/* Can't have + and - /after/ the base register */
-		if (nomod_modify == TIC64X_ADDRMODE_NOMODIFY &&
-				pre_post == TIC64X_ADDRMODE_POST) {
-			as_bad("Cannot have + and - modes after base register");
-			return;
-		}
-	}
-	/* Someone with more sleep needs to think up more checks */
-
-	/* So - we have a base register, addressing mode, offset and maybe scale
-	 * bit, which we need to fill out in insn. Simple ones first */
-	err = tic64x_set_operand(&insn->opcode, tic64x_operand_basereg,
-						reg->num & 0x1F, 0);
-	if (err)
-		abort_setop_fail(insn, "tic64x_operand_basereg");
-
-	/* Addressing mode - ditch any fields that haven't been set or are zero.
-	 * We rely on earlier checks (XXX not written yet...) to ensure it's
-	 * a valid mode that the user expects */
-	tmp = 0;
-	if (off_reg > 0)
-		tmp |= off_reg;
-	if (pos_neg > 0)
-		tmp |= pos_neg;
-	if (pre_post > 0)
-		tmp |= pre_post;
-	if (nomod_modify > 0)
-		tmp |= nomod_modify;
-
-	err = tic64x_set_operand(&insn->opcode, tic64x_operand_addrmode, tmp,
-									0);
-	if (err)
-		abort_setop_fail(insn, "tic64x_operand_addrmode");
-
-	offs_operand = find_operand_index(insn->templ, tic64x_operand_rcoffset);
-	if (offs_operand < 0)
-		as_fatal("memaccess with no r/c offset operand");
-
-	if (!has_offset) {
-		/* _really_ simple, no offset, no scale */
-		/* XXX Don't scale register offsets for now, not aware of
-		 * assembly syntax to express which way it should go */
-		tmp = 0;
-		sc = 0;
-	} else if (off_reg == TIC64X_ADDRMODE_REGISTER) {
-		/* All's fine and well */
-		tmp = offsetreg->num & 0x1F;
-		sc = 0;
-	} else if (has_offset && expr.X_op == O_constant) {
-		offs_size = tic64x_operand_positions[tic64x_operand_rcoffset].size;
-		tmp = expr.X_add_number;
-
-		if (bracket == ']') {
-			/* Programmer provides pre-scaled value within square
-			 * brackets - unscale it to meet our expectations */
-			i = insn->templ->flags & TIC64X_OP_MEMSZ_MASK;
-			i >>= TIC64X_OP_MEMSZ_SHIFT;
-			tmp <<= i;
-		}
-
-		if (tmp < 0) {
-			as_bad("tic64x-pedantic-mode: can't add/subtract a "
-				"negative constant from base register, use "
-				"correct addressing mode instead");
-			return;
-		}
-
-		if (tmp > ((1 << offs_size) - 1) ||
-			insn->templ->flags & TIC64X_OP_CONST_SCALE) {
-
-			/* If the instruction always scales the offset, or if
-			 * the offset is too large to fit, scale it. The
-			 * amount by which it's scaled is the size of memory
-			 * access this instruction performs - so 8b for dword
-			 * memory access, 2b for half byte access. The power
-			 * of this shift is stored in insn template flags */
-			i = insn->templ->flags & TIC64X_OP_MEMSZ_MASK;
-			i >>= TIC64X_OP_MEMSZ_SHIFT;
-
-			/* Shift 1 by power to make multiplier */
-			i = 1 << i;
-
-			/* Is constant offset aligned to this boundry? */
-			if (tmp & (i-1)) {
-				as_bad("Constant offset to base address "
-					"register too large, cannot be scaled "
-					"as %d is not on a %d byte boundry",
-									tmp, i);
-				return;
-			}
-
-			/* Ok, we can scale it, but even then does it fit? */
-			tmp /= i;
-			if (tmp > ((1 << offs_size) - 1 )) {
-				as_bad("Constant offset too large");
-				return;
-			}
-
-			/* Success; enable scaling */
-			sc = 1;
-		} else {
-			/* When < size and we have a choice, don't scale */
-			sc = 0;
-		}
-	} else {
-		as_bad("Offset field not a constant");
-		return;
-	}
-
-	/* So, we may have decided to scale above... but can we? */
-	if (sc == 1 && !(insn->templ->flags & TIC64X_OP_MEMACC_SBIT) &&
-			!(insn->templ->flags & TIC64X_OP_CONST_SCALE)) {
-		/* We can't scale. Can't fit offset in field then */
-		as_bad("Constant offset too large, or insn cannot scale it");
-		return;
-	} else if(sc == 1 && (insn->templ->flags & TIC64X_OP_MEMACC_SBIT)) {
-		/* If we have that bit and must scale, do it here */
-		/* Unless the instruction always scales, that is */
-
-		if (!(insn->templ->flags & TIC64X_OP_CONST_SCALE)) {
-			err = tic64x_set_operand(&insn->opcode,
-						tic64x_operand_scale,
-						c, 0);
-			if (err)
-				abort_setop_fail(insn, "tic64x_operand_scale");
-		}
-	}
-
-	err = tic64x_set_operand(&insn->opcode, tic64x_operand_rcoffset, tmp,
-									0);
-	if (err)
-		abort_setop_fail(insn, "tic64x_operand_r/c");
-
-	insn->operand_values[offs_operand].resolved = 1;
-
-	return;
-}
-
-void
-opreader_memrel15(char *line, struct tic64x_insn *insn,
-				enum tic64x_text_operand type ATTRIBUTE_UNUSED)
-{
-	expressionS expr;
-	int y, shift, val, index, err;
-	char bracket;
-
-	index = find_operand_index(insn->templ, tic64x_operand_const15);
-	if (index < 0)
-		as_fatal("memrel15 operand with no corresponding const15 "
-								"field");
-
-	/* Need to be able to distinguish between this and memaccess */
-	if (*line++ != '*' || *line++ != '+' || *line++ != 'B' ||
-							*line++ != '1') {
-		as_bad("Malformed memrel15 operand");
-		return;
-	}
-
-	if (*line == '4') {
-		y = 0;
-	} else if (*line == '5') {
-		y = 1;
-	} else {
-		as_bad("memrel15 operand must use B14 or B15 base register");
-		return;
-	}
-	err = tic64x_set_operand(&insn->opcode, tic64x_operand_y, y, 0);
-	if (err)
-		as_fatal("Error setting y bit in memrel15 operand");
-
-	line++;
-
-	/* Hopefully no-one puts whitespace between the base reg and offset,
-	 * but just in case */
-	while (ISSPACE(*line))
-		line++;
-
-	if (*line != '[' && *line != '(') {
-		as_bad("Unexpected character when looking for '['");
-		return;
-	}
-
-	bracket = *line++;
-	while (ISSPACE(*line))
-		line++;
-
-	tic64x_parse_expr(line, &expr);
-	if (expr.X_op == O_constant) {
-		/* We're good, can set it now */
-
-		if (expr.X_add_number < 0) {
-			as_bad("Negative offset to base register not supported "
-				"for this instruction form");
-			return;
-		}
-
-		val = expr.X_add_number;
-		if (bracket == '[') {
-			/* User has pre-scaled this operand for us */
-			shift = insn->templ->flags & TIC64X_OP_MEMSZ_MASK;
-			shift >>= TIC64X_OP_MEMSZ_SHIFT;
-			val <<= shift;
-		}
-
-		if (insn->templ->flags & TIC64X_OP_CONST_SCALE) {
-			shift = insn->templ->flags & TIC64X_OP_MEMSZ_MASK;
-			shift >>= TIC64X_OP_MEMSZ_SHIFT;
-			if ((val & ((1 << shift) - 1))) {
-				as_bad("Offset not aligned to memory access "
-					"granuality");
-				return;
-			}
-
-			val >>= shift;
-		}
-
-		err = tic64x_set_operand(&insn->opcode, tic64x_operand_const15,
-									val, 0);
-		if (err) {
-			as_bad("Memory offset exceeds size of 15bit field");
-			return;
-		}
-
-		insn->operand_values[index].resolved = 1;
-	} else if (expr.X_op == O_symbol) {
-		/* Going to have to emit a relocation */
-		memcpy(&insn->operand_values[index].expr, &expr, sizeof(expr));
-	} else {
-		as_bad("Unsupported expression type");
-	}
-
-	return;
-}
-
-void
-opreader_register(char *line, struct tic64x_insn *insn,
-				enum tic64x_text_operand type)
-{
-	struct tic64x_register *reg;
-	enum tic64x_operand_type t2;
-	int tmp, err;
-
-	/* Expect only a single piece of text, should be register */
-	reg = tic64x_sym_to_reg(line);
-	if (!reg) {
-		as_bad("Expected \"%s\" to be register", line);
-		return;
-	}
-
-	switch (type) {
-	case tic64x_optxt_srcreg1:
-		t2 = tic64x_operand_srcreg1;
-		break;
-	case tic64x_optxt_srcreg2:
-		t2 = tic64x_operand_srcreg2;
-		break;
-	case tic64x_optxt_dstreg:
-		t2 = tic64x_operand_dstreg;
-		break;
-	default:
-		as_bad("Unexpected operand type in opreader_register");
-		return;
-	}
-
-	/* Verify register is in same unit num as this instruction, or that
-	 * we have a good excuse for using another one */
-	if (!tic64x_optest_register(line, insn, type)) {
-		as_bad("Register \"%s\" not suitable for this instruction "
-			"format", insn->templ->mnemonic);
-		return;
-	}
-
-	err = tic64x_set_operand(&insn->opcode, t2, reg->num & 0x1F, 0);
-	if (err)
-		abort_setop_fail(insn, "{register}");
-
-	/* Now set some more interesting fields - if working on destination reg,
-	 * set the side of processor we're working on. Also set xpath field */
-	if (t2 == tic64x_operand_dstreg) {
-
-		/* Destination must be on same side of processor as we're
-		 * executing, except when it's memory access. Bleaugh */
-
-		if (insn->templ->flags & TIC64X_OP_MEMACCESS) {
-			if ((insn->mem_unit_num == 2 &&
-					!(reg->num & TIC64X_REG_UNIT2))
-				|| (insn->mem_unit_num == 1 &&
-					(reg->num & TIC64X_REG_UNIT2))) {
-				as_bad("Destination register must match data "
-					"path specifier");
-				return;
-			}
-		} else {
-			/* Ensure destination is just on the correct side */
-			if ((insn->unit_num == 2 &&
-					!(reg->num & TIC64X_REG_UNIT2))
-					|| (insn->unit_num == 1 &&
-					reg->num & TIC64X_REG_UNIT2)) {
-				as_bad("Destination register must be on side "
-					"or processor where insn executes");
-				return;
-			}
-		}
-	} else if (TXTOPERAND_CAN_XPATH(insn, type)) {
-		/* This operand can use the xpath, do we? */
-		if (((reg->num & TIC64X_REG_UNIT2) && insn->unit_num == 1) ||
-		    (!(reg->num & TIC64X_REG_UNIT2) && insn->unit_num == 2)) {
-			/* Yes */
-			tmp = 1;
-		} else {
-			/* No */
-			tmp = 0;
-		}
-
-		/* Cross-check with what user said */
-                if (insn->uses_xpath == 0 && tmp == 1) {
-			as_bad("Specify 'X' in execution unit when "
-				"addressing registers in other side of "
-				"processor");
-			return;
-		} else if (insn->uses_xpath == 1 && tmp == 0) {
-			as_bad("'X' in execution unit, but cross-path register "
-				"is on same side of processor as instruction");
-			return;
-		}
-
-		err = tic64x_set_operand(&insn->opcode, tic64x_operand_x, tmp,	
-									0);
-		if (err)
-			abort_setop_fail(insn, "tic64x_operand_x");
-	}
-
-	return;
-}
-
-void opreader_double_register(char *line, struct tic64x_insn *insn,
-			enum tic64x_text_operand optype)
-{
-	struct tic64x_register *reg1, *reg2;
-	char *rtext;
-	enum tic64x_operand_type type;
-	int tmp, i, side, err;
-	char c;
-
-	/* Double register is of the form "A0:A1", or whatever symbolic names
-	 * user has assigned. Register numbers must be consecutive, and stored
-	 * as the top four bits */
-
-	/* Read up to ':' seperator */
-	rtext = line;
-	while (*line != ':' && !is_end_of_line[(int)*line])
-		line++;
-
-	/* Bail out if there wasn't one */
-	if (is_end_of_line[(int)*line]) {
-		as_bad("Unexpected end-of-line, expected ':' double register "
-			"seperator");
-		return;
-	}
-
-	/* Actually try and read register */
-	*line = 0;
-	reg1 = tic64x_sym_to_reg(rtext);
-	if (!reg1) {
-		as_bad("\"%s\" is not a register", rtext);
-		return;
-	}
-	*line++ = ':';
-
-	/* Now read up to next non-name */
-	rtext = line;
-	while (ISALPHA(*line) || ISDIGIT(*line) || *line == '_')
-		line++;
-
-	/* And find register */
-	c = *line;
-	*line = 0;
-	reg2 = tic64x_sym_to_reg(rtext);
-	if (!reg2) {
-		as_bad("\"%s\" is not a register", rtext);
-		*line = c;
-		return;
-	}
-	*line = c;
-
-	/* Now for some validation - same side? */
-	if ((reg1->num & TIC64X_REG_UNIT2) != (reg2->num & TIC64X_REG_UNIT2)) {
-		as_bad("Double register operands must be on same side of "
-								"processor");
-		return;
-	}
-
-	/* Consecutive? */
-	if ((reg1->num & 0x1F) != (reg2->num & 0x1F) + 1) {
-		as_bad("Double register operands must be consecutive");
-		return;
-	}
-
-	/* These are fine and can be written into opcode operand */
-	if (optype == tic64x_optxt_dwdst) {
-
-		/* dword destination operands can have two forms - 5 bit
-		 * register address of the even one of the pair, or four
-		 * bit address, top bits of destination regs. Identify
-		 * which way around we are, adjust value accordingly */
-
-		i = find_operand_index(insn->templ, tic64x_operand_dwdst5);
-		if (i < 0) {
-			i = find_operand_index(insn->templ,
-					tic64x_operand_dwdst4);
-			if (i < 0)
-				abort_no_operand(insn, "dwdst");
-
-			type = tic64x_operand_dwdst4;
-			tmp = (reg2->num & 0x1F) >> 1;
-		} else {
-			type = tic64x_operand_dwdst5;
-			tmp = (reg2->num & 0x1F);
-			if (tmp & 1) as_fatal(
-				"opreader_double_register: low "
-				"bit set in register address");
-		}
-		insn->operand_values[i].resolved = 1;
-	} else if (optype == tic64x_optxt_dwsrc) {
-		type = tic64x_operand_dwsrc;
-		tmp = (reg2->num & 0x1F);
-	} else if (optype == tic64x_optxt_dwsrc2) {
-		type = tic64x_operand_srcreg1;
-		tmp = (reg2->num & 0x1F);
-	} else {
-		as_bad("opreader_double_register: unknown operand type");
-		return;
-	}
-
-	err = tic64x_set_operand(&insn->opcode, type, tmp, 0);
-	if (err)
-		abort_setop_fail(insn, "dwreg");
-
-	if (insn->templ->flags & TIC64X_OP_NOSIDE)
-		abort_no_operand(insn, "tic64x_operand_s");
-
-	/* Validate that this pair comes from the right side. It has to be
-	 * the side of execution (can't put dw over xpath), unless it's memory
-	 * access */
-
-	side = (insn->templ->flags & TIC64X_OP_MEMACCESS)
-		? insn->mem_unit_num : insn->unit_num;
-
-	if ((side == 2 && !(reg2->num & TIC64X_REG_UNIT2)) ||
-	    (side == 1 && (reg2->num & TIC64X_REG_UNIT2)))
-		as_bad("Register pair differ in side from "
-			"execution unit specifier");
-
-	return;
-}
-
-static const enum tic64x_operand_type constant_types[] = {
-	tic64x_operand_const5, tic64x_operand_const5p2,
-	tic64x_operand_const21, tic64x_operand_const16,
-	tic64x_operand_const15, tic64x_operand_const12,
-	tic64x_operand_const10, tic64x_operand_const7,
-	tic64x_operand_const4, tic64x_operand_invalid };
-
-void
-opreader_constant(char *line, struct tic64x_insn *insn,
-			enum tic64x_text_operand type)
-{
-	expressionS expr;
-	enum tic64x_operand_type realtype;
-	int i, j, shift, err;
-
-	/* Pre-lookup the operand index we expect... */
-	if (type == tic64x_optxt_nops) {
-		realtype = tic64x_operand_nops;
-		i = find_operand_index(insn->templ, realtype);
-	} else {
-		for (j = 0; constant_types[j] != tic64x_operand_invalid; j++) {
-			if ((i = (find_operand_index(insn->templ,
-						constant_types[j]))) >= 0) {
-				realtype = constant_types[j];
-				break;
-			}
-		}
-
-		if (constant_types[j] == tic64x_operand_invalid) {
-			abort_no_operand(insn, "tic64x_operand_const*");
-		}
-	}
-
-	/* Do we need to shift at all? */
-	if (insn->templ->flags & TIC64X_OP_CONST_SCALE) {
-		shift = insn->templ->flags & TIC64X_OP_MEMSZ_MASK;
-		shift >>= TIC64X_OP_MEMSZ_SHIFT;
-	} else if (insn->templ->flags & TIC64X_OP_USE_TOP_HWORD) {
-		shift = 16;
-	} else {
-		shift = 0;
-	}
-
-	tic64x_parse_expr(line, &expr);
-	if (expr.X_op == O_constant) {
-		if ((type == tic64x_optxt_uconstant || type ==tic64x_optxt_nops)
-			&& expr.X_add_number < 0 &&
-			!(insn->templ->flags & TIC64X_OP_NO_RANGE_CHK)) {
-			as_bad("Negative operand, expected unsigned");
-			return;
-		}
-
-		err = tic64x_set_operand(&insn->opcode, realtype,
-					expr.X_add_number >> shift,
-					(type == tic64x_optxt_sconstant)
-					? 1 : 0);
-
-		/* Trying to set operand that's too big: that's an error, unless
-		 * it's an instruction that expects this and that has set the
-		 * no range check flag */
-		if (err && !(insn->templ->flags & TIC64X_OP_NO_RANGE_CHK)) {
-			as_bad("Constant operand exceeds permitted size");
-			return;
-		}
-
-		insn->operand_values[i].resolved = 1;
-	} else {
-		/* Not something useful right now, leave unresovled */
-		/*  Shifting will be handled by fixup/reloc code */
-		memcpy(&insn->operand_values[i].expr, &expr, sizeof(expr));
-	}
-
-	return;
-}
-
-void
-opreader_bfield(char *line, struct tic64x_insn *insn,
-			enum tic64x_text_operand type ATTRIBUTE_UNUSED)
-{
-	expressionS expr1, expr2;
-	char *part2;
-	int val1, val2;
-
-	/* This code remains untested until we actually run into a bfield op */
-
-	part2 = strchr(line, ',');
-	*part2++ = 0;
-
-	tic64x_parse_expr(line, &expr1);
-	tic64x_parse_expr(part2, &expr2);
-
-	if (expr1.X_op != O_constant || expr2.X_op != O_constant) {
-		as_bad("bitfield range operands not constants");
-		return;
-	}
-
-	val1 = expr1.X_add_number;
-	val2 = expr2.X_add_number;
-
-	if (val1 >= 32 || val2 >= 32 || val1 < 0 || val2 < 0) {
-		as_bad("bitfield operand out of range: must be 0-31");
-		return;
-	}
-
-	tic64x_set_operand(&insn->opcode, tic64x_operand_const5, val1, 0);
-	tic64x_set_operand(&insn->opcode, tic64x_operand_bitfldb, val2, 0);
-
-	return;
-}
-
 int
 tic64x_compare_operands(struct tic64x_insn *insn,
 			struct tic64x_op_template *templ,
@@ -2495,5 +1727,773 @@ tic64x_output_insn(struct tic64x_insn *insn, char *out, fragS *frag, int pcoffs)
 
 	/* Assume everything is little endian for now */
 	bfd_putl32(insn->opcode, out);
+	return;
+}
+
+void
+opreader_none(char *line, struct tic64x_insn *insn,
+				enum tic64x_text_operand type)
+{
+
+	UNUSED(line);
+	UNUSED(insn);
+	UNUSED(type);
+	as_bad("Excess operand");
+	return;
+}
+
+void
+opreader_memaccess(char *line, struct tic64x_insn *insn,
+			enum tic64x_text_operand type ATTRIBUTE_UNUSED)
+{
+	expressionS expr;
+	char *regname, *offs;
+	struct tic64x_register *reg, *offsetreg;
+	int off_reg, pos_neg, pre_post, nomod_modify, has_offset, i, tmp, sc;
+	int offs_operand, offs_size, err;
+	char c, bracket;
+
+	off_reg = -1;
+	pos_neg = -1;
+	pre_post = -1;
+	nomod_modify = -1;
+	has_offset = -1;
+
+	/* We expect firstly to start wih a '*' */
+	if (*line++ != '*') {
+		as_bad("expected '*' before memory operand");
+		return;
+	}
+
+	/* See page 79 of spru732h for table of address modes */
+	if (*line == '+') {
+		if (*(line+1) == '+') {
+			/* Preincrement */
+			nomod_modify = TIC64X_ADDRMODE_MODIFY;
+			pos_neg = TIC64X_ADDRMODE_POS;
+			pre_post = TIC64X_ADDRMODE_PRE;
+			line += 2;
+		} else {
+			nomod_modify = TIC64X_ADDRMODE_NOMODIFY;
+			pos_neg = TIC64X_ADDRMODE_POS;
+			pre_post = TIC64X_ADDRMODE_PRE;
+			line++;
+		}
+	} else if (*line == '-') {
+		if (*(line+1) == '-') {
+			nomod_modify = TIC64X_ADDRMODE_MODIFY;
+			pos_neg = TIC64X_ADDRMODE_NEG;
+			pre_post = TIC64X_ADDRMODE_PRE;
+			line += 2;
+		} else {
+			nomod_modify = TIC64X_ADDRMODE_NOMODIFY;
+			pos_neg = TIC64X_ADDRMODE_NEG;
+			pre_post = TIC64X_ADDRMODE_PRE;
+			line++;
+		}
+	}
+
+	/* We should now have an alpha-num register name, possibly .asg'd */
+	regname = line;
+	while (ISALPHA(*line) || ISDIGIT(*line) || *line == '_')
+		line++;
+
+	if (regname == line) { /* Invalid register name */
+		as_bad("Expected register name in memory operand of \"%s\"",
+						insn->templ->mnemonic);
+		return;
+	}
+
+	c = *line;
+	*line = 0;
+	reg = tic64x_sym_to_reg(regname);
+	*line = c;
+	if (!reg) {
+		as_bad("\"%s\" is not a register", regname);
+		return;
+	}
+
+	/* Memory addr registers _have_ to come from the side of the processor
+	 * we're executing on */
+	if (((reg->num & TIC64X_REG_UNIT2) && insn->unit_num != 2) ||
+	    (!(reg->num & TIC64X_REG_UNIT2) && insn->unit_num != 1)) {
+		as_bad("Base address register must be on same side of processor"
+			" as instruction");
+		return;
+	}
+
+	/* We should now have a register to work with - it can be suffixed
+	 * with a postdecrement/increment, offset constant or register */
+	if (*line == '-') {
+		if (*(line+1) == '-') {
+			if (pos_neg != -1 || nomod_modify != -1) {
+				as_bad("Can't specify both pre and post "
+					"operators on address register");
+				return;
+			}
+
+			nomod_modify = TIC64X_ADDRMODE_MODIFY;
+			pos_neg = TIC64X_ADDRMODE_NEG;
+			pre_post = TIC64X_ADDRMODE_POST;
+			line += 2;
+		} else {
+			as_bad("Bad operator following address register");
+			return;
+		}
+	} else if (*line == '+') {
+		if (*(line+1) == '+') {
+			if (pos_neg != -1 || nomod_modify != -1) {
+				as_bad("Can't specify both pre and post "
+					"operators on address register");
+				return;
+			}
+
+			nomod_modify = TIC64X_ADDRMODE_MODIFY;
+			pos_neg = TIC64X_ADDRMODE_POS;
+			pre_post = TIC64X_ADDRMODE_POST;
+			line += 2;
+		} else {
+			as_bad("Bad operator following address register");
+			return;
+		}
+	}
+
+	if (nomod_modify == -1 || pos_neg == -1 || pre_post == -1) {
+		/* No pluses or minuses before or after base register - default
+		 * to a positive offset/reg */
+		nomod_modify = TIC64X_ADDRMODE_NOMODIFY;
+		pos_neg = TIC64X_ADDRMODE_POS;
+		pre_post = TIC64X_ADDRMODE_PRE;
+	}
+
+	/* Look for offset register of constant */
+	offsetreg = NULL;
+	bracket = '\0';
+	if (*line == '[' || *line == '(') {
+		has_offset = 1;
+		c = (*line++ == '[') ? ']' : ')';
+		bracket = c;
+		offs = line;
+
+		while (*line != c && !is_end_of_line[(int)*line])
+			line++;
+
+		if (is_end_of_line[(int)*line]) {
+			as_bad("Unexpected end of file while reading address "
+				"register offset");
+			return;
+		}
+
+		/* We have an offset - read it into an expr, then
+		 * leave it for the moment */
+		c = *line;
+		*line = 0;
+
+/* XXX - use gas' built in register section / register symbols support,
+ * so that expression parsing can handle our detection of registers */
+
+		/* Need to know early whether this is a register or not - if it
+		 * is, should just be a single symbol that we can translate. */
+		offsetreg = tic64x_sym_to_reg(offs);
+		if (offsetreg) {
+			/* joy */
+			off_reg = TIC64X_ADDRMODE_REGISTER;
+			/* Memory addr registers _have_ to come from the
+			 * side of the processor we're executing on */
+			if (((reg->num & TIC64X_REG_UNIT2) &&
+					insn->unit_num != 2) ||
+			    (!(reg->num & TIC64X_REG_UNIT2) &&
+					insn->unit_num != 1)) {
+				as_bad("Base address register must be on same "
+					"side of processor as instruction");
+				return;
+			}
+		} else {
+			tic64x_parse_expr(offs, &expr);
+		}
+	} else {
+		/* No offset, so set offs to constant zero */
+		has_offset = 0;
+		off_reg = TIC64X_ADDRMODE_OFFSET;
+	}
+
+	/* For completeness, we could/should replace the (possibly) trailing
+	 * bracket here */
+	if (c)
+		*line++ = c;
+
+	/* Offset / reg should be the last thing we (might) read - ensure that
+	 * we're at the end of the string we were passed */
+	if (*line != 0) {
+		as_bad("Trailing rubbish at end of address operand");
+		return;
+	}
+
+	/* There are a million and one ways this operand could have been
+	 * constructed - try and make sense of all this */
+	if (has_offset) {
+		/* Can't have + and - /after/ the base register */
+		if (nomod_modify == TIC64X_ADDRMODE_NOMODIFY &&
+				pre_post == TIC64X_ADDRMODE_POST) {
+			as_bad("Cannot have + and - modes after base register");
+			return;
+		}
+	}
+	/* Someone with more sleep needs to think up more checks */
+
+	/* So - we have a base register, addressing mode, offset and maybe scale
+	 * bit, which we need to fill out in insn. Simple ones first */
+	err = tic64x_set_operand(&insn->opcode, tic64x_operand_basereg,
+						reg->num & 0x1F, 0);
+	if (err)
+		abort_setop_fail(insn, "tic64x_operand_basereg");
+
+	/* Addressing mode - ditch any fields that haven't been set or are zero.
+	 * We rely on earlier checks (XXX not written yet...) to ensure it's
+	 * a valid mode that the user expects */
+	tmp = 0;
+	if (off_reg > 0)
+		tmp |= off_reg;
+	if (pos_neg > 0)
+		tmp |= pos_neg;
+	if (pre_post > 0)
+		tmp |= pre_post;
+	if (nomod_modify > 0)
+		tmp |= nomod_modify;
+
+	err = tic64x_set_operand(&insn->opcode, tic64x_operand_addrmode, tmp,
+									0);
+	if (err)
+		abort_setop_fail(insn, "tic64x_operand_addrmode");
+
+	offs_operand = find_operand_index(insn->templ, tic64x_operand_rcoffset);
+	if (offs_operand < 0)
+		as_fatal("memaccess with no r/c offset operand");
+
+	if (!has_offset) {
+		/* _really_ simple, no offset, no scale */
+		/* XXX Don't scale register offsets for now, not aware of
+		 * assembly syntax to express which way it should go */
+		tmp = 0;
+		sc = 0;
+	} else if (off_reg == TIC64X_ADDRMODE_REGISTER) {
+		/* All's fine and well */
+		tmp = offsetreg->num & 0x1F;
+		sc = 0;
+	} else if (has_offset && expr.X_op == O_constant) {
+		offs_size = tic64x_operand_positions[tic64x_operand_rcoffset].size;
+		tmp = expr.X_add_number;
+
+		if (bracket == ']') {
+			/* Programmer provides pre-scaled value within square
+			 * brackets - unscale it to meet our expectations */
+			i = insn->templ->flags & TIC64X_OP_MEMSZ_MASK;
+			i >>= TIC64X_OP_MEMSZ_SHIFT;
+			tmp <<= i;
+		}
+
+		if (tmp < 0) {
+			as_bad("tic64x-pedantic-mode: can't add/subtract a "
+				"negative constant from base register, use "
+				"correct addressing mode instead");
+			return;
+		}
+
+		if (tmp > ((1 << offs_size) - 1) ||
+			insn->templ->flags & TIC64X_OP_CONST_SCALE) {
+
+			/* If the instruction always scales the offset, or if
+			 * the offset is too large to fit, scale it. The
+			 * amount by which it's scaled is the size of memory
+			 * access this instruction performs - so 8b for dword
+			 * memory access, 2b for half byte access. The power
+			 * of this shift is stored in insn template flags */
+			i = insn->templ->flags & TIC64X_OP_MEMSZ_MASK;
+			i >>= TIC64X_OP_MEMSZ_SHIFT;
+
+			/* Shift 1 by power to make multiplier */
+			i = 1 << i;
+
+			/* Is constant offset aligned to this boundry? */
+			if (tmp & (i-1)) {
+				as_bad("Constant offset to base address "
+					"register too large, cannot be scaled "
+					"as %d is not on a %d byte boundry",
+									tmp, i);
+				return;
+			}
+
+			/* Ok, we can scale it, but even then does it fit? */
+			tmp /= i;
+			if (tmp > ((1 << offs_size) - 1 )) {
+				as_bad("Constant offset too large");
+				return;
+			}
+
+			/* Success; enable scaling */
+			sc = 1;
+		} else {
+			/* When < size and we have a choice, don't scale */
+			sc = 0;
+		}
+	} else {
+		as_bad("Offset field not a constant");
+		return;
+	}
+
+	/* So, we may have decided to scale above... but can we? */
+	if (sc == 1 && !(insn->templ->flags & TIC64X_OP_MEMACC_SBIT) &&
+			!(insn->templ->flags & TIC64X_OP_CONST_SCALE)) {
+		/* We can't scale. Can't fit offset in field then */
+		as_bad("Constant offset too large, or insn cannot scale it");
+		return;
+	} else if(sc == 1 && (insn->templ->flags & TIC64X_OP_MEMACC_SBIT)) {
+		/* If we have that bit and must scale, do it here */
+		/* Unless the instruction always scales, that is */
+
+		if (!(insn->templ->flags & TIC64X_OP_CONST_SCALE)) {
+			err = tic64x_set_operand(&insn->opcode,
+						tic64x_operand_scale,
+						c, 0);
+			if (err)
+				abort_setop_fail(insn, "tic64x_operand_scale");
+		}
+	}
+
+	err = tic64x_set_operand(&insn->opcode, tic64x_operand_rcoffset, tmp,
+									0);
+	if (err)
+		abort_setop_fail(insn, "tic64x_operand_r/c");
+
+	insn->operand_values[offs_operand].resolved = 1;
+
+	return;
+}
+
+void
+opreader_memrel15(char *line, struct tic64x_insn *insn,
+				enum tic64x_text_operand type ATTRIBUTE_UNUSED)
+{
+	expressionS expr;
+	int y, shift, val, index, err;
+	char bracket;
+
+	index = find_operand_index(insn->templ, tic64x_operand_const15);
+	if (index < 0)
+		as_fatal("memrel15 operand with no corresponding const15 "
+								"field");
+
+	/* Need to be able to distinguish between this and memaccess */
+	if (*line++ != '*' || *line++ != '+' || *line++ != 'B' ||
+							*line++ != '1') {
+		as_bad("Malformed memrel15 operand");
+		return;
+	}
+
+	if (*line == '4') {
+		y = 0;
+	} else if (*line == '5') {
+		y = 1;
+	} else {
+		as_bad("memrel15 operand must use B14 or B15 base register");
+		return;
+	}
+	err = tic64x_set_operand(&insn->opcode, tic64x_operand_y, y, 0);
+	if (err)
+		as_fatal("Error setting y bit in memrel15 operand");
+
+	line++;
+
+	/* Hopefully no-one puts whitespace between the base reg and offset,
+	 * but just in case */
+	while (ISSPACE(*line))
+		line++;
+
+	if (*line != '[' && *line != '(') {
+		as_bad("Unexpected character when looking for '['");
+		return;
+	}
+
+	bracket = *line++;
+	while (ISSPACE(*line))
+		line++;
+
+	tic64x_parse_expr(line, &expr);
+	if (expr.X_op == O_constant) {
+		/* We're good, can set it now */
+
+		if (expr.X_add_number < 0) {
+			as_bad("Negative offset to base register not supported "
+				"for this instruction form");
+			return;
+		}
+
+		val = expr.X_add_number;
+		if (bracket == '[') {
+			/* User has pre-scaled this operand for us */
+			shift = insn->templ->flags & TIC64X_OP_MEMSZ_MASK;
+			shift >>= TIC64X_OP_MEMSZ_SHIFT;
+			val <<= shift;
+		}
+
+		if (insn->templ->flags & TIC64X_OP_CONST_SCALE) {
+			shift = insn->templ->flags & TIC64X_OP_MEMSZ_MASK;
+			shift >>= TIC64X_OP_MEMSZ_SHIFT;
+			if ((val & ((1 << shift) - 1))) {
+				as_bad("Offset not aligned to memory access "
+					"granuality");
+				return;
+			}
+
+			val >>= shift;
+		}
+
+		err = tic64x_set_operand(&insn->opcode, tic64x_operand_const15,
+									val, 0);
+		if (err) {
+			as_bad("Memory offset exceeds size of 15bit field");
+			return;
+		}
+
+		insn->operand_values[index].resolved = 1;
+	} else if (expr.X_op == O_symbol) {
+		/* Going to have to emit a relocation */
+		memcpy(&insn->operand_values[index].expr, &expr, sizeof(expr));
+	} else {
+		as_bad("Unsupported expression type");
+	}
+
+	return;
+}
+
+void
+opreader_register(char *line, struct tic64x_insn *insn,
+				enum tic64x_text_operand type)
+{
+	struct tic64x_register *reg;
+	enum tic64x_operand_type t2;
+	int tmp, err;
+
+	/* Expect only a single piece of text, should be register */
+	reg = tic64x_sym_to_reg(line);
+	if (!reg) {
+		as_bad("Expected \"%s\" to be register", line);
+		return;
+	}
+
+	switch (type) {
+	case tic64x_optxt_srcreg1:
+		t2 = tic64x_operand_srcreg1;
+		break;
+	case tic64x_optxt_srcreg2:
+		t2 = tic64x_operand_srcreg2;
+		break;
+	case tic64x_optxt_dstreg:
+		t2 = tic64x_operand_dstreg;
+		break;
+	default:
+		as_bad("Unexpected operand type in opreader_register");
+		return;
+	}
+
+	/* Verify register is in same unit num as this instruction, or that
+	 * we have a good excuse for using another one */
+	if (!tic64x_optest_register(line, insn, type)) {
+		as_bad("Register \"%s\" not suitable for this instruction "
+			"format", insn->templ->mnemonic);
+		return;
+	}
+
+	err = tic64x_set_operand(&insn->opcode, t2, reg->num & 0x1F, 0);
+	if (err)
+		abort_setop_fail(insn, "{register}");
+
+	/* Now set some more interesting fields - if working on destination reg,
+	 * set the side of processor we're working on. Also set xpath field */
+	if (t2 == tic64x_operand_dstreg) {
+
+		/* Destination must be on same side of processor as we're
+		 * executing, except when it's memory access. Bleaugh */
+
+		if (insn->templ->flags & TIC64X_OP_MEMACCESS) {
+			if ((insn->mem_unit_num == 2 &&
+					!(reg->num & TIC64X_REG_UNIT2))
+				|| (insn->mem_unit_num == 1 &&
+					(reg->num & TIC64X_REG_UNIT2))) {
+				as_bad("Destination register must match data "
+					"path specifier");
+				return;
+			}
+		} else {
+			/* Ensure destination is just on the correct side */
+			if ((insn->unit_num == 2 &&
+					!(reg->num & TIC64X_REG_UNIT2))
+					|| (insn->unit_num == 1 &&
+					reg->num & TIC64X_REG_UNIT2)) {
+				as_bad("Destination register must be on side "
+					"or processor where insn executes");
+				return;
+			}
+		}
+	} else if (TXTOPERAND_CAN_XPATH(insn, type)) {
+		/* This operand can use the xpath, do we? */
+		if (((reg->num & TIC64X_REG_UNIT2) && insn->unit_num == 1) ||
+		    (!(reg->num & TIC64X_REG_UNIT2) && insn->unit_num == 2)) {
+			/* Yes */
+			tmp = 1;
+		} else {
+			/* No */
+			tmp = 0;
+		}
+
+		/* Cross-check with what user said */
+                if (insn->uses_xpath == 0 && tmp == 1) {
+			as_bad("Specify 'X' in execution unit when "
+				"addressing registers in other side of "
+				"processor");
+			return;
+		} else if (insn->uses_xpath == 1 && tmp == 0) {
+			as_bad("'X' in execution unit, but cross-path register "
+				"is on same side of processor as instruction");
+			return;
+		}
+
+		err = tic64x_set_operand(&insn->opcode, tic64x_operand_x, tmp,
+									0);
+		if (err)
+			abort_setop_fail(insn, "tic64x_operand_x");
+	}
+
+	return;
+}
+
+void opreader_double_register(char *line, struct tic64x_insn *insn,
+			enum tic64x_text_operand optype)
+{
+	struct tic64x_register *reg1, *reg2;
+	char *rtext;
+	enum tic64x_operand_type type;
+	int tmp, i, side, err;
+	char c;
+
+	/* Double register is of the form "A0:A1", or whatever symbolic names
+	 * user has assigned. Register numbers must be consecutive, and stored
+	 * as the top four bits */
+
+	/* Read up to ':' seperator */
+	rtext = line;
+	while (*line != ':' && !is_end_of_line[(int)*line])
+		line++;
+
+	/* Bail out if there wasn't one */
+	if (is_end_of_line[(int)*line]) {
+		as_bad("Unexpected end-of-line, expected ':' double register "
+			"seperator");
+		return;
+	}
+
+	/* Actually try and read register */
+	*line = 0;
+	reg1 = tic64x_sym_to_reg(rtext);
+	if (!reg1) {
+		as_bad("\"%s\" is not a register", rtext);
+		return;
+	}
+	*line++ = ':';
+
+	/* Now read up to next non-name */
+	rtext = line;
+	while (ISALPHA(*line) || ISDIGIT(*line) || *line == '_')
+		line++;
+
+	/* And find register */
+	c = *line;
+	*line = 0;
+	reg2 = tic64x_sym_to_reg(rtext);
+	if (!reg2) {
+		as_bad("\"%s\" is not a register", rtext);
+		*line = c;
+		return;
+	}
+	*line = c;
+
+	/* Now for some validation - same side? */
+	if ((reg1->num & TIC64X_REG_UNIT2) != (reg2->num & TIC64X_REG_UNIT2)) {
+		as_bad("Double register operands must be on same side of "
+								"processor");
+		return;
+	}
+
+	/* Consecutive? */
+	if ((reg1->num & 0x1F) != (reg2->num & 0x1F) + 1) {
+		as_bad("Double register operands must be consecutive");
+		return;
+	}
+
+	/* These are fine and can be written into opcode operand */
+	if (optype == tic64x_optxt_dwdst) {
+
+		/* dword destination operands can have two forms - 5 bit
+		 * register address of the even one of the pair, or four
+		 * bit address, top bits of destination regs. Identify
+		 * which way around we are, adjust value accordingly */
+
+		i = find_operand_index(insn->templ, tic64x_operand_dwdst5);
+		if (i < 0) {
+			i = find_operand_index(insn->templ,
+					tic64x_operand_dwdst4);
+			if (i < 0)
+				abort_no_operand(insn, "dwdst");
+
+			type = tic64x_operand_dwdst4;
+			tmp = (reg2->num & 0x1F) >> 1;
+		} else {
+			type = tic64x_operand_dwdst5;
+			tmp = (reg2->num & 0x1F);
+			if (tmp & 1) as_fatal(
+				"opreader_double_register: low "
+				"bit set in register address");
+		}
+		insn->operand_values[i].resolved = 1;
+	} else if (optype == tic64x_optxt_dwsrc) {
+		type = tic64x_operand_dwsrc;
+		tmp = (reg2->num & 0x1F);
+	} else if (optype == tic64x_optxt_dwsrc2) {
+		type = tic64x_operand_srcreg1;
+		tmp = (reg2->num & 0x1F);
+	} else {
+		as_bad("opreader_double_register: unknown operand type");
+		return;
+	}
+
+	err = tic64x_set_operand(&insn->opcode, type, tmp, 0);
+	if (err)
+		abort_setop_fail(insn, "dwreg");
+
+	if (insn->templ->flags & TIC64X_OP_NOSIDE)
+		abort_no_operand(insn, "tic64x_operand_s");
+
+	/* Validate that this pair comes from the right side. It has to be
+	 * the side of execution (can't put dw over xpath), unless it's memory
+	 * access */
+
+	side = (insn->templ->flags & TIC64X_OP_MEMACCESS)
+		? insn->mem_unit_num : insn->unit_num;
+
+	if ((side == 2 && !(reg2->num & TIC64X_REG_UNIT2)) ||
+	    (side == 1 && (reg2->num & TIC64X_REG_UNIT2)))
+		as_bad("Register pair differ in side from "
+			"execution unit specifier");
+
+	return;
+}
+
+static const enum tic64x_operand_type constant_types[] = {
+	tic64x_operand_const5, tic64x_operand_const5p2,
+	tic64x_operand_const21, tic64x_operand_const16,
+	tic64x_operand_const15, tic64x_operand_const12,
+	tic64x_operand_const10, tic64x_operand_const7,
+	tic64x_operand_const4, tic64x_operand_invalid };
+
+void
+opreader_constant(char *line, struct tic64x_insn *insn,
+			enum tic64x_text_operand type)
+{
+	expressionS expr;
+	enum tic64x_operand_type realtype;
+	int i, j, shift, err;
+
+	/* Pre-lookup the operand index we expect... */
+	if (type == tic64x_optxt_nops) {
+		realtype = tic64x_operand_nops;
+		i = find_operand_index(insn->templ, realtype);
+	} else {
+		for (j = 0; constant_types[j] != tic64x_operand_invalid; j++) {
+			if ((i = (find_operand_index(insn->templ,
+						constant_types[j]))) >= 0) {
+				realtype = constant_types[j];
+				break;
+			}
+		}
+
+		if (constant_types[j] == tic64x_operand_invalid) {
+			abort_no_operand(insn, "tic64x_operand_const*");
+		}
+	}
+
+	/* Do we need to shift at all? */
+	if (insn->templ->flags & TIC64X_OP_CONST_SCALE) {
+		shift = insn->templ->flags & TIC64X_OP_MEMSZ_MASK;
+		shift >>= TIC64X_OP_MEMSZ_SHIFT;
+	} else if (insn->templ->flags & TIC64X_OP_USE_TOP_HWORD) {
+		shift = 16;
+	} else {
+		shift = 0;
+	}
+
+	tic64x_parse_expr(line, &expr);
+	if (expr.X_op == O_constant) {
+		if ((type == tic64x_optxt_uconstant || type ==tic64x_optxt_nops)
+			&& expr.X_add_number < 0 &&
+			!(insn->templ->flags & TIC64X_OP_NO_RANGE_CHK)) {
+			as_bad("Negative operand, expected unsigned");
+			return;
+		}
+
+		err = tic64x_set_operand(&insn->opcode, realtype,
+					expr.X_add_number >> shift,
+					(type == tic64x_optxt_sconstant)
+					? 1 : 0);
+
+		/* Trying to set operand that's too big: that's an error, unless
+		 * it's an instruction that expects this and that has set the
+		 * no range check flag */
+		if (err && !(insn->templ->flags & TIC64X_OP_NO_RANGE_CHK)) {
+			as_bad("Constant operand exceeds permitted size");
+			return;
+		}
+
+		insn->operand_values[i].resolved = 1;
+	} else {
+		/* Not something useful right now, leave unresovled */
+		/*  Shifting will be handled by fixup/reloc code */
+		memcpy(&insn->operand_values[i].expr, &expr, sizeof(expr));
+	}
+
+	return;
+}
+
+void
+opreader_bfield(char *line, struct tic64x_insn *insn,
+			enum tic64x_text_operand type ATTRIBUTE_UNUSED)
+{
+	expressionS expr1, expr2;
+	char *part2;
+	int val1, val2;
+
+	/* This code remains untested until we actually run into a bfield op */
+
+	part2 = strchr(line, ',');
+	*part2++ = 0;
+
+	tic64x_parse_expr(line, &expr1);
+	tic64x_parse_expr(part2, &expr2);
+
+	if (expr1.X_op != O_constant || expr2.X_op != O_constant) {
+		as_bad("bitfield range operands not constants");
+		return;
+	}
+
+	val1 = expr1.X_add_number;
+	val2 = expr2.X_add_number;
+
+	if (val1 >= 32 || val2 >= 32 || val1 < 0 || val2 < 0) {
+		as_bad("bitfield operand out of range: must be 0-31");
+		return;
+	}
+
+	tic64x_set_operand(&insn->opcode, tic64x_operand_const5, val1, 0);
+	tic64x_set_operand(&insn->opcode, tic64x_operand_bitfldb, val2, 0);
+
 	return;
 }
