@@ -8,12 +8,6 @@
 #include "struc-symbol.h"
 #include "libbfd.h"
 
-#define OPTEST_MATCH		1
-#define OPTEST_NOMATCH		0
-#define OPTEST_WRONGREGSIDE	-1
-#define OPTEST_WRONGUNIT	-2
-#define OPTEST_NOSUBTRACT	-3
-
 #define UNUSED(x) ((x) = (x))
 
 #define TXTOPERAND_CAN_XPATH(insn, type) 				\
