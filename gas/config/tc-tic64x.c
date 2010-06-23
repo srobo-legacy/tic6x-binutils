@@ -139,42 +139,24 @@ static opwrite opwrite_double_register;
 static opwrite opwrite_constant;
 
 struct {
-	enum tic64x_text_operand type;
+	enum tic64x_text_operand type1;
+	enum tic64x_text_operand type2;
+	enum tic64x_text_operand type3;
 	opreader *reader;
 	opvalidate *validate;
 	opwrite *write;
-} tic64x_operand_readers[] = {
-{
-	tic64x_optxt_none,
-	opread_none,
-	opvalidate_none,
-	opwrite_none
-},
+} operand_handlers[] = {
 {
 	tic64x_optxt_memaccess,
+	tic64x_optxt_memrel15,
+	tic64x_optxt_none,
 	opread_memaccess,
 	opvalidate_memaccess,
 	opwrite_memaccess
 },
 {
-	tic64x_optxt_memrel15,
-	opread_memrel15,
-	opvalidate_memrel15,
-	opwrite_memrel15
-},
-{
 	tic64x_optxt_dstreg,
-	opread_register,
-	opvalidate_register,
-	opwrite_register
-},
-{
 	tic64x_optxt_srcreg1,
-	opread_register,
-	opvalidate_register,
-	opwrite_register
-},
-{
 	tic64x_optxt_srcreg2,
 	opread_register,
 	opvalidate_register,
@@ -182,17 +164,7 @@ struct {
 },
 {
 	tic64x_optxt_dwdst,
-	opread_double_register,
-	opvalidate_double_register,
-	opwrite_double_register
-},
-{
 	tic64x_optxt_dwsrc,
-	opread_double_register,
-	opvalidate_double_register,
-	opwrite_double_register
-},
-{
 	tic64x_optxt_dwsrc2,
 	opread_double_register,
 	opvalidate_double_register,
@@ -200,33 +172,15 @@ struct {
 },
 {
 	tic64x_optxt_uconstant,
-	opread_constant,
-	opvalidate_constant,
-	opwrite_constant
-},
-{
 	tic64x_optxt_sconstant,
-	opread_constant,
-	opvalidate_constant,
-	opwrite_constant
-},
-{
 	tic64x_optxt_nops,
 	opread_constant,
 	opvalidate_constant,
 	opwrite_constant
-},
-#if 0
-/* At least for the moment, lets ignore the special case of bitfield operands,
- * they wreck havok with the nice abstractions I have worked out ;_; */
-{tic64x_optxt_bfield,	opread_bfield,		opvalidate_constant},
-#endif
-{
-	tic64x_optxt_none,
-	NULL,
-	NULL,
-	NULL
-}};
+}
+};
+
+#define NUM_OPERAND_HANDLERS 4;
 
 
 struct tic64x_insn {
