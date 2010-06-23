@@ -188,7 +188,7 @@ struct {
 }
 };
 
-#define NUM_OPERAND_HANDLERS 4;
+#define NUM_OPERAND_HANDLERS 4
 
 
 struct tic64x_insn {
