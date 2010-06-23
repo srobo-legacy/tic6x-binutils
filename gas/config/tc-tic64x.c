@@ -242,13 +242,7 @@ struct tic64x_insn {
 	/* Template holds everything needed to build the instruction, but
 	 * we need some data to actually build with. Each entry in operands
 	 * array corresponds to the operand in the op template */
-	struct {
-		/* Once operands are parse, they should either fill out the
-		 * expression for later resolvement, or set the value and
-		 * set "resolved" to 1 */
-		expressionS expr;
-		int resolved;
-	} operand_values[TIC64X_MAX_OPERANDS];
+	struct read_operand operand_values[TIC64X_MAX_OPERANDS];
 
 	/* Hack for ti's mv instruction failery - can't be resolved in initial
 	 * pass, we need to inspect other parallel ops later and make a decision
