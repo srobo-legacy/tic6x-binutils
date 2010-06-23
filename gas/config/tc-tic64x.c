@@ -246,11 +246,6 @@ int tic64x_line_had_nz_cond;
 struct tic64x_register *tic64x_line_had_cond_reg;
 
 static char *tic64x_parse_expr(char *s, expressionS *exp);
-static void tic64x_asg(int x);
-static void tic64x_noop(int x);
-static void tic64x_comm(int x);
-static void tic64x_sect(int x);
-static void tic64x_fail(int x);
 static struct tic64x_register *tic64x_sym_to_reg(char *name);
 static int find_operand_index(struct tic64x_op_template *templ,
 			enum tic64x_operand_type type);
