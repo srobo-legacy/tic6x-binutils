@@ -214,6 +214,10 @@ struct tic64x_insn {
 	int mvfail;
 	char *mvfail_op1;
 	char *mvfail_op2;
+
+#define MAX_NUM_INSN_TEMPLATES 16
+	int num_possible_insns;
+	struct tic64x_insn *possible_templates[MAX_NUM_INSN_TEMPLATES];
 };
 
 const char comment_chars[] = ";";
