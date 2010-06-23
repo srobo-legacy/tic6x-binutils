@@ -25,6 +25,12 @@
 		as_fatal("Couldn't set operand " type " for "		\
 			"instruction %s", insn->templ->mnemonic);
 
+static void tic64x_asg(int x);
+static void tic64x_noop(int x);
+static void tic64x_comm(int x);
+static void tic64x_sect(int x);
+static void tic64x_fail(int x);
+
 /* A few things we might want to handle - more complete table in tic54x, also
  * see spru186 for a full reference */
 const pseudo_typeS md_pseudo_table[] =
@@ -79,7 +85,7 @@ struct opdetail_constant {
 	uint32_t const_val;
 	bfd_boolean is_signed;
 	expressionS expr;
-	bool is_expr;
+	bfd_boolean is_expr;
 };
 
 struct read_operand {
