@@ -78,6 +78,8 @@ struct opdetail_register {
 struct opdetail_constant {
 	uint32_t const_val;
 	bfd_boolean is_signed;
+	expressionS expr;
+	bool is_expr;
 };
 
 struct read_operand {
