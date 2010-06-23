@@ -25,82 +25,6 @@
 		as_fatal("Couldn't set operand " type " for "		\
 			"instruction %s", insn->templ->mnemonic);
 
-struct unitspec {
-	int8_t		unit;		/* Character (ie 'L') or -1 */
-	int8_t		unit_num;	/* 0 -> side 1, 1 -> side 2, or -1 */
-	int8_t		mem_path;	/* 0 -> T1, 1 -> T2, not set: -1 */
-	int8_t		uses_xpath;	/* 0 -> No, 1-> Yes, not set: -1 */
-};
-
-struct tic64x_insn {
-	struct tic64x_op_template *templ;
-	uint32_t opcode;		/* The opcode itself to be emitted,
-					 * gets filled with operands as we
-					 * work out what template to use */
-	struct unitspec unitspecs;	/* Details about this instruction, what
-					 * unit, side, datapath etc that it
-					 * happens to use */
-	int8_t parallel;		/* || prefix? */
-	int8_t cond_nz;			/* Condition flag, zero or nz?*/
-	int16_t cond_reg;		/* Register for comparison */
-
-	/* Template holds everything needed to build the instruction, but
-	 * we need some data to actually build with. Each entry in operands
-	 * array corresponds to the operand in the op template */
-	struct {
-		/* Once operands are parse, they should either fill out the
-		 * expression for later resolvement, or set the value and
-		 * set "resolved" to 1 */
-		expressionS expr;
-		int resolved;
-	} operand_values[TIC64X_MAX_OPERANDS];
-
-	/* Hack for ti's mv instruction failery - can't be resolved in initial
-	 * pass, we need to inspect other parallel ops later and make a decision
-	 * there */
-	int mvfail;
-	char *mvfail_op1;
-	char *mvfail_op2;
-};
-
-const char comment_chars[] = ";";
-const char line_comment_chars[] = ";*#";
-const char line_separator_chars[] = "";
-
-const char EXP_CHARS[] = "eE";
-const char FLT_CHARS[] = "fF";
-
-/* No options right now */
-struct option md_longopts[] =
-{
-	{ NULL,		no_argument,	NULL,	0}
-};
-
-size_t md_longopts_size = sizeof(md_longopts);
-
-const char *md_shortopts = "";
-
-static struct hash_control *tic64x_ops;
-static struct hash_control *tic64x_reg_names;
-static struct hash_control *tic64x_subsyms;
-int tic64x_line_had_parallel_prefix;
-int tic64x_line_had_cond;
-int tic64x_line_had_nz_cond;
-struct tic64x_register *tic64x_line_had_cond_reg;
-
-static char *tic64x_parse_expr(char *s, expressionS *exp);
-static void tic64x_asg(int x);
-static void tic64x_noop(int x);
-static void tic64x_comm(int x);
-static void tic64x_sect(int x);
-static void tic64x_fail(int x);
-static struct tic64x_register *tic64x_sym_to_reg(char *name);
-static int find_operand_index(struct tic64x_op_template *templ,
-			enum tic64x_operand_type type);
-
-static void tic64x_output_insn(struct tic64x_insn *insn, char *out, fragS *f,
-								int pcoffs);
-
 /* A few things we might want to handle - more complete table in tic54x, also
  * see spru186 for a full reference */
 const pseudo_typeS md_pseudo_table[] =
@@ -126,6 +50,13 @@ const pseudo_typeS md_pseudo_table[] =
 	{"usect",	tic64x_fail,		0},
 	{"word",	cons, 			4},
 	{NULL, 		NULL,			0}
+};
+
+struct unitspec {
+	int8_t		unit;		/* Character (ie 'L') or -1 */
+	int8_t		unit_num;	/* 0 -> side 1, 1 -> side 2, or -1 */
+	int8_t		mem_path;	/* 0 -> T1, 1 -> T2, not set: -1 */
+	int8_t		uses_xpath;	/* 0 -> No, 1-> Yes, not set: -1 */
 };
 
 /* Parser stuff to read a particularly kind of operand */
@@ -295,6 +226,75 @@ struct {
 	NULL
 }};
 
+
+struct tic64x_insn {
+	struct tic64x_op_template *templ;
+	uint32_t opcode;		/* The opcode itself to be emitted,
+					 * gets filled with operands as we
+					 * work out what template to use */
+	struct unitspec unitspecs;	/* Details about this instruction, what
+					 * unit, side, datapath etc that it
+					 * happens to use */
+	int8_t parallel;		/* || prefix? */
+	int8_t cond_nz;			/* Condition flag, zero or nz?*/
+	int16_t cond_reg;		/* Register for comparison */
+
+	/* Template holds everything needed to build the instruction, but
+	 * we need some data to actually build with. Each entry in operands
+	 * array corresponds to the operand in the op template */
+	struct {
+		/* Once operands are parse, they should either fill out the
+		 * expression for later resolvement, or set the value and
+		 * set "resolved" to 1 */
+		expressionS expr;
+		int resolved;
+	} operand_values[TIC64X_MAX_OPERANDS];
+
+	/* Hack for ti's mv instruction failery - can't be resolved in initial
+	 * pass, we need to inspect other parallel ops later and make a decision
+	 * there */
+	int mvfail;
+	char *mvfail_op1;
+	char *mvfail_op2;
+};
+
+const char comment_chars[] = ";";
+const char line_comment_chars[] = ";*#";
+const char line_separator_chars[] = "";
+
+const char EXP_CHARS[] = "eE";
+const char FLT_CHARS[] = "fF";
+
+/* No options right now */
+struct option md_longopts[] =
+{
+	{ NULL,		no_argument,	NULL,	0}
+};
+
+size_t md_longopts_size = sizeof(md_longopts);
+
+const char *md_shortopts = "";
+
+static struct hash_control *tic64x_ops;
+static struct hash_control *tic64x_reg_names;
+static struct hash_control *tic64x_subsyms;
+int tic64x_line_had_parallel_prefix;
+int tic64x_line_had_cond;
+int tic64x_line_had_nz_cond;
+struct tic64x_register *tic64x_line_had_cond_reg;
+
+static char *tic64x_parse_expr(char *s, expressionS *exp);
+static void tic64x_asg(int x);
+static void tic64x_noop(int x);
+static void tic64x_comm(int x);
+static void tic64x_sect(int x);
+static void tic64x_fail(int x);
+static struct tic64x_register *tic64x_sym_to_reg(char *name);
+static int find_operand_index(struct tic64x_op_template *templ,
+			enum tic64x_operand_type type);
+
+static void tic64x_output_insn(struct tic64x_insn *insn, char *out, fragS *f,
+								int pcoffs);
 
 /* So, with gas at the moment, we can't detect the end of an instruction
  * packet until there's been a line without a || at the start. And we can't
