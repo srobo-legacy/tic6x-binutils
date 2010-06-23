@@ -101,7 +101,6 @@ struct read_operand {
 
 /* Read operand from line into read register struct */
 typedef int (opreader) (char *line, bfd_boolean print_error,
-				enum tic64x_text_operand optype,
 				struct read_operand *out);
 /* Some values for this to return: */
 #define OPREADER_OK		0
@@ -207,6 +206,7 @@ struct tic64x_insn {
 	 * we need some data to actually build with. Each entry in operands
 	 * array corresponds to the operand in the op template */
 	struct read_operand operand_values[TIC64X_MAX_OPERANDS];
+	int operands;
 
 	/* Hack for ti's mv instruction failery - can't be resolved in initial
 	 * pass, we need to inspect other parallel ops later and make a decision
