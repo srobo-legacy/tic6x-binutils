@@ -314,7 +314,6 @@ static int read_execution_unit(char **curline, struct unitspec *spec);
 static void generate_d_mv(struct tic64x_insn *insn);
 static void generate_l_mv(struct tic64x_insn *insn, int isdw);
 static void generate_s_mv(struct tic64x_insn *insn);
-static int parse_operands(char **operands, struct tic64x_insn *insn);
 static int apply_conditional(struct tic64x_insn *insn);
 
 int
@@ -986,34 +985,6 @@ read_execution_unit(char **curline, struct unitspec *spec)
 	return 1;
 }
 
-int
-parse_operands(char **operands, struct tic64x_insn *insn)
-{
-	int i, j;
-	enum tic64x_text_operand optype;
-
-	for (i = 0; i < TIC64X_MAX_TXT_OPERANDS && operands[i]; i++) {
-		/* We have some text, lookup what kind of operand we expect,
-		 * and call its parser / handler / whatever */
-		optype = insn->templ->textops[i];
-		for (j = 0; tic64x_operand_readers[j].reader != NULL; j++) {
-			if (tic64x_operand_readers[j].type == optype)
-				break;
-		}
-
-		if (tic64x_operand_readers[j].reader) {
-			tic64x_operand_readers[j].reader(operands[i], insn,
-					tic64x_operand_readers[j].type);
-		} else {
-			as_bad("\"%s\" has unrecognised operand %d",
-				insn->templ->mnemonic, i);
-			return 1;
-		}
-	}
-
-	return 0;
-}
-
 void
 md_assemble(char *line)
 {
@@ -1113,7 +1084,7 @@ md_assemble(char *line)
 	if (apply_conditional(insn))
 		return;
 
-	if (parse_operands(operands, insn))
+	if (beat_instruction_and_operands(operands, insn))
 		return;
 wrapup:
 	/* If this is the start of a new insn packet, dump the contents of
