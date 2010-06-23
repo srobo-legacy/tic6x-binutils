@@ -58,6 +58,8 @@ const pseudo_typeS md_pseudo_table[] =
 	{NULL, 		NULL,			0}
 };
 
+struct tic64x_insn;
+
 struct unitspec {
 	int8_t		unit;		/* Character (ie 'L') or -1 */
 	int8_t		unit_num;	/* 0 -> side 1, 1 -> side 2, or -1 */
