@@ -144,7 +144,7 @@ struct op_handler {
 	enum tic64x_text_operand type1;
 	enum tic64x_text_operand type2;
 	enum tic64x_text_operand type3;
-	const char *name
+	const char *name;
 	opreader *reader;
 	opvalidate *validate;
 	opwrite *write;
@@ -237,7 +237,7 @@ struct tic64x_insn {
 	uint32_t template_validity[MAX_NUM_INSN_TEMPLATES];
 #define VALID_ON_UNIT1		1
 #define VALID_ON_UNIT2		2
-#define VALID_MASK		3
+#define VALID_MASK		(VALID_ON_UNIT1 | VALID_ON_UNIT2)
 #define VALID_USES_XPATH1	4
 #define VALID_USES_XPATH2	8
 #define VALID_USES_DPATH_2	0x10
@@ -1131,9 +1131,8 @@ beat_instruction_and_operands(char **operands, struct tic64x_insn *insn)
 	struct unitspec spec;
 	struct tic64x_op_template *templ, *cur;
 	struct op_handler *handler;
-	int i, idx, ret, flag;
+	int i, idx, ret;
 	uint8_t valid, tmp_byte;
-	int8_t unit;
 	bfd_boolean matched_unit, matched_side, matched_xpath;
 
 	memset(insn->operand_values, 0, sizeof(insn->operand_values));
@@ -1269,8 +1268,8 @@ beat_instruction_and_operands(char **operands, struct tic64x_insn *insn)
 			for (i = 0; i < insn->operands; i++)
 				if (insn->operand_values[i].handler->validate(
 						&insn->operand_values[i],
-						cur->textops[i], insn, TRUE,
-						&spec))
+						cur->textops[i], FALSE, insn,
+						TRUE, &spec))
 					break;
 
 			if (i == insn->operands) { /* Reached end, is valid */
@@ -1282,7 +1281,7 @@ beat_instruction_and_operands(char **operands, struct tic64x_insn *insn)
 				if (cur->flags & TIC64X_OP_FIXED_UNITNO) {
 					if (cur->flags & TIC64X_OP_FIXED_UNIT2){
 						if (spec.unit_num == 0)
-							continue
+							continue;
 					} else {
 						if (spec.unit_num == 1)
 							continue;
@@ -1301,7 +1300,7 @@ beat_instruction_and_operands(char **operands, struct tic64x_insn *insn)
 				}
 
 				insn->template_validity[idx] |= tmp_byte;
-				if (spec.mem_path == 1)
+				if (spec.mem_path == 1) {
 					insn->template_validity[idx] |=
 							VALID_USES_DPATH_2;
 				}
@@ -1333,11 +1332,9 @@ beat_instruction_and_operands(char **operands, struct tic64x_insn *insn)
 						"internal operands\n");
 				}
 
-				insn->template_validity = i;
+				insn->template_validity[idx] |= i;
 			}
 		} /* End of side 1-or-2 loop */
-
-		/* Hurrah */
 	} /* End of templates loop */
 
 	/* This is the point where a bunch of user errors are going to turn
@@ -1351,7 +1348,7 @@ beat_instruction_and_operands(char **operands, struct tic64x_insn *insn)
 	 * error message */
 	/* First, did we find anything valid at all? */
 	for (idx = 0; idx < insn->num_possible_templates; idx++)
-		if ((insn->template_validity[idx] & OPVALID_MASK) == 0)
+		if ((insn->template_validity[idx] & VALID_MASK) == 0)
 			break;
 
 	if (idx != insn->num_possible_templates) {
@@ -1438,12 +1435,12 @@ beat_instruction_and_operands(char **operands, struct tic64x_insn *insn)
 		/* How about the specified side? Also store the xpath flag
 		 * for this side for checking a little later */
 		if (insn->unitspecs.unit_num == 0) {
-			if (!(insn->template_validity[idx] & VALID_ON_UNIT_1))
+			if (!(insn->template_validity[idx] & VALID_ON_UNIT1))
 				continue;
 			valid = insn->template_validity[idx] &
 					VALID_USES_XPATH1;
 		} else if (insn->unitspecs.unit_num == 1) {
-			if (!(insn->template_validity[idx] & VALID_ON_UNIT_2))
+			if (!(insn->template_validity[idx] & VALID_ON_UNIT2))
 				continue;
 			valid = insn->template_validity[idx] &
 					VALID_USES_XPATH2;
@@ -1456,10 +1453,10 @@ beat_instruction_and_operands(char **operands, struct tic64x_insn *insn)
 
 		/* Finally; if the xpath was specified check it concurs with the
 		 * operand parser; and the same if it wasn't specified */
-		if (unitspecs.uses_xpath == 0) {
+		if (insn->unitspecs.uses_xpath == 0) {
 			if (valid != 0)
 				continue;
-		} else if (unitspecs.uses_xpath == 1) {
+		} else if (insn->unitspecs.uses_xpath == 1) {
 			if (valid == 0)
 				continue;
 		} else {
@@ -1472,14 +1469,14 @@ beat_instruction_and_operands(char **operands, struct tic64x_insn *insn)
 		/* Looks like its good. See if the memory path is needed for
 		 * this instruction */
 		if (cur->flags & TIC64X_OP_MEMACCESS) {
-			if (unitspecs.uses_xpath == -1)
+			if (insn->unitspecs.uses_xpath == -1)
 				continue;
 
-			if (unitspecs.mem_path == 0) {
+			if (insn->unitspecs.mem_path == 0) {
 				if (insn->template_validity[idx] &
 							VALID_USES_DPATH_2)
 					continue;
-			} else if (unitspecs.mem_path == 1) {
+			} else if (insn->unitspecs.mem_path == 1) {
 				if (!(insn->template_validity[idx] &
 							VALID_USES_DPATH_2))
 					continue;
@@ -1489,7 +1486,7 @@ beat_instruction_and_operands(char **operands, struct tic64x_insn *insn)
 			}
 		} else {
 			/* did user specify it on a non-data-path insn? */
-			if (unitspecs.uses_xpath != -1)
+			if (insn->unitspecs.uses_xpath != -1)
 				continue;
 		}
 
