@@ -124,24 +124,18 @@ typedef void (opwrite) (struct read_operand *in,
 				enum tic64x_text_operand optype,
 				struct tic64x_insn *insn);
 
-static opreader opread_none;
 static opreader opread_memaccess;
-static opreader opread_memrel15;
 static opreader opread_register;
 static opreader opread_double_register;
 static opreader opread_constant;
 static opreader opread_bfield;
 
-static opvalidate opvalidate_none;
 static opvalidate opvalidate_memaccess;
-static opvalidate opvalidate_memrel15;
 static opvalidate opvalidate_register;
 static opvalidate opvalidate_double_register;
 static opvalidate opvalidate_constant;
 
-static opwrite opwrite_none;
 static opwrite opwrite_memaccess;
-static opwrite opwrite_memrel15;
 static opwrite opwrite_register;
 static opwrite opwrite_double_register;
 static opwrite opwrite_constant;
@@ -1829,18 +1823,6 @@ tic64x_output_insn(struct tic64x_insn *insn, char *out, fragS *frag, int pcoffs)
 }
 
 void
-opread_none(char *line, struct tic64x_insn *insn,
-				enum tic64x_text_operand type)
-{
-
-	UNUSED(line);
-	UNUSED(insn);
-	UNUSED(type);
-	as_bad("Excess operand");
-	return;
-}
-
-void
 opread_memaccess(char *line, struct tic64x_insn *insn,
 			enum tic64x_text_operand type ATTRIBUTE_UNUSED)
 {
@@ -2597,19 +2579,6 @@ opread_bfield(char *line, struct tic64x_insn *insn,
 }
 
 int
-opvalidate_none(struct read_operand *in ATTRIBUTE_UNUSED,
-			bfd_boolean  print_error ATTRIBUTE_UNUSED,
-			enum tic64x_text_operand optype ATTRIBUTE_UNUSED,
-			struct tic64x_insn *insn ATTRIBUTE_UNUSED,
-			bfd_boolean gen_unitspec ATTRIBUTE_UNUSED,
-			struct unitspec *spec ATTRIBUTE_UNUSED)
-{
-
-	as_bad("Attempted to validate excess operand");
-	return 1;
-}
-
-int
 opvalidate_memaccess(struct read_operand *in, bfd_boolean print_error,
 			enum tic64x_text_operand optype,
 			struct tic64x_insn *insn, bfd_boolean gen_unitspec,
@@ -2623,23 +2592,6 @@ opvalidate_memaccess(struct read_operand *in, bfd_boolean print_error,
 	UNUSED(gen_unitspec);
 	UNUSED(spec);
 	as_fatal("Unimplemented opvalidate_memaccess\n");
-	return 1;
-}
-
-int
-opvalidate_memrel15(struct read_operand *in, bfd_boolean print_error,
-			enum tic64x_text_operand optype,
-			struct tic64x_insn *insn, bfd_boolean gen_unitspec,
-			struct unitspec *spec)
-{
-
-	UNUSED(in);
-	UNUSED(print_error);
-	UNUSED(optype);
-	UNUSED(insn);
-	UNUSED(gen_unitspec);
-	UNUSED(spec);
-	as_fatal("Unimplemented opvalidate_memrel15\n");
 	return 1;
 }
 
@@ -2695,18 +2647,6 @@ opvalidate_constant (struct read_operand *in, bfd_boolean print_error,
 }
 
 void
-opwrite_none(struct read_operand *in, enum tic64x_text_operand optype,
-			struct tic64x_insn *insn)
-{
-
-	UNUSED(in);
-	UNUSED(optype);
-	UNUSED(insn);
-	as_bad("Attempted to write out excess operand\n");
-	return;
-}
-
-void
 opwrite_memaccess(struct read_operand *in, enum tic64x_text_operand optype,
 			struct tic64x_insn *insn)
 {
@@ -2715,18 +2655,6 @@ opwrite_memaccess(struct read_operand *in, enum tic64x_text_operand optype,
 	UNUSED(optype);
 	UNUSED(insn);
 	as_fatal("Unimplemented opwrite_memaccess\n");
-	return;
-}
-
-void
-opwrite_memrel15(struct read_operand *in, enum tic64x_text_operand optype,
-			struct tic64x_insn *insn)
-{
-
-	UNUSED(in);
-	UNUSED(optype);
-	UNUSED(insn);
-	as_fatal("Unimplemented opwrite_memrel15\n");
 	return;
 }
 
