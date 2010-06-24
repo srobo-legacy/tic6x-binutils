@@ -1649,7 +1649,7 @@ tic64x_output_insn_packet()
 	 * same execution packet */
 	for (i = 0; i < read_insns_index; i++) {
 		insn = read_insns[i];
-		if (insn->unit != 0 && insn->unit_num != 0) {
+		if (insn->unitspecs.unit != 0 && insn->unitspecs.unit_num != 0){
 #define USEUNIT(a, i, c) do {						\
 				if ((a)[(i)-1] != 0) {			\
 					as_bad("Using unit %C%d more than once"\
@@ -1661,25 +1661,26 @@ tic64x_output_insn_packet()
 				}					\
 			} while (0);
 
-			switch (insn->unit) {
+			switch (insn->unitspecs.unit) {
 			case 'M':
-				USEUNIT(m, insn->unit_num, 'M');
+				USEUNIT(m, insn->unitspecs.unit_num, 'M');
 				break;
 			case 'L':
-				USEUNIT(l, insn->unit_num, 'L');
+				USEUNIT(l, insn->unitspecs.unit_num, 'L');
 				break;
 			case 'S':
-				USEUNIT(s, insn->unit_num, 'S');
+				USEUNIT(s, insn->unitspecs.unit_num, 'S');
 				break;
 			case 'D':
-				USEUNIT(d, insn->unit_num, 'D');
+				USEUNIT(d, insn->unitspecs.unit_num, 'D');
 				break;
 			default:
 				as_fatal("Unrecognised execution unit in "
 					"%s %d", __FILE__, __LINE__);
 #undef USEUNIT
 			}
-		} else if (insn->unit_num != 0 || insn->unit != 0) {
+		} else if (insn->unitspecs.unit_num != 0 ||
+				insn->unitspecs.unit != 0) {
 			as_fatal("Reading insn packet units, found one "
 				"specifier but not the other");
 		}
@@ -1703,8 +1704,8 @@ tic64x_output_insn_packet()
 			else
 				side = 1;
 
-			if (side != insn->unit_num) {
-				insn->unit_num = side;
+			if (side != insn->unitspecs.unit_num) {
+				insn->unitspecs.unit_num = side;
 				tic64x_set_operand(&insn->opcode,
 						tic64x_operand_s,
 						(side == 1) ? 0 : 1, 0);
@@ -1713,9 +1714,9 @@ tic64x_output_insn_packet()
 			/* llvm-generated mv's are also unaware of whether
 			 * the X path should be used, so work that out here */
 			if (insn->mvfail_op2[0] != insn->mvfail_op1[0]){
-				insn->uses_xpath = 1;
+				insn->unitspecs.uses_xpath = 1;
 			} else {
-				insn->uses_xpath = 0;
+				insn->unitspecs.uses_xpath = 0;
 			}
 
 			src2 = tic64x_sym_to_reg(insn->mvfail_op1);
@@ -1740,19 +1741,20 @@ tic64x_output_insn_packet()
 				isxpath = 1;
 			}
 
-			if (insn->unit_num == 0 && insn->unit == 0) {
+			if (insn->unitspecs.unit_num == 0 &&
+						insn->unitspecs.unit == 0) {
 				/* No unit specified, guess */
 				/* Side determined by destination reg */
 				if (dst->num & TIC64X_REG_UNIT2) {
-					insn->unit_num = 2;
+					insn->unitspecs.unit_num = 2;
 				} else {
-					insn->unit_num = 1;
+					insn->unitspecs.unit_num = 1;
 				}
 
 #define USEUNIT(u, n, a) do {						\
 				(u)[(n)] = 1;				\
-				insn->unit = a;				\
-				insn->unit_num = n+1;			\
+				insn->unitspecs.unit = a;		\
+				insn->unitspecs.unit_num = n+1;		\
 			} while (0);
 
 #define GRABPATH(u, a) do {						\
@@ -1767,15 +1769,15 @@ tic64x_output_insn_packet()
 					GRABPATH(d, 'D');
 				}
 
-				if (!isdw && insn->unit == 0) {
+				if (!isdw && insn->unitspecs.unit == 0) {
 					GRABPATH(s, 'S');
 				}
 
-				if (insn->unit == 0) {
+				if (insn->unitspecs.unit == 0) {
 					GRABPATH(l, 'L');
 				}
 
-				if (insn->unit == 0) {
+				if (insn->unitspecs.unit == 0) {
 					as_bad("Can't schedule mv in remaining "
 						"slots");
 					return;
@@ -1784,9 +1786,10 @@ tic64x_output_insn_packet()
 #undef USEUNIT
 			}
 
-			if (insn->unit_num != 0 && insn->unit != 0) {
+			if (insn->unitspecs.unit_num != 0 &&
+						insn->unitspecs.unit != 0) {
 				/* Mkay */
-				switch (insn->unit) {
+				switch (insn->unitspecs.unit) {
 				case 'L':
 					generate_l_mv(insn, isdw);
 					break;
@@ -1809,7 +1812,8 @@ tic64x_output_insn_packet()
 
 				/* If needs be, pump in conditional data */
 				apply_conditional(insn);
-			} else if (insn->unit_num != 0 || insn->unit != 0) {
+			} else if (insn->unitspecs.unit_num != 0 ||
+						insn->unitspecs.unit != 0) {
 				as_fatal("Patching up mv, have partial unit "
 					"specifier, not complete");
 			}
@@ -1850,11 +1854,11 @@ tic64x_output_insn(struct tic64x_insn *insn, char *out, fragS *frag, int pcoffs)
 	/* Side bit specifies execution unit except for memory access, which
 	 * uses 's' for destination side / data path, and y for src/unit no */
 	if (insn->templ->flags & TIC64X_OP_MEMACCESS) {
-		s = (insn->mem_unit_num == 2) ? 1 : 0;
-		y = (insn->unit_num == 2) ? 1 : 0;
+		s = (insn->unitspecs.mem_path == 2) ? 1 : 0;
+		y = (insn->unitspecs.unit_num == 2) ? 1 : 0;
 	} else {
-		s = (insn->unit_num == 2) ? 1 : 0;
-		y = (insn->unit_num == 2) ? 1 : 0;
+		s = (insn->unitspecs.unit_num == 2) ? 1 : 0;
+		y = (insn->unitspecs.unit_num == 2) ? 1 : 0;
 	}
 
 	/* From bottom to top, fixed fields, the other operands */
@@ -2380,9 +2384,9 @@ opread_register(char *line, struct tic64x_insn *insn,
 		 * executing, except when it's memory access. Bleaugh */
 
 		if (insn->templ->flags & TIC64X_OP_MEMACCESS) {
-			if ((insn->mem_unit_num == 2 &&
+			if ((insn->mem_path == 2 &&
 					!(reg->num & TIC64X_REG_UNIT2))
-				|| (insn->mem_unit_num == 1 &&
+				|| (insn->mem_path == 1 &&
 					(reg->num & TIC64X_REG_UNIT2))) {
 				as_bad("Destination register must match data "
 					"path specifier");
