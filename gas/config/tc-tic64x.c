@@ -277,6 +277,8 @@ static struct tic64x_register *tic64x_sym_to_reg(char *name);
 static int find_operand_index(struct tic64x_op_template *templ,
 			enum tic64x_operand_type type);
 
+bfd_boolean beat_instruction_around_the_bush(char **operands,
+			struct tic64x_insn *insn);
 static void tic64x_output_insn(struct tic64x_insn *insn, char *out, fragS *f,
 								int pcoffs);
 
@@ -1068,7 +1070,7 @@ md_assemble(char *line)
 	if (apply_conditional(insn))
 		return;
 
-	if (beat_instruction_and_operands(operands, insn))
+	if (beat_instruction_around_the_bush(operands, insn))
 		return;
 wrapup:
 	/* If this is the start of a new insn packet, dump the contents of
@@ -1126,7 +1128,7 @@ md_after_pass_hook()
  * to modify our view or choice later on when the whole instruction packet
  * gets emitted */
 bfd_boolean
-beat_instruction_and_operands(char **operands, struct tic64x_insn *insn)
+beat_instruction_around_the_bush(char **operands, struct tic64x_insn *insn)
 {
 	struct unitspec spec;
 	struct tic64x_op_template *templ, *cur;
