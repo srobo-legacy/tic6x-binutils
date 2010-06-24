@@ -1387,6 +1387,33 @@ beat_instruction_and_operands(char **operands, struct tic64x_insn *insn)
 		insn->num_possible_templates = 1;
 		return FALSE;
 	} /* end of iterating through instruction templates */
+
+	/* We didn't find any instruction templates that matched the specifiers
+	 * the user put in. There can be many of them, and they can fail for
+	 * many reasons; this makes selecting a particular error nontrivial.
+	 * So we'll report an error based on which template got the closest to
+	 * being accepted */
+
+	if (matched_unit == FALSE) {
+		as_bad("Instruction cannot execute on %C unit\n",
+				insn->unitspecs.unit);
+		return TRUE;
+	}
+
+	if (matched_side == FALSE) {
+		as_bad("Instruction must execute on other side of processor\n");
+		return TRUE;
+	}
+
+	if (matched_xpath == FALSE) {
+		as_bad("'X'path unit specifier incorrectly used or omitted\n");
+		return TRUE;
+	}
+
+	/* Otherwise, the only other reason we could have rejected this is
+	 * because the memory data path specifier was wrong */
+	as_bad("Memory data path specified incorrectly used or omitted\n");
+	return TRUE;
 }
 
 
