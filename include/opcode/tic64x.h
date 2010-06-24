@@ -157,7 +157,10 @@ struct tic64x_op_template {
 					 * inserting into opcode - for some
 					 * things like mvkh and mvkl, this is
 					 * entirely valid */
-#define TIC64X_OP_ALL_UNITS     0x400000/* Instruction can execute on any unit*/
+
+/* Instruction can execute on any unit - no point having it as a special flag*/
+#define TIC64X_OP_ALL_UNITS (TIC64X_OP_UNIT_S | TIC64X_OP_UNIT_L |\
+				TIC64X_OP_UNIT_D | TIC64X_OP_UNIT_M)
 
 
 #define TIC64X_MAX_TXT_OPERANDS	3
