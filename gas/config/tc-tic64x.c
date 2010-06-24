@@ -59,6 +59,7 @@ const pseudo_typeS md_pseudo_table[] =
 };
 
 struct tic64x_insn;
+struct op_handler;
 
 struct unitspec {
 	int8_t		unit;		/* Character (ie 'L') or -1 */
@@ -91,7 +92,7 @@ struct opdetail_constant {
 };
 
 struct read_operand {
-	enum tic64x_text_operand type;
+	struct op_handler *handler;
 	union {
 		struct opdetail_memaccess mem;
 		struct opdetail_register reg;
@@ -145,7 +146,7 @@ static opwrite opwrite_register;
 static opwrite opwrite_double_register;
 static opwrite opwrite_constant;
 
-struct {
+struct op_handler {
 	enum tic64x_text_operand type1;
 	enum tic64x_text_operand type2;
 	enum tic64x_text_operand type3;
