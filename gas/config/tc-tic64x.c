@@ -1126,8 +1126,9 @@ beat_instruction_and_operands(char **operands, struct tic64x_insn *insn)
 	struct tic64x_op_template *templ, *cur;
 	struct op_handler *handler;
 	int i, idx, ret, flag;
-	uint8_t validity, tmp_byte;
+	uint8_t valid, tmp_byte;
 	int8_t unit;
+	bfd_boolean matched_unit, matched_side, matched_xpath;
 
 	memset(insn->operand_values, 0, sizeof(insn->operand_values));
 
@@ -1287,6 +1288,105 @@ beat_instruction_and_operands(char **operands, struct tic64x_insn *insn)
 
 		/* Hurrah */
 	} /* End of templates loop */
+
+	/* Bonus points! If the user added a unit specifier, check whether
+	 * any of the matching templates can be used with those constraints */
+	/* If they didn't, we're good */
+	if (insn->unitspecs.unit == -1)
+		return FALSE;
+
+	matched_unit = matched_side = matched_xpath = FALSE;
+	for (idx = 0; idx < insn->num_possible_templates; idx++) {
+		cur = insn->possible_templates[idx];
+
+		switch (insn->unitspecs.unit) {
+		case 'S':
+			i = TIC64X_OP_UNIT_S;
+			break;
+		case 'L':
+			i = TIC64X_OP_UNIT_L;
+			break;
+		case 'D':
+			i = TIC64X_OP_UNIT_D;
+			break;
+		case 'M':
+			i = TIC64X_OP_UNIT_M;
+			break;
+		default:
+			as_fatal("Invalid unit specifier in internal unitspec "
+								"record\n");
+		}
+
+		/* Does this template run on the specified unit? */
+		if (!(cur->flags & i))
+			continue;
+
+		matched_unit = TRUE;
+
+		/* How about the specified side? Also store the xpath flag
+		 * for this side for checking a little later */
+		if (insn->unitspecs.unit_num == 0) {
+			if (!(insn->template_validity[idx] & VALID_ON_UNIT_1))
+				continue;
+			valid = insn->template_validity[idx] &
+					VALID_USES_XPATH1;
+		} else if (insn->unitspecs.unit_num == 1) {
+			if (!(insn->template_validity[idx] & VALID_ON_UNIT_2))
+				continue;
+			valid = insn->template_validity[idx] &
+					VALID_USES_XPATH2;
+		} else {
+			as_fatal("Invalid side specifier in internal unitspec "
+								"record\n");
+		}
+
+		matched_side = TRUE;
+
+		/* Finally; if the xpath was specified check it concurs with the
+		 * operand parser; and the same if it wasn't specified */
+		if (unitspecs.uses_xpath == 0) {
+			if (valid != 0)
+				continue;
+		} else if (unitspecs.uses_xpath == 1) {
+			if (valid == 0)
+				continue;
+		} else {
+			as_fatal("Invalid xpath specifier in internal unitspec "
+								"record\n");
+		}
+
+		matched_xpath = TRUE;
+
+		/* Looks like its good. See if the memory path is needed for
+		 * this instruction */
+		if (cur->flags & TIC64X_OP_MEMACCESS) {
+			if (unitspecs.uses_xpath == -1)
+				continue;
+
+			if (unitspecs.mem_path == 0) {
+				if (insn->template_validity[idx] &
+							VALID_USES_DPATH_2)
+					continue;
+			} else if (unitspecs.mem_path == 1) {
+				if (!(insn->template_validity[idx] &
+							VALID_USES_DPATH_2))
+					continue;
+			} else {
+				as_fatal("Invalid memory path specifier in "
+						"internal unitspec record\n");
+			}
+		} else {
+			/* did user specify it on a non-data-path insn? */
+			if (unitspecs.uses_xpath != -1)
+				continue;
+		}
+
+		/* Success; now eliminate all other possible instructions */
+		insn->template_validity[0] = insn->template_validity[idx];
+		insn->possible_templates[0] = cur;
+		insn->num_possible_templates = 1;
+		return FALSE;
+	} /* end of iterating through instruction templates */
 }
 
 
