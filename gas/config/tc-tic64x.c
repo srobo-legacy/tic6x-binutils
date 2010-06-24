@@ -1129,9 +1129,12 @@ md_after_pass_hook()
 bfd_boolean
 beat_instruction_and_operands(char **operands, struct tic64x_insn *insn)
 {
+	struct unitspec spec;
 	struct tic64x_op_template *templ, *cur;
 	struct op_handler *handler;
-	int i, idx, ret;
+	int i, idx, ret, flag;
+	uint8_t validity, tmp_byte;
+	int8_t unit;
 
 	memset(insn->operand_values, 0, sizeof(insn->operand_values));
 
@@ -1225,8 +1228,107 @@ beat_instruction_and_operands(char **operands, struct tic64x_insn *insn)
 	 * thats fine too. We'll decide on what particular form is chosen when
 	 * the instruction packet gets emitted */
 
-#error ENOTYET
-}
+	for (idx = 0; idx < insn->num_possible_templates; idx++) {
+
+		insn->template_validity[idx] = 0;
+		cur = insn->possible_templates[idx];
+
+		for (i = 0; i < 4; i++) {
+			validity = 0;
+
+			switch (i) {
+			case 0:
+				flag = TIC64X_OP_UNIT_S;
+				unit = 'S';
+				break;
+			case 1:
+				flag = TIC64X_OP_UNIT_L;
+				unit = 'L';
+				break;
+			case 2:
+				flag = TIC64X_OP_UNIT_D;
+				unit = 'D';
+				break;
+			case 3:
+				flag = TIC64X_OP_UNIT_M;
+				unit = 'M';
+				break;
+			}
+
+			/* If template doesn't support executing on this unit,
+			 * ditch it immediately */
+			if (!(cur->flags & flag) &&
+					!(cur->flags & TIC64X_OP_ALL_UNITS))
+				continue;
+
+			/* The important part: work out what units this will
+			 * work on, and what extra constraints there are */
+			spec.unit = unit;
+			spec.unit_num = 0;
+			spec.mem_path = spec.uses_xpath = -1;
+
+			for (i = 0; i < insn->operands; i++)
+				if (insn->operand_values[i].handler->validate(
+						&insn->operand_values[i],
+						cur->textops[i], insn, TRUE,
+						&spec))
+					break;
+
+			if (i == insn->operands) { /* Reached end, is valid */
+
+				/* Final check - is it invalid on this side? */
+				if ((cur->flags & TIC64X_OP_FIXED_UNITNO) &&
+					(cur->flags & TIC64X_OP_FIXED_UNIT2)) {
+					; /* Fixed on unit 2, not allowed on 1*/
+				} else {
+					tmp_byte = VALID_FOR_SIDE;
+					tmp_byte |= (spec->xpath != 1) ? 0
+							: VALID_USES_XPATH;
+					if ((cur->flags & TIC64X_OP_MEMACCESS)
+							&& spec->mem_path == 1)
+						tmp_byte |= VALID_USES_DPATH_2;
+
+					validity = SET_SIDE_VALIDITY(tmp_byte,
+							SIDE_1_VALIDITY);
+				}
+			}
+
+			/* And now we do /the same thing/ for side 2. Could loop
+			 * but there are threeish things that have to be hard
+			 * coded right now */
+
+			spec.unit_num = 1;
+			spec.mem_path = spec.uses_xpath = -1;
+
+			for (i = 0; i < insn->operands; i++)
+				if (insn->operand_values[i].handler->validate(
+						&insn->operand_values[i],
+						cur->textops[i], insn, TRUE,
+						&spec))
+					break;
+
+			if (i == insn->operands) { /* Reached end, is valid */
+
+				/* Final check - is it invalid on this side? */
+				if ((cur->flags & TIC64X_OP_FIXED_UNITNO) &&
+					!(cur->flags & TIC64X_OP_FIXED_UNIT2)) {
+					; /* Fixed on unit 1, not allowed on 2*/
+				} else {
+					tmp_byte = VALID_FOR_SIDE;
+					tmp_byte |= (spec->xpath != 1) ? 0
+							: VALID_USES_XPATH;
+					if ((cur->flags & TIC64X_OP_MEMACCESS)
+							&& spec->mem_path == 1)
+						tmp_byte |= VALID_USES_DPATH_2;
+
+					validity = SET_SIDE_VALIDITY(tmp_byte,
+							SIDE_2_VALIDITY);
+				}
+			}
+
+			/* Hurrah */
+		} /* End of unit loop */
+	} /* End of templates loop */
 }
 
 
