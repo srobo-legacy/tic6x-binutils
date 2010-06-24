@@ -1548,7 +1548,7 @@ generate_l_mv(struct tic64x_insn *insn, int isdw)
 		operands[0] = insn->mvfail_op1;
 		operands[1] = buffer;
 		operands[2] = insn->mvfail_op2;
-		parse_operands(operands, insn);
+		beat_instruction_around_the_bush(operands, insn);
 	} else {
 		insn->templ = hash_find(tic64x_ops, "or");
 		while (insn->templ->opcode != 0x8F0 &&
@@ -1563,7 +1563,7 @@ generate_l_mv(struct tic64x_insn *insn, int isdw)
 		operands[0] = buffer;
 		operands[1] = insn->mvfail_op1;
 		operands[2] = insn->mvfail_op2;
-		parse_operands(operands, insn);
+		beat_instruction_around_the_bush(operands, insn);
 		/* munge operands */
 	}
 
@@ -1588,7 +1588,7 @@ generate_d_mv(struct tic64x_insn *insn)
 	operands[0] = buffer;
 	operands[1] = insn->mvfail_op1;
 	operands[2] = insn->mvfail_op2;
-	parse_operands(operands, insn);
+	beat_instruction_around_the_bush(operands, insn);
 }
 
 void
