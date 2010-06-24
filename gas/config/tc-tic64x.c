@@ -1092,6 +1092,116 @@ md_after_pass_hook()
 	return;
 }
 
+/* This is the beef of assembling; here we work out what operands are, and
+ * use that info to decide what instruction (out of possibly many) we're going
+ * to pick. Crucially, we're discovering whether there *is* a valid
+ * configuration for the instruction we're parsing, not which one. We may need
+ * to modify our view or choice later on when the whole instruction packet
+ * gets emitted */
+bfd_boolean
+beat_instruction_and_operands(char **operands, struct tic64x_insn *insn)
+{
+	struct tic64x_op_template *templ, *cur;
+	struct op_handler *handler;
+	int i, idx, ret;
+
+	memset(insn->operand_values, 0, sizeof(insn->operand_values));
+
+	/* So: for every operand in the list, we try parsing it until we find
+	 * a reader that accepts it. If we don't find one, iterate back through
+	 * looking for a partial match that can print a useful error. If no
+	 * partial matches, scream. */
+	i = 0;
+	while (operands[i] != NULL) {
+
+		for (idx = 0; idx < NUM_OPERAND_HANDLERS; idx++) {
+			ret = operand_handlers[idx].reader(operands[i],
+					FALSE, &insn->operand_values[i]);
+
+			if (ret == OPREADER_OK)
+				break;
+		}
+
+		/* So; did we find a match to this operand? */
+		if (ret != OPREADER_OK) {
+			/* No; Look for a partial match */
+			for (idx = 0; idx < NUM_OPERAND_HANDLERS; idx++) {
+				ret = operand_handlers[idx].reader(operands[i],
+						FALSE,&insn->operand_values[i]);
+
+				if (ret == OPREADER_PARTIAL_MATCH) {
+					operand_handlers[idx].reader(operands[i]
+						,TRUE,&insn->operand_values[i]);
+					return TRUE;
+				}
+			}
+
+			/* No partial match at all */
+			as_bad("Unrecognized operand \"%s\"", operands[i]);
+			return TRUE;
+		}
+
+		/* Move along to next operand */
+		insn->operand_values[i].handler = &operand_handlers[idx];
+		i++;
+	}
+
+	insn->operands = i;
+
+	/* Yay, we now have some operands. Now for the delicious task of working
+	 * out which one to pick from the bunch. First, lets actually make a
+	 * list of all the different templates that _might_ actually match,
+	 * then compare their operands against the possible operands we just
+	 * read, and store the resulting set. insn->templ points at the first
+	 * instruction in the list of them that we're looking at */
+
+	/* Store the first instruction in the list so we can compare names */
+	templ = insn->templ;
+	cur = templ;
+	while (1) {
+		/* Check we haven't gone past the block of instructions that
+		 * we're interested in */
+		if (cur->mnemonic == NULL ||
+					strcmp(templ->mnemonic, cur->mnemonic))
+			break;
+
+		for (i = 0; i < insn->operands; i++) {
+			handler = insn->operand_values[i].handler;
+			if (cur->textops[i] != handler->type1 &&
+				cur->textops[i] != handler->type2 &&
+				cur->textops[i] != handler->type3)
+				break;
+		}
+
+		if (i == insn->operands) { /* It matched */
+			if (insn->num_possible_templates + 1 ==
+							MAX_NUM_INSN_TEMPLATES)
+				as_fatal("More than %d potential instructions "
+					"when parsing %s, increase max template"
+					" cap\n", MAX_NUM_INSN_TEMPLATES,
+					cur->mnemonic);
+
+			insn->possible_templates[insn->num_possible_templates]
+				= cur;
+			insn->num_possible_templates++;
+		}
+	}
+
+	/* We now have a gigantic list of all the instruction templates that
+	 * might match the _form_ of the current instruction. We now iterate
+	 * through each, trying a variety of specifier combinations to see how
+	 * this instruction could be formed, and what options it would use in
+	 * that case.
+	 * Crucially, at this stage all we care about is that there is _one_
+	 * valid way to output this instruction. If there are more than one,
+	 * thats fine too. We'll decide on what particular form is chosen when
+	 * the instruction packet gets emitted */
+
+#error ENOTYET
+}
+}
+
+
 void
 generate_l_mv(struct tic64x_insn *insn, int isdw)
 {
