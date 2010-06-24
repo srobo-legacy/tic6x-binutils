@@ -150,6 +150,7 @@ struct op_handler {
 	enum tic64x_text_operand type1;
 	enum tic64x_text_operand type2;
 	enum tic64x_text_operand type3;
+	const char *name
 	opreader *reader;
 	opvalidate *validate;
 	opwrite *write;
@@ -158,6 +159,7 @@ struct op_handler {
 	tic64x_optxt_memaccess,
 	tic64x_optxt_memrel15,
 	tic64x_optxt_none,
+	"memacc",
 	opread_memaccess,
 	opvalidate_memaccess,
 	opwrite_memaccess
@@ -166,6 +168,7 @@ struct op_handler {
 	tic64x_optxt_dstreg,
 	tic64x_optxt_srcreg1,
 	tic64x_optxt_srcreg2,
+	"reg",
 	opread_register,
 	opvalidate_register,
 	opwrite_register
@@ -174,6 +177,7 @@ struct op_handler {
 	tic64x_optxt_dwdst,
 	tic64x_optxt_dwsrc,
 	tic64x_optxt_dwsrc2,
+	"dwreg",
 	opread_double_register,
 	opvalidate_double_register,
 	opwrite_double_register
@@ -182,6 +186,7 @@ struct op_handler {
 	tic64x_optxt_uconstant,
 	tic64x_optxt_sconstant,
 	tic64x_optxt_nops,
+	"const",
 	opread_constant,
 	opvalidate_constant,
 	opwrite_constant
