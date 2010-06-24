@@ -264,23 +264,16 @@ size_t md_longopts_size = sizeof(md_longopts);
 
 const char *md_shortopts = "";
 
+/* Hash tables to store various mappings of names -> info */
 static struct hash_control *tic64x_ops;
 static struct hash_control *tic64x_reg_names;
 static struct hash_control *tic64x_subsyms;
+
+/* Data picked up by the pre-md-assemble hook about the incoming instruction */
 int tic64x_line_had_parallel_prefix;
 int tic64x_line_had_cond;
 int tic64x_line_had_nz_cond;
 struct tic64x_register *tic64x_line_had_cond_reg;
-
-static char *tic64x_parse_expr(char *s, expressionS *exp);
-static struct tic64x_register *tic64x_sym_to_reg(char *name);
-static int find_operand_index(struct tic64x_op_template *templ,
-			enum tic64x_operand_type type);
-
-bfd_boolean beat_instruction_around_the_bush(char **operands,
-			struct tic64x_insn *insn);
-static void tic64x_output_insn(struct tic64x_insn *insn, char *out, fragS *f,
-								int pcoffs);
 
 /* So, with gas at the moment, we can't detect the end of an instruction
  * packet until there's been a line without a || at the start. And we can't
@@ -295,7 +288,18 @@ static fragS *read_insns_frags[8];
 static segT packet_seg;
 static int packet_subseg;
 
+
+
 static void tic64x_output_insn_packet(void);
+static char *tic64x_parse_expr(char *s, expressionS *exp);
+static struct tic64x_register *tic64x_sym_to_reg(char *name);
+static int find_operand_index(struct tic64x_op_template *templ,
+			enum tic64x_operand_type type);
+
+bfd_boolean beat_instruction_around_the_bush(char **operands,
+			struct tic64x_insn *insn);
+static void tic64x_output_insn(struct tic64x_insn *insn, char *out, fragS *f,
+								int pcoffs);
 static int read_execution_unit(char **curline, struct unitspec *spec);
 static void generate_d_mv(struct tic64x_insn *insn);
 static void generate_l_mv(struct tic64x_insn *insn, int isdw);
