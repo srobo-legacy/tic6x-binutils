@@ -222,29 +222,22 @@ struct tic64x_insn {
 
 	/* So, we have a bunch of possible templates, but need to know what
 	 * combination of unit specifiers they are valid for: IE, which sides
-	 * they'll run on, what units, whether they use the X path in that
-	 * configuration, and so forth. We record this data with a 32 bit
-	 * bitfield; split into 8 bits for each unit, then four bits for each
-	 * side within that unit. Using those four bits we indicate 1) if using
-	 * this unit/side is feasable, 2) whether the xpath will be used in this
-	 * configuration, 3) if the memory data path is used in this insn,
-	 * whether it uses side 1 or 2. The fouth bit is unused */
+	 * they'll run on and whether they use the X path in that configuration.
+	 * Which unit it'll run on is specified in the template flags. Insns
+	 * where the unit it runs in makes a difference get a different template
+	 * altogether. */
+	/* The actual data we store is the following: Two bits indicate whether
+	 * the template is valid on each of side 1 or two; another two bits
+	 * dictate whether the xpath is used in this configuration. A fifth bit
+	 * determines whether this insn uses the memory data path on side one
+	 * or two; it's only valid if the TIC64X_OP_MEMACCESS flag is set in
+	 * the template flags */
 	uint32_t template_validity[MAX_NUM_INSN_TEMPLATES];
-#define GET_UNIT_VALIDITY(val, shift) (((val) >> (shift)) & 0xFF)
-#define SET_UNIT_VALIDITY(val, shift) ((val) << (shift))
-#define UNIT_S_VALIDITY		0
-#define UNIT_L_VALIDITY		8
-#define UNIT_D_VALIDITY		16
-#define UNIT_M_VALIDITY		24
-
-#define GET_SIDE_VALIDITY(val, shift) (((val) >> (shift)) & 0xF)
-#define SET_SIDE_VALIDITY(val, shift) ((val) << (shift))
-#define SIDE_1_VALIDITY		0
-#define SIDE_2_VALIDITY		4
-
-#define VALID_FOR_SIDE		1
-#define VALID_USES_XPATH	2
-#define VALID_USES_DPATH_2	4
+#define VALID_ON_UNIT1		1
+#define VALID_ON_UNIT2		2
+#define VALID_USES_XPATH1	4
+#define VALID_USES_XPATH2	8
+#define VALID_USES_DPATH_2	0x10
 
 };
 
