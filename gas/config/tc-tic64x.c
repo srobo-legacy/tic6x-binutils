@@ -231,12 +231,19 @@ struct tic64x_insn {
 	 * determines whether this insn uses the memory data path on side one
 	 * or two; it's only valid if the TIC64X_OP_MEMACCESS flag is set in
 	 * the template flags */
+	/* ALSO: some flags indicating where a template registered an error
+	 * in validation (say, const too large, register on wrong side, etc).
+	 * This simplifies decisions on what error to print */
 	uint32_t template_validity[MAX_NUM_INSN_TEMPLATES];
 #define VALID_ON_UNIT1		1
 #define VALID_ON_UNIT2		2
+#define VALID_MASK		3
 #define VALID_USES_XPATH1	4
 #define VALID_USES_XPATH2	8
 #define VALID_USES_DPATH_2	0x10
+#define NOTVALID_OP1		0x20
+#define NOTVALID_OP2		0x40
+#define NOTVALID_OP3		0x80
 
 };
 
@@ -1310,7 +1317,24 @@ beat_instruction_and_operands(char **operands, struct tic64x_insn *insn)
 							"register handler did "
 							"not specify which side"
 							" data path is used");
-			} /* end of matched-all-operands */
+			} else { /* If we didn't match an operand... */
+				switch (i) {
+				case 0:
+					i = NOTVALID_OP1;
+					break;
+				case 1:
+					i = NOTVALID_OP2;
+					break;
+				case 2:
+					i = NOTVALID_OP3;
+					break;
+				default:
+					as_fatal("Can't have more than 3 "
+						"internal operands\n");
+				}
+
+				insn->template_validity = i;
+			}
 		} /* End of side 1-or-2 loop */
 
 		/* Hurrah */
