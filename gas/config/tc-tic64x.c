@@ -1340,6 +1340,67 @@ beat_instruction_and_operands(char **operands, struct tic64x_insn *insn)
 		/* Hurrah */
 	} /* End of templates loop */
 
+	/* This is the point where a bunch of user errors are going to turn
+	 * up: registers on the wrong side, constants that are too big, memory
+	 * offsets that are too large or won't scale. Yet again it's nontrival
+	 * to work out what error to print, because we don't know what form the
+	 * user ultimately wanted. So, go back through operands, finding the
+	 * instruction that best matches before an error occurs: IE, how far can
+	 * we get into the operand list before finding an error. When that's
+	 * found, first remaning template is used to validate (and print the
+	 * error message */
+	/* First, did we find anything valid at all? */
+	for (idx = 0; idx < insn->num_possible_templates; idx++)
+		if ((insn->template_validity[idx] & OPVALID_MASK) == 0)
+			break;
+
+	if (idx != insn->num_possible_templates) {
+		/* So an error occured; find an operand to print the error for*/
+
+		/* Try final operand... */
+		for (idx = 0; idx < insn->num_possible_templates; idx++)
+			if (insn->template_validity[idx] & NOTVALID_OP3)
+				break;
+
+		/* Otherwise second operand */
+		if (idx == insn->num_possible_templates)
+			for (idx = 0; idx < insn->num_possible_templates; idx++)
+				if (insn->template_validity[idx] & NOTVALID_OP2)
+					break;
+
+		/* Otherwise the first */
+		if (idx == insn->num_possible_templates)
+			for (idx = 0; idx < insn->num_possible_templates; idx++)
+				if (insn->template_validity[idx] & NOTVALID_OP1)
+					break;
+
+		if (idx == insn->num_possible_templates)
+			as_fatal("No valid instruction templates found, but no "
+				"invalid operands found either - internal error"
+				"\n");
+
+		cur = insn->possible_templates[idx];
+		/* OK, we have a template to play with. Which instruction? */
+		if (insn->template_validity[idx] & NOTVALID_OP3)
+			i = 2;
+		else if (insn->template_validity[idx] & NOTVALID_OP2)
+			i = 1;
+		else
+			i = 0;
+
+		/* Call validator, permit it to print error */
+		spec.unit = spec.unit_num = spec.mem_path = spec.uses_xpath =-1;
+		if (!insn->operand_values[i].handler->validate(
+				&insn->operand_values[i], cur->textops[i], TRUE,
+				insn, FALSE, &spec))
+			as_fatal("Validator for %s marked operand invalide, but"
+				"then changed its mind; internal error\n",
+				insn->operand_values[i].handler->name);
+
+		/* kdone */
+		return TRUE;
+	}
+
 	/* Bonus points! If the user added a unit specifier, check whether
 	 * any of the matching templates can be used with those constraints */
 	/* If they didn't, we're good */
