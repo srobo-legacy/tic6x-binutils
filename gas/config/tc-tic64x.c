@@ -1217,6 +1217,33 @@ beat_instruction_and_operands(char **operands, struct tic64x_insn *insn)
 		}
 	}
 
+	/* If nothing matched at all, bail and inform the user. Picking the
+	 * error here is nontrivial, because although we've correctly parsed
+	 * all the operands, it doesn't match any of the shapes we expect.
+	 * Dumping all the shapes we might have accepted is unacceptably verbose
+	 * (unless perhaps the user askes for it; future feature?), so let's
+	 * print out what operand form we were looking for and let the user
+	 * work out what's wrong */
+	if (insn->num_possible_templates == 0) {
+		char message[128];
+
+		sprintf(message, "No instruction matched format \"%s",
+						insn->templ->mnemonic);
+
+		/* Chance of buffer overflow is nil while we're limited to
+		 * three operands and their names are less than ~30 chars */
+		for (i = 0; i < insn->operands; i++) {
+			strcat(message, " ");
+			strcat(message, insn->operand_values->handler->name);
+			if (i != insn->operands - 1)
+				strcat(message, ",");
+		}
+
+		strcat(message, "\"");
+		as_bad(message);
+		return FALSE;
+	}
+
 	/* We now have a gigantic list of all the instruction templates that
 	 * might match the _form_ of the current instruction. We now iterate
 	 * through each, trying a variety of specifier combinations to see how
