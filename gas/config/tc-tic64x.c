@@ -1610,7 +1610,7 @@ generate_s_mv(struct tic64x_insn *insn)
 	operands[0] = buffer;
 	operands[1] = insn->mvfail_op1;
 	operands[2] = insn->mvfail_op2;
-	parse_operands(operands, insn);
+	beat_instruction_around_the_bush(operands, insn);
 }
 
 void
