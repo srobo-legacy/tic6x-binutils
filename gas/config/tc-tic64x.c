@@ -1226,40 +1226,11 @@ beat_instruction_and_operands(char **operands, struct tic64x_insn *insn)
 		insn->template_validity[idx] = 0;
 		cur = insn->possible_templates[idx];
 
-		for (i = 0; i < 4; i++) {
-			validity = 0;
+		/* The important part: work out what side this will
+		 * work on, and what extra constraints there are */
+		spec.unit = spec.mem_path = spec.uses_xpath = -1;
 
-			switch (i) {
-			case 0:
-				flag = TIC64X_OP_UNIT_S;
-				unit = 'S';
-				break;
-			case 1:
-				flag = TIC64X_OP_UNIT_L;
-				unit = 'L';
-				break;
-			case 2:
-				flag = TIC64X_OP_UNIT_D;
-				unit = 'D';
-				break;
-			case 3:
-				flag = TIC64X_OP_UNIT_M;
-				unit = 'M';
-				break;
-			}
-
-			/* If template doesn't support executing on this unit,
-			 * ditch it immediately */
-			if (!(cur->flags & flag) &&
-					!(cur->flags & TIC64X_OP_ALL_UNITS))
-				continue;
-
-			/* The important part: work out what units this will
-			 * work on, and what extra constraints there are */
-			spec.unit = unit;
-			spec.unit_num = 0;
-			spec.mem_path = spec.uses_xpath = -1;
-
+		for (spec.unit_num = 0; spec.unit_num < 2; spec.unit_num++) {
 			for (i = 0; i < insn->operands; i++)
 				if (insn->operand_values[i].handler->validate(
 						&insn->operand_values[i],
@@ -1269,58 +1240,52 @@ beat_instruction_and_operands(char **operands, struct tic64x_insn *insn)
 
 			if (i == insn->operands) { /* Reached end, is valid */
 
-				/* Final check - is it invalid on this side? */
-				if ((cur->flags & TIC64X_OP_FIXED_UNITNO) &&
-					(cur->flags & TIC64X_OP_FIXED_UNIT2)) {
-					; /* Fixed on unit 2, not allowed on 1*/
-				} else {
-					tmp_byte = VALID_FOR_SIDE;
-					tmp_byte |= (spec->xpath != 1) ? 0
-							: VALID_USES_XPATH;
-					if ((cur->flags & TIC64X_OP_MEMACCESS)
-							&& spec->mem_path == 1)
-						tmp_byte |= VALID_USES_DPATH_2;
-
-					validity = SET_SIDE_VALIDITY(tmp_byte,
-							SIDE_1_VALIDITY);
+				/* Final check - is this template fixed on one
+				 * side of the processor, and is that the
+				 * opposite side to the one we're checking right
+				 * now? */
+				if (cur->flags & TIC64X_OP_FIXED_UNITNO) {
+					if (cur->flags & TIC64X_OP_FIXED_UNIT2){
+						if (spec.unit_num == 0)
+							continue
+					} else {
+						if (spec.unit_num == 1)
+							continue;
+					}
 				}
-			}
 
-			/* And now we do /the same thing/ for side 2. Could loop
-			 * but there are threeish things that have to be hard
-			 * coded right now */
+				if (spec.unit_num == 0) {
+					tmp_byte = VALID_ON_UNIT1;
+					if (spec.uses_xpath == 1)
+						tmp_byte |= VALID_USES_XPATH1;
 
-			spec.unit_num = 1;
-			spec.mem_path = spec.uses_xpath = -1;
-
-			for (i = 0; i < insn->operands; i++)
-				if (insn->operand_values[i].handler->validate(
-						&insn->operand_values[i],
-						cur->textops[i], insn, TRUE,
-						&spec))
-					break;
-
-			if (i == insn->operands) { /* Reached end, is valid */
-
-				/* Final check - is it invalid on this side? */
-				if ((cur->flags & TIC64X_OP_FIXED_UNITNO) &&
-					!(cur->flags & TIC64X_OP_FIXED_UNIT2)) {
-					; /* Fixed on unit 1, not allowed on 2*/
 				} else {
-					tmp_byte = VALID_FOR_SIDE;
-					tmp_byte |= (spec->xpath != 1) ? 0
-							: VALID_USES_XPATH;
-					if ((cur->flags & TIC64X_OP_MEMACCESS)
-							&& spec->mem_path == 1)
-						tmp_byte |= VALID_USES_DPATH_2;
-
-					validity = SET_SIDE_VALIDITY(tmp_byte,
-							SIDE_2_VALIDITY);
+					tmp_byte = VALID_ON_UNIT2;
+					if (spec.uses_xpath == 1)
+						tmp_byte |= VALID_USES_XPATH2;
 				}
-			}
 
-			/* Hurrah */
-		} /* End of unit loop */
+				insn->template_validity[idx] |= tmp_byte;
+				if (spec.mem_path == 1)
+					insn->template_validity[idx] |=
+							VALID_USES_DPATH_2;
+				}
+
+				/* Sanity check - to ensure the use dpath 2...
+				 * indicator flag is valid for insns with
+				 * TIC64X_OP_MEMACCESS set, ensure validator
+				 * handler actually set the mem_path field */
+				if (cur->flags & TIC64X_OP_MEMACCESS)
+					if (spec.mem_path == -1)
+						as_fatal("Memory access insn "
+							"encountered, but "
+							"register handler did "
+							"not specify which side"
+							" data path is used");
+			} /* end of matched-all-operands */
+		} /* End of side 1-or-2 loop */
+
+		/* Hurrah */
 	} /* End of templates loop */
 }
 
