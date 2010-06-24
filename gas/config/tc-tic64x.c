@@ -1184,6 +1184,7 @@ beat_instruction_and_operands(char **operands, struct tic64x_insn *insn)
 	 * then compare their operands against the possible operands we just
 	 * read, and store the resulting set. insn->templ points at the first
 	 * instruction in the list of them that we're looking at */
+	insn->num_possible_templates = 0;
 
 	/* Store the first instruction in the list so we can compare names */
 	templ = insn->templ;
