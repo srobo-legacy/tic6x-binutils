@@ -219,6 +219,33 @@ struct tic64x_insn {
 #define MAX_NUM_INSN_TEMPLATES 16
 	int num_possible_templates;
 	struct tic64x_op_template *possible_templates[MAX_NUM_INSN_TEMPLATES];
+
+	/* So, we have a bunch of possible templates, but need to know what
+	 * combination of unit specifiers they are valid for: IE, which sides
+	 * they'll run on, what units, whether they use the X path in that
+	 * configuration, and so forth. We record this data with a 32 bit
+	 * bitfield; split into 8 bits for each unit, then four bits for each
+	 * side within that unit. Using those four bits we indicate 1) if using
+	 * this unit/side is feasable, 2) whether the xpath will be used in this
+	 * configuration, 3) if the memory data path is used in this insn,
+	 * whether it uses side 1 or 2. The fouth bit is unused */
+	uint32_t template_validity[MAX_NUM_INSN_TEMPLATES];
+#define GET_UNIT_VALIDITY(val, shift) (((val) >> (shift)) & 0xFF)
+#define SET_UNIT_VALIDITY(val, shift) ((val) << (shift))
+#define UNIT_S_VALIDITY		0
+#define UNIT_L_VALIDITY		8
+#define UNIT_D_VALIDITY		16
+#define UNIT_M_VALIDITY		24
+
+#define GET_SIDE_VALIDITY(val, shift) (((val) >> (shift)) & 0xF)
+#define SET_SIDE_VALIDITY(val, shift) ((val) << (shift))
+#define SIDE_1_VALIDITY		0
+#define SIDE_2_VALIDITY		4
+
+#define VALID_FOR_SIDE		1
+#define VALID_USES_XPATH	2
+#define VALID_USES_DPATH_2	4
+
 };
 
 const char comment_chars[] = ";";
