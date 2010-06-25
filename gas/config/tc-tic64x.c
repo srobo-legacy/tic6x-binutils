@@ -311,6 +311,7 @@ struct resource_rec {
 };
 
 
+static bfd_boolean pick_units_for_insn_packet(struct resource_rec *res);
 static void tic64x_output_insn_packet(void);
 static char *tic64x_parse_expr(char *s, expressionS *exp);
 static struct tic64x_register *tic64x_sym_to_reg(char *name);
@@ -1636,6 +1637,60 @@ generate_s_mv(struct tic64x_insn *insn)
 	operands[1] = insn->mvfail_op1;
 	operands[2] = insn->mvfail_op2;
 	beat_instruction_around_the_bush(operands, insn);
+}
+
+bfd_boolean
+pick_units_for_insn_packet(struct resource_rec *res)
+{
+	struct tic64x_insn *insn;
+	struct tic64x_op_template *templ;
+	int i, j, idx, flag;
+	uint8_t use1, use2;
+
+	for (i = 0; i < read_insns_index; i++) {
+		insn = read_insns[i];
+		res->units[i] = 0;
+
+		for (idx = 0; idx < insn->num_possible_templates; idx++) {
+			templ = insn->possible_templates[idx];
+
+			for (j = 0; j < 4; j++) {
+				switch (j) {
+				case 0:
+					flag = TIC64X_OP_UNIT_S;
+					use1 = CAN_S1;
+					use2 = CAN_S2;
+					break;
+				case 1:
+					flag = TIC64X_OP_UNIT_L;
+					use1 = CAN_L1;
+					use2 = CAN_L2;
+					break;
+				case 2:
+					flag = TIC64X_OP_UNIT_D;
+					use1 = CAN_D1;
+					use2 = CAN_D2;
+					break;
+				case 3:
+					flag = TIC64X_OP_UNIT_M;
+					use1 = CAN_M1;
+					use2 = CAN_M2;
+					break;
+				}
+
+				if (templ->flags & flag) {
+					if (insn->template_validity[idx] &
+							VALID_ON_UNIT1)
+						res->units[i] |= use1;
+					if (insn->template_validity[idx] &
+							VALID_ON_UNIT2)
+						res->units[i] |= use2;
+				}
+			} /* Units in template loop */
+		} /* Template loop */
+	} /* Read instructions loop */
+
+	return select_insn_unit(res, 0);
 }
 
 void
