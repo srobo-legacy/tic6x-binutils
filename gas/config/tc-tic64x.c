@@ -1804,6 +1804,7 @@ pick_units_for_insn_packet(struct resource_rec *res)
 void
 tic64x_output_insn_packet()
 {
+	struct resource_rec res;
 	struct tic64x_register *src2, *dst;
 	struct tic64x_insn *insn;
 	fragS *frag;
@@ -1831,182 +1832,29 @@ tic64x_output_insn_packet()
 	if (had_errors())
 		return;
 
-	/* We may need to make some decisions based on what units have been
-	 * used so far - collect details on which ones those are. Also report
-	 * an error if there's more than one execution unit being used in the
-	 * same execution packet */
-	for (i = 0; i < read_insns_index; i++) {
-		insn = read_insns[i];
-		if (insn->unitspecs.unit != 0 && insn->unitspecs.unit_num != 0){
-#define USEUNIT(a, i, c) do {						\
-				if ((a)[(i)-1] != 0) {			\
-					as_bad("Using unit %C%d more than once"\
-						"in instruction packet",\
-						(c), (i));		\
-					err++;				\
-				} else {				\
-					(a)[(i)-1]++;			\
-				}					\
-			} while (0);
-
-			switch (insn->unitspecs.unit) {
-			case 'M':
-				USEUNIT(m, insn->unitspecs.unit_num, 'M');
-				break;
-			case 'L':
-				USEUNIT(l, insn->unitspecs.unit_num, 'L');
-				break;
-			case 'S':
-				USEUNIT(s, insn->unitspecs.unit_num, 'S');
-				break;
-			case 'D':
-				USEUNIT(d, insn->unitspecs.unit_num, 'D');
-				break;
-			default:
-				as_fatal("Unrecognised execution unit in "
-					"%s %d", __FILE__, __LINE__);
-#undef USEUNIT
-			}
-		} else if (insn->unitspecs.unit_num != 0 ||
-				insn->unitspecs.unit != 0) {
-			as_fatal("Reading insn packet units, found one "
-				"specifier but not the other");
-		}
+	/* Attempt to schedule existing instructions into available units */
+	if (pick_units_for_insn_packet(&res)) {
+		as_bad("Unable to allocate all instructions to units in "
+			"execute packet: a resource conflict occured\n");
+		as_info("Coming soon to an assembler near you: descriptive "
+			"error messages!\n");
+		return;
 	}
 
-	/* Patch up mnemonics, actually implement 'mv's. Inject any other TI
-	 * "Pseudo-op" failery here */
+	/* Do a final pass looking for mv instructions that need to be patched
+	 * up - after this point they shouldn't need any further beating */
 	for (i = 0; i < read_insns_index; i++) {
 		insn = read_insns[i];
 		if (insn->mvfail) {
-			/* So it's a mv; we want to put it in whatever l/d/s
-			 * slot is free, but we need to work out what
-			 * requirements it has.... first, did the user give it
-			 * a unit specifier, then, does it need an xpath and
-			 * what side it has to be on */
 
-			/* But first, a hack. */
-			int side;
-			if (insn->mvfail_op2[0] == 'B')
-				side = 2;
-			else
-				side = 1;
+#error bees
 
-			if (side != insn->unitspecs.unit_num) {
-				insn->unitspecs.unit_num = side;
-				tic64x_set_operand(&insn->opcode,
-						tic64x_operand_s,
-						(side == 1) ? 0 : 1, 0);
-			}
-
-			/* llvm-generated mv's are also unaware of whether
-			 * the X path should be used, so work that out here */
-			if (insn->mvfail_op2[0] != insn->mvfail_op1[0]){
-				insn->unitspecs.uses_xpath = 1;
-			} else {
-				insn->unitspecs.uses_xpath = 0;
-			}
-
-			src2 = tic64x_sym_to_reg(insn->mvfail_op1);
-			dst = tic64x_sym_to_reg(insn->mvfail_op2);
-
-			if (!src2 || !dst) {
-				as_bad("Bad operands \"%s\" and \"%s\" to mv",
-					insn->mvfail_op1, insn->mvfail_op2);
-				return;
-			}
-
-			/* Any special requirements? */
-			isdw = 0;
-			isxpath = 0;
-			if (tic64x_optest_double_register(insn->mvfail_op1,
-						insn, tic64x_optxt_dwsrc)) {
-				isdw = 1;
-			} else if (((src2->num & TIC64X_REG_UNIT2) &&
-						!(dst->num & TIC64X_REG_UNIT2))
-				|| (!(src2->num & TIC64X_REG_UNIT2) &&
-						(dst->num & TIC64X_REG_UNIT2))){
-				isxpath = 1;
-			}
-
-			if (insn->unitspecs.unit_num == 0 &&
-						insn->unitspecs.unit == 0) {
-				/* No unit specified, guess */
-				/* Side determined by destination reg */
-				if (dst->num & TIC64X_REG_UNIT2) {
-					insn->unitspecs.unit_num = 2;
-				} else {
-					insn->unitspecs.unit_num = 1;
-				}
-
-#define USEUNIT(u, n, a) do {						\
-				(u)[(n)] = 1;				\
-				insn->unitspecs.unit = a;		\
-				insn->unitspecs.unit_num = n+1;		\
-			} while (0);
-
-#define GRABPATH(u, a) do {						\
-				if ((u)[0] == 0) {			\
-					USEUNIT((u), 0, (a))		\
-				} else if ((u)[1] == 0) {		\
-					USEUNIT((u), 1, (a))		\
-				}					\
-			} while (0);
-
-				if (!isdw && !isxpath) {
-					GRABPATH(d, 'D');
-				}
-
-				if (!isdw && insn->unitspecs.unit == 0) {
-					GRABPATH(s, 'S');
-				}
-
-				if (insn->unitspecs.unit == 0) {
-					GRABPATH(l, 'L');
-				}
-
-				if (insn->unitspecs.unit == 0) {
-					as_bad("Can't schedule mv in remaining "
-						"slots");
-					return;
-				}
-#undef GRABPATH
-#undef USEUNIT
-			}
-
-			if (insn->unitspecs.unit_num != 0 &&
-						insn->unitspecs.unit != 0) {
-				/* Mkay */
-				switch (insn->unitspecs.unit) {
-				case 'L':
-					generate_l_mv(insn, isdw);
-					break;
-				case 'S':
-					generate_s_mv(insn);
-					break;
-				case 'D':
-					generate_d_mv(insn);
-					break;
-				case 'M':
-					as_bad("Can't generate mv instruction "
-						"in multiply unit");
-					return;
-				default:
-					as_fatal("Invalid unit encountered, "
-						"%s %d\n", __FILE__, __LINE__);
-				}
-				free(insn->mvfail_op1);
-				free(insn->mvfail_op2);
-
-				/* If needs be, pump in conditional data */
-				apply_conditional(insn);
-			} else if (insn->unitspecs.unit_num != 0 ||
-						insn->unitspecs.unit != 0) {
-				as_fatal("Patching up mv, have partial unit "
-					"specifier, not complete");
-			}
 		}
 	}
+
+#error compress insn down to selected template
+
+#error check xpath
 
 	/* Emit insns, with correct p-bits this time */
 	for (i = 0; i < read_insns_index; i++) {
