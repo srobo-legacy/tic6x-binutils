@@ -312,6 +312,7 @@ struct resource_rec {
 
 
 static bfd_boolean pick_units_for_insn_packet(struct resource_rec *res);
+static bfd_boolean select_insn_unit(struct resource_rec *res, int idx);
 static void tic64x_output_insn_packet(void);
 static char *tic64x_parse_expr(char *s, expressionS *exp);
 static struct tic64x_register *tic64x_sym_to_reg(char *name);
@@ -1637,6 +1638,90 @@ generate_s_mv(struct tic64x_insn *insn)
 	operands[1] = insn->mvfail_op1;
 	operands[2] = insn->mvfail_op2;
 	beat_instruction_around_the_bush(operands, insn);
+}
+
+/* Instruction unit selector - look at what units the specified instruction
+ * (by index) can execute on, and decide an order of choices to try the rest of
+ * selection with. The choice that eliminates the least number of possibilities 
+ * in the rest of selection comes first; IE, the choice that leaves the most
+ * options open later */
+bfd_boolean
+select_insn_unit(struct resource_rec *input, int idx)
+{
+	struct resource_rec res;
+	int i, j, k, flag;
+	uint8_t weights[8];
+
+	/* If we've reached the bottom of the list of insns */
+	if (idx == read_insns_index)
+		return FALSE;
+
+	/* Calculate weights of different choices. '8' means we can't make this
+	 * choice anyway due to it being impossible, or prevented by a previous
+	 * selection. Other numbers represent the number of other instructions
+	 * that could use the specified unit, but which won't if we make this
+	 * choice */
+	for (i = 0, flag = 1; i < 8; i++, flag <<= 1) {
+		if (!(input->units[idx] & flag)) {
+			/* This instruction can't go on that unit anyway */
+			weights[i] = 8;
+			continue;
+		}
+
+		/* What else runs on this? */
+		weights[i] = 0;
+		for (j = 0; j < 8; j++) {
+			if (input->units[j] & flag) {
+				weights[i]++;
+			}
+		}
+
+		/* So now thats a weight, with a minimum of '1' (this insn),
+		 * we'll remove that bias for convenience */
+		weights[i]--;
+	}
+
+	/* So here we are with our weights; lets try them out */
+	for (i = 0; i < 8; i++) {
+		for (j = 0; j < 8; j++) {
+			if (weights[j] == i) {
+				/* Copy resource state so we can revert it */
+				memcpy(&res, input, sizeof(res));
+
+				/* Eliminate all uses of this unit */
+				flag = 1 << j;
+				for (k = 0; i < 8; k++)
+					res.units[k] &= ~flag;
+
+				/* Except for _this_ insn */
+				res.units[idx] |= flag;
+
+				/* Does that work? */
+				if (!select_insn_unit(&res, idx+1)) {
+					memcpy(input, &res, sizeof(res));
+					return FALSE;
+				}
+
+				/* Can't use this unit then */
+				weights[j] = 8;
+			}
+		}
+	}
+
+	/* If we reach this point, we've been through each unit and discovered
+	 * either that we can't run on it or that the other insns can't be
+	 * selected if we make this choice. So, make this the callers problem,
+	 * who either makes a different choice of unit for a previous insn,
+	 * or acknowledges that this packet is unselectable */
+
+	/* But first a sanity check */
+	for (i = 0; i < 8; i++)
+		if (weights[i] != 8)
+			as_fatal("Reached end of unit selection pass, but not "
+				"all units are marked as impossible to "
+				"select\n");
+
+	return TRUE;
 }
 
 bfd_boolean
