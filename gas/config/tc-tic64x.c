@@ -322,7 +322,7 @@ static int find_operand_index(struct tic64x_op_template *templ,
 			enum tic64x_operand_type type);
 
 static int apply_conditional(struct tic64x_insn *insn);
-static void fabricate_mv_insn(struct tic64x_insn *insn);
+static void fabricate_mv_insn(struct tic64x_insn *insn, char *op1, char *op2);
 static void finalise_mv_insn(struct tic64x_insn *insn);
 static bfd_boolean beat_instruction_around_the_bush(char **operands,
 			struct tic64x_insn *insn);
@@ -1776,11 +1776,11 @@ void
 tic64x_output_insn_packet()
 {
 	struct resource_rec res;
-	struct tic64x_register *src2, *dst;
 	struct tic64x_insn *insn;
+	struct tic64x_op_template *cur;
 	fragS *frag;
 	char *out;
-	int i, err, isdw, isxpath, wanted_unit;
+	int i, idx, err, wanted_unit;
 	uint8_t unit_flag;
 	bfd_boolean xpath1_used, xpath2_used, dpath1_used, dpath2_used;
 
@@ -1804,7 +1804,7 @@ tic64x_output_insn_packet()
 	if (pick_units_for_insn_packet(&res)) {
 		as_bad("Unable to allocate all instructions to units in "
 			"execute packet: a resource conflict occured\n");
-		as_info("Coming soon to an assembler near you: descriptive "
+		as_bad("Coming soon to an assembler near you: descriptive "
 			"error messages!\n");
 		return;
 	}
@@ -1867,7 +1867,7 @@ tic64x_output_insn_packet()
 				else
 					insn->unitspecs.uses_xpath = 0;
 
-				if (insn->flags & TIC64X_MEMACCESS) {
+				if (cur->flags & TIC64X_OP_MEMACCESS) {
 					if (insn->template_validity[idx] &
 							VALID_USES_DPATH_2)
 						insn->unitspecs.mem_path = 1;
@@ -1929,7 +1929,7 @@ tic64x_output_insn_packet()
 		if (insn->cond_nz != -1) {
 			/* This is the band for side-B registers */
 			if (insn->cond_reg >= 1 && insn->cond_reg <= 3) {
-				if (insn->unitspecs.unit_side == 0) {
+				if (insn->unitspecs.unit_num == 0) {
 					as_bad("Condition register read from "
 						"wrong side of processor in "
 						"execute packet\n");
@@ -1938,7 +1938,7 @@ tic64x_output_insn_packet()
 					 * went wrong, eh? */
 				}
 			} else {
-				if (insn->unitspecs.unit_side == 1) {
+				if (insn->unitspecs.unit_num == 1) {
 					as_bad("Condition register read from "
 						"wrong side of processor in "
 						"execute packet\n");
