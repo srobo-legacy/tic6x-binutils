@@ -325,6 +325,7 @@ static int find_operand_index(struct tic64x_op_template *templ,
 
 static int apply_conditional(struct tic64x_insn *insn);
 static void fabricate_mv_insn(struct tic64x_insn *insn);
+static void finalise_mv_insn(struct tic64x_insn *insn);
 static bfd_boolean beat_instruction_around_the_bush(char **operands,
 			struct tic64x_insn *insn);
 static void generate_d_mv(struct tic64x_insn *insn);
@@ -1032,6 +1033,73 @@ fabricate_mv_insn(struct tic64x_insn *insn)
 	if (src_side != dst_side)
 		insn->template_validity[0] |= (dst_side) ? VALID_USES_XPATH2
 							: VALID_USES_XPATH1;
+
+	/* However, if there's a unit specifier given in the assembly line,
+	 * we should honour that */
+	if (insn->unitspecs.unit != -1)
+		finalise_mv_insn(insn);
+
+	return;
+}
+
+void
+finalise_mv_insn(struct tic64x_insn *insn)
+{
+	struct op_handler *handler;
+	struct read_operand op;
+	int wanted_opcode;
+	bfd_boolean swap_constant;
+
+	/* Righty; at this point we should have a tied down unit specifier */
+	if (insn->unitspecs.unit == -1 || insn->unitspecs.unit_num == -1 ||
+					insn->unitspecs.uses_xpath == -1)
+		as_fatal("Finalising mv instruction with no internal unit "
+			"specifier\n");
+
+	handler = &operand_handlers[3];
+	if (handler->reader("0", FALSE, &op))
+		as_fatal("Error finalising mv instruction when parsing constant"
+			" expression\n");
+
+	switch (insn->unitspecs.unit) {
+	case 'S':
+		wanted_opcode = 0x1A0;
+		break;
+	case 'L':
+		wanted_opcode = 0x58;
+		swap_constant = TRUE;
+		break;
+	case 'D':
+		wanted_opcode = 0xAF0;
+		break;
+	case 'M':
+		as_bad("mv instruction cannot execute on 'M' unit\n");
+	default:
+		as_fatal("Invalid execution unit in internal record\n");
+	}
+
+	insn->templ = hash_find(tic64x_ops, "add");
+	while (insn->templ->opcode != wanted_opcode &&
+			!strcmp("add", insn->templ->mnemonic))
+		insn->templ++;
+
+	if (insn->templ->opcode != wanted_opcode)
+		as_fatal("Desired template when finalising mv instruction has "
+			"disappeared\n");
+
+	if (swap_constant) {
+		memcpy(&insn->operand_values[0], &insn->operand_values[1],
+					sizeof(insn->operand_values[1]));
+		memcpy(&insn->operand_values[1], &op, sizeof(op));
+	} else {
+		memcpy(&insn->operand_values[0], &op, sizeof(op));
+	}
+
+	insn->possible_templates[0] = insn->templ;
+	/* Uses xpath and validity flags remain the same as before - all that
+	 * really changed is that we squirted a '0' constant into the right
+	 * place and set the template to the correct add instruction for the
+	 * unit specified */
 
 	return;
 }
