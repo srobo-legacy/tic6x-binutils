@@ -314,21 +314,22 @@ struct resource_rec {
 static bfd_boolean pick_units_for_insn_packet(struct resource_rec *res);
 static bfd_boolean select_insn_unit(struct resource_rec *res, int idx);
 static void tic64x_output_insn_packet(void);
+static void tic64x_output_insn(struct tic64x_insn *insn, char *out, fragS *f,
+								int pcoffs);
+
+static int read_execution_unit(char **curline, struct unitspec *spec);
 static char *tic64x_parse_expr(char *s, expressionS *exp);
 static struct tic64x_register *tic64x_sym_to_reg(char *name);
 static int find_operand_index(struct tic64x_op_template *templ,
 			enum tic64x_operand_type type);
 
-bfd_boolean beat_instruction_around_the_bush(char **operands,
-			struct tic64x_insn *insn);
+static int apply_conditional(struct tic64x_insn *insn);
 static void fabricate_mv_insn(struct tic64x_insn *insn);
-static void tic64x_output_insn(struct tic64x_insn *insn, char *out, fragS *f,
-								int pcoffs);
-static int read_execution_unit(char **curline, struct unitspec *spec);
+static bfd_boolean beat_instruction_around_the_bush(char **operands,
+			struct tic64x_insn *insn);
 static void generate_d_mv(struct tic64x_insn *insn);
 static void generate_l_mv(struct tic64x_insn *insn, int isdw);
 static void generate_s_mv(struct tic64x_insn *insn);
-static int apply_conditional(struct tic64x_insn *insn);
 
 int
 md_parse_option(int c, char *arg)
