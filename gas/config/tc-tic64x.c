@@ -1044,7 +1044,7 @@ finalise_mv_insn(struct tic64x_insn *insn)
 {
 	struct op_handler *handler;
 	struct read_operand op;
-	int wanted_opcode;
+	unsigned int wanted_opcode;
 	bfd_boolean swap_constant;
 
 	/* Righty; at this point we should have a tied down unit specifier */
