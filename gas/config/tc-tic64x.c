@@ -2032,9 +2032,8 @@ tic64x_output_insn(struct tic64x_insn *insn, char *out)
 	return;
 }
 
-void
-opread_memaccess(char *line, struct tic64x_insn *insn,
-			enum tic64x_text_operand type ATTRIBUTE_UNUSED)
+int
+opread_memaccess(char *line, bfd_boolean print_error, struct read_operand *out)
 {
 	expressionS expr;
 	char *regname, *offs;
@@ -2360,9 +2359,8 @@ opread_memaccess(char *line, struct tic64x_insn *insn,
 	return;
 }
 
-void
-opread_register(char *line, struct tic64x_insn *insn,
-				enum tic64x_text_operand type)
+int
+opread_register(char *line, bfd_boolean print_error, struct read_operand *out)
 {
 	struct tic64x_register *reg;
 	enum tic64x_operand_type t2;
@@ -2461,8 +2459,9 @@ opread_register(char *line, struct tic64x_insn *insn,
 	return;
 }
 
-void opread_double_register(char *line, struct tic64x_insn *insn,
-			enum tic64x_text_operand optype)
+int
+opread_double_register(char *line, bfd_boolean print_error,
+				struct read_operand *out)
 {
 	struct tic64x_register *reg1, *reg2;
 	char *rtext;
@@ -2589,9 +2588,8 @@ static const enum tic64x_operand_type constant_types[] = {
 	tic64x_operand_const10, tic64x_operand_const7,
 	tic64x_operand_const4, tic64x_operand_invalid };
 
-void
-opread_constant(char *line, struct tic64x_insn *insn,
-			enum tic64x_text_operand type)
+int
+opread_constant(char *line, bfd_boolean print_error, struct read_operand *out)
 {
 	expressionS expr;
 	enum tic64x_operand_type realtype;
