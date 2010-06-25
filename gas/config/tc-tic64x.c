@@ -1884,7 +1884,68 @@ tic64x_output_insn_packet()
 			finalise_mv_insn(insn);
 	}
 
+	/* Righty. Everything should now be in some kind of standard form.
+	 * Apply some extra sanity checks */
 
+	xpath1_used = xpath2_used = dpath1_used = dpath2_used = FALSE;
+	for (i = 0; i < read_insns_index; i++) {
+		insn = read_insns[i];
+
+		if (insn->unitspecs.uses_xpath == 1) {
+			if (insn->unitspecs.unit_num == 0) {
+				if (xpath1_used == TRUE) {
+					as_bad("Mutiple uses of x-path 1 in "
+						"execute packet\n");
+				} else {
+					xpath1_used = TRUE;
+				}
+			} else {
+				if (xpath2_used == TRUE) {
+					as_bad("Multiple uses of x-path 2 in "
+						"execute packet\n");
+				} else {
+					xpath2_used = TRUE;
+				}
+			}
+		}
+
+		if (insn->unitspecs.mem_path == 0) {
+			if (dpath1_used) {
+				as_bad("Multiple uses of data path 1 in "
+					"execute packet\n");
+			} else {
+				dpath1_used = TRUE;
+			}
+		} else if (insn->unitspecs.mem_path == 1) {
+			if (dpath2_used) {
+				as_bad("Multiple uses of data path 2 in "
+					"execute packet\n");
+			}
+		}
+
+		/* That checks for resource violations. Finally, are the
+		 * conditional attributes attached to this sane? */
+
+		if (insn->cond_nz != -1) {
+			/* This is the band for side-B registers */
+			if (insn->cond_reg >= 1 && insn->cond_reg <= 3) {
+				if (insn->unitspecs.unit_side == 0) {
+					as_bad("Condition register read from "
+						"wrong side of processor in "
+						"execute packet\n");
+					/* XXX - how about printing which
+					 * particular instruction it is that
+					 * went wrong, eh? */
+				}
+			} else {
+				if (insn->unitspecs.unit_side == 1) {
+					as_bad("Condition register read from "
+						"wrong side of processor in "
+						"execute packet\n");
+				}
+			}
+		}
+	} /* End of loop checking instruction resources */
 
 	/* Emit insns, with correct p-bits this time */
 	for (i = 0; i < read_insns_index; i++) {
