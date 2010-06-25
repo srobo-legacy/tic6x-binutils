@@ -288,6 +288,27 @@ static fragS *read_insns_frags[8];
 static segT packet_seg;
 static int packet_subseg;
 
+/* Resource management: so for the situation where we either have move insns
+ * or other insns that haven't have a unit specifier attached, we need to keep
+ * information about what instructions use what resources, and how we can
+ * rejuggle things to fit all instructions in a packet into the eight available
+ * units. */
+struct resource_rec {
+	/* Flags regarding what units instructions can be coerced to run on,
+	 * limit and indexes correspond to the contents of the read_insns array
+	 * and read_insns_index counter */
+	uint8_t units[8];
+
+	/* Flags for each insn */
+#define CAN_S1	1
+#define CAN_S2	2
+#define CAN_L1	4
+#define CAN_L2	8
+#define CAN_D1	0x10
+#define CAN_D2	0x20
+#define CAN_M1	0x40
+#define CAN_M2	0x80
+};
 
 
 static void tic64x_output_insn_packet(void);
