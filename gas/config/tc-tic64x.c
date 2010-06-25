@@ -1780,14 +1780,11 @@ tic64x_output_insn_packet()
 	struct tic64x_insn *insn;
 	fragS *frag;
 	char *out;
-	int i, err, isdw, isxpath;
-	char m[2], l[2], s[2], d[2];
+	int i, err, isdw, isxpath, wanted_unit;
+	uint8_t unit_flag;
+	bfd_boolean xpath1_used, xpath2_used, dpath1_used, dpath2_used;
 
 	err = 0;
-	memset(m, 0, sizeof(m));
-	memset(l, 0, sizeof(l));
-	memset(s, 0, sizeof(s));
-	memset(d, 0, sizeof(d));
 
 	/* No instructions -> meh */
 	if (read_insns_index == 0)
@@ -1812,20 +1809,82 @@ tic64x_output_insn_packet()
 		return;
 	}
 
-	/* Do a final pass looking for mv instructions that need to be patched
-	 * up - after this point they shouldn't need any further beating */
+	/* Loop through all instructions in this packet, moving the decided
+	 * unit specs into the instruction record, and eliminating the remaining
+	 * instruction templates */
 	for (i = 0; i < read_insns_index; i++) {
 		insn = read_insns[i];
-		if (insn->mvfail) {
+		unit_flag = res.units[i];
 
-#error bees
-
+		switch (unit_flag) {
+		case CAN_S1:
+		case CAN_S2:
+			insn->unitspecs.unit = 'S';
+			wanted_unit = TIC64X_OP_UNIT_S;
+			break;
+		case CAN_L1:
+		case CAN_L2:
+			insn->unitspecs.unit = 'L';
+			wanted_unit = TIC64X_OP_UNIT_L;
+			break;
+		case CAN_D1:
+		case CAN_D2:
+			insn->unitspecs.unit = 'D';
+			wanted_unit = TIC64X_OP_UNIT_D;
+			break;
+		case CAN_M1:
+		case CAN_M2:
+			insn->unitspecs.unit = 'M';
+			wanted_unit = TIC64X_OP_UNIT_M;
+			break;
 		}
+
+		switch (unit_flag) {
+		case CAN_S1:
+		case CAN_L1:
+		case CAN_D1:
+		case CAN_M1:
+			insn->unitspecs.unit_num = 0;
+			break;
+		case CAN_S2:
+		case CAN_L2:
+		case CAN_D2:
+		case CAN_M2:
+			insn->unitspecs.unit_num = 1;
+		}
+
+		/* We now have a unit and a side - go and find the first thing
+		 * that matches this in the big list of templates */
+		for (idx = 0; idx < insn->num_possible_templates; idx++) {
+			cur = insn->possible_templates[idx];
+			if (cur->flags & wanted_unit) {
+				insn->templ = cur;
+				insn->num_possible_templates = 0;
+
+				if (insn->template_validity[idx] &
+					(VALID_USES_XPATH1 | VALID_USES_XPATH2))
+					insn->unitspecs.uses_xpath = 1;
+				else
+					insn->unitspecs.uses_xpath = 0;
+
+				if (insn->flags & TIC64X_MEMACCESS) {
+					if (insn->template_validity[idx] &
+							VALID_USES_DPATH_2)
+						insn->unitspecs.mem_path = 1;
+					else
+						insn->unitspecs.mem_path = 0;
+				}
+
+				break;
+			}
+		}
+
+		/* Ok, we've fetched the template; anything else? */
+		if (insn->mvfail)
+			finalise_mv_insn(insn);
 	}
 
-#error compress insn down to selected template
 
-#error check xpath
 
 	/* Emit insns, with correct p-bits this time */
 	for (i = 0; i < read_insns_index; i++) {
