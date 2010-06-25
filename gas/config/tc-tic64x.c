@@ -208,9 +208,9 @@ struct tic64x_insn {
 	struct read_operand operand_values[TIC64X_MAX_OPERANDS];
 	int operands;
 
-	/* Hack for ti's mv instruction failery - can't be resolved in initial
-	 * pass, we need to inspect other parallel ops later and make a decision
-	 * there */
+	/* Hack for ti's mv instruction failery -  we store its operands and
+	 * make a decision about what actual instruction it will be when the
+	 * entire packet gets emitted */
 	int mvfail;
 	char *mvfail_op1;
 	char *mvfail_op2;
