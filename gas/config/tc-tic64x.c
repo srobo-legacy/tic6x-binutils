@@ -1068,6 +1068,9 @@ md_assemble(char *line)
 		as_bad("Unrecognised mnemonic %s", mnemonic);
 		free(insn);
 		return;
+	} else if (insn->mvfail) {
+		/* Special template for mv, isn't actually an instruction */
+		insn->templ = &tic64x_mv_template[0];
 	}
 
 	ret = read_execution_unit(&line, &insn->unitspecs);
@@ -1098,42 +1101,24 @@ md_assemble(char *line)
 		}
 	}
 
-	if (insn->mvfail) {
-		/* Evil: store operands for later inspection, branch away */
-		insn->mvfail_op1 = strdup(operands[0]);
-		insn->mvfail_op2 = strdup(operands[1]);
-
-		/* And because we need to handle it being 'mv' elsewhere,
-		 * a goto. */
-		goto wrapup;
-	}
-
-#if 0
-/* Again let's avoid supporting bitfields for the moment, it doesn't quite fit*/
-	/* Set mode nightmare: if insn has bitfield, congeal middle two
-	 * operands back into one. Highly unpleasent, but saves having to
-	 * patch up everything to support four operands. */
-	if (insn->templ->flags & TIC64X_OP_BITFIELD) {
-		/* Seeing how it was in this form in the first place.. */
-		char *tmp;
-		tmp = malloc(1024);
-		snprintf(tmp, 1023, "%s, %s", operands[1], operands[2]);
-		operands[1] = tmp;
-		operands[2] = operands[3];
-	}
-
-	/* Now that we have an insn, validate a few general parts of it,
-	 * also apply a conditional if the pre-read hook caught it */
-#endif
-
 	/* If pre-assemble hook saw a conditional, place that information in
 	 * the instruction record */
 	if (apply_conditional(insn))
 		return;
 
-	if (beat_instruction_around_the_bush(operands, insn))
-		return;
-wrapup:
+	if (!insn->mvfail) {
+		if (beat_instruction_around_the_bush(operands, insn))
+			return;
+	} else {
+		/* So, here's the first set of hacks for mv: we store operands
+		 * for later munging into a real instruction; we also fabricate
+		 * the table of what units it can run on */
+		insn->mvfail_op1 = strdup(operands[0]);
+		insn->mvfail_op2 = strdup(operands[1]);
+
+		fabricate_mv_insn(insn);
+	}
+
 	/* If this is the start of a new insn packet, dump the contents of
 	 * the previous packet and start a new one. Include some sanity
 	 * checks */
