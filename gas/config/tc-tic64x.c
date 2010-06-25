@@ -212,8 +212,6 @@ struct tic64x_insn {
 	 * make a decision about what actual instruction it will be when the
 	 * entire packet gets emitted */
 	int mvfail;
-	char *mvfail_op1;
-	char *mvfail_op2;
 
 #define MAX_NUM_INSN_TEMPLATES 16
 	int num_possible_templates;
@@ -999,7 +997,7 @@ read_execution_unit(char **curline, struct unitspec *spec)
 }
 
 void
-fabricate_mv_insn(struct tic64x_insn *insn)
+fabricate_mv_insn(struct tic64x_insn *insn, char *op1, char *op2)
 {
 	struct op_handler *handler;
 	uint8_t src_side, dst_side;
@@ -1009,13 +1007,13 @@ fabricate_mv_insn(struct tic64x_insn *insn)
 	memset(&insn->operand_values[0], 0, sizeof(insn->operand_values[0]));
 
 	/* Assert here that each operand is a register... */
-	if (handler->reader(insn->mvfail_op1, TRUE, &insn->operand_values[1]))
+	if (handler->reader(op1, TRUE, &insn->operand_values[1]))
 		return;
 
 	src_side = (insn->operand_values[1].u.reg.base->num & TIC64X_REG_UNIT2)
 									? 1 : 0;
 
-	if (handler->reader(insn->mvfail_op2, TRUE, &insn->operand_values[2]))
+	if (handler->reader(op2, TRUE, &insn->operand_values[2]))
 		return;
 
 	dst_side = (insn->operand_values[2].u.reg.base->num & TIC64X_REG_UNIT2)
@@ -1179,13 +1177,7 @@ md_assemble(char *line)
 		if (beat_instruction_around_the_bush(operands, insn))
 			return;
 	} else {
-		/* So, here's the first set of hacks for mv: we store operands
-		 * for later munging into a real instruction; we also fabricate
-		 * the table of what units it can run on */
-		insn->mvfail_op1 = strdup(operands[0]);
-		insn->mvfail_op2 = strdup(operands[1]);
-
-		fabricate_mv_insn(insn);
+		fabricate_mv_insn(insn, operands[0], operands[1]);
 	}
 
 	/* If this is the start of a new insn packet, dump the contents of
