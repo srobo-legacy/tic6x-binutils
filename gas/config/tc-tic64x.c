@@ -243,6 +243,11 @@ struct tic64x_insn {
 #define NOTVALID_OP2		0x40
 #define NOTVALID_OP3		0x80
 
+	/* Final emission, we need to know various bits of information to write
+	 * fixups and relocations - namely what fragment we're in, and the pcrel
+	 * offset of this instruction. */
+	fragS *output_frag;
+	int output_pcoffs;
 };
 
 const char comment_chars[] = ";";
@@ -312,8 +317,7 @@ struct resource_rec {
 static bfd_boolean pick_units_for_insn_packet(struct resource_rec *res);
 static bfd_boolean select_insn_unit(struct resource_rec *res, int idx);
 static void tic64x_output_insn_packet(void);
-static void tic64x_output_insn(struct tic64x_insn *insn, char *out, fragS *f,
-								int pcoffs);
+static void tic64x_output_insn(struct tic64x_insn *insn, char *out);
 
 static int read_execution_unit(char **curline, struct unitspec *spec);
 static char *tic64x_parse_expr(char *s, expressionS *exp);
@@ -1959,7 +1963,9 @@ tic64x_output_insn_packet()
 		else
 			insn->parallel = 1;
 
-		tic64x_output_insn(insn, out, frag, i * 4);
+		insn->output_frag = frag;
+		insn->output_pcoffs = i *4;
+		tic64x_output_insn(insn, out);
 #if 0
 /* Insn can't be freed, it might be being fixed up. Needs more thought
  * about insn lifetime */
