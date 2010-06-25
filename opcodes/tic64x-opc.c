@@ -1791,6 +1791,22 @@ struct tic64x_op_template tic64x_opcodes[] = {
 }
 }; /* End of main opcode table */
 
+/* MV instruction representation - this is for the assembler to have a template
+ * for mv, but without it actually being part of the opcode table, where it
+ * might actually require an opcode / the like */
+struct tic64x_op_template tic64x_mv_template[] = {
+{"mv",		0,		0,
+	TIC64X_OP_UNIT_D | TIC64X_OP_UNIT_S | TIC64X_OP_UNIT_L |
+	TIC64X_OP_XPATH_SRC2,
+	{ tic64x_optxt_srcreg2, tic64x_optxt_dstreg, tic64x_optxt_none },
+	{ tic64x_operand_invalid, tic64x_operand_invalid }
+},
+{NULL,		0,		0,		0,
+	{ tic64x_optxt_none, tic64x_optxt_none, tic64x_optxt_none },
+	{ tic64x_operand_invalid, tic64x_operand_invalid }
+}
+};
+
 /* Compact instructions are made up of twisty turny formats, all different.
  * Rather than beating faces against keyboards and trying to have some generic
  * way of converting a compact back to a large instruction, which would no doubt

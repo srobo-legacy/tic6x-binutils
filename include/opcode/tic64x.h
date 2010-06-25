@@ -170,6 +170,7 @@ struct tic64x_op_template {
 };
 
 extern struct tic64x_op_template tic64x_opcodes[];
+extern struct tic64x_op_template tic64x_mv_template[];
 extern struct tic64x_register tic64x_regs[];
 
 /* get/set calls for actual operands. Returns nonzero if value is too large */
