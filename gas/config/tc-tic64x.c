@@ -1977,15 +1977,21 @@ tic64x_output_insn_packet()
 }
 
 void
-tic64x_output_insn(struct tic64x_insn *insn, char *out, fragS *frag, int pcoffs)
+tic64x_output_insn(struct tic64x_insn *insn, char *out)
 {
-	fixS *fix;
 	int i, s, y;
+
+	/* Generate the wadge of binary that represents the assembled
+	 * instruction. This consists of setting the operand independant
+	 * portions of the opcode, then calling the operand writer helper
+	 * to actually pump out operand information */
 
 	insn->opcode |= insn->templ->opcode;
 
-	/* Side bit specifies execution unit except for memory access, which
-	 * uses 's' for destination side / data path, and y for src/unit no */
+	/* The side bit is a special case - most of the time it does mean which
+	 * side the instruction executes on, but in the case of memory access
+	 * the 'y' bit does that job, and the 's' bit specifies which data path
+	 * the data takes. So, here are some special cases: */
 	if (insn->templ->flags & TIC64X_OP_MEMACCESS) {
 		s = (insn->unitspecs.mem_path == 2) ? 1 : 0;
 		y = (insn->unitspecs.unit_num == 2) ? 1 : 0;
@@ -1994,15 +2000,14 @@ tic64x_output_insn(struct tic64x_insn *insn, char *out, fragS *frag, int pcoffs)
 		y = (insn->unitspecs.unit_num == 2) ? 1 : 0;
 	}
 
-	/* From bottom to top, fixed fields, the other operands */
-	if (insn->parallel)
-		tic64x_set_operand(&insn->opcode, tic64x_operand_p, 1, 0);
-
 	if (!(insn->templ->flags & TIC64X_OP_NOSIDE))
 		tic64x_set_operand(&insn->opcode, tic64x_operand_s, s, 0);
 
 	if (insn->templ->flags & TIC64X_OP_UNITNO)
 		tic64x_set_operand(&insn->opcode, tic64x_operand_y, y, 0);
+
+	if (insn->parallel)
+		tic64x_set_operand(&insn->opcode, tic64x_operand_p, 1, 0);
 
 	if (!(insn->templ->flags & TIC64X_OP_NOCOND) &&
 					insn->cond_reg != 0) {
@@ -2012,30 +2017,14 @@ tic64x_output_insn(struct tic64x_insn *insn, char *out, fragS *frag, int pcoffs)
 					insn->cond_reg, 0);
 	}
 
-	for (i = 0; i < TIC64X_MAX_OPERANDS; i++) {
-		if (insn->templ->operands[i] == tic64x_operand_invalid)
-			continue;
+	/* Now, pump out some operands */
+	for (i = 0; i < insn->operands; i++) {
 
-		/* Create fixups for unresolved operands */
-		if (!insn->operand_values[i].resolved) {
-			if (insn->operand_values[i].expr.X_op == O_symbol) {
+		insn->operand_values[i].handler->write(&insn->operand_values[i],
+						insn->templ->textops[i], insn);
 
-				int pcrel = (insn->templ->flags &
-						TIC64X_OP_CONST_PCREL)
-						? TRUE : FALSE;
-				int rtype = type_to_rtype(insn,
-						insn->templ->operands[i]);
-
-				fix = fix_new_exp(frag, out - frag->fr_literal,
-						4, &insn->operand_values[i].expr
-						, pcrel, rtype);
-				fix->fx_pcrel_adjust = pcoffs;
-			} else {
-				as_fatal("Unresolved operand %d for \"%s\" is "
-					"not a symbol (internal error)",
-					i, insn->templ->mnemonic);
-			}
-		}
+		/* Happily we don't need to beat fixups here, that can be
+		 * delagated to the writer routine */
 	}
 
 	/* Assume everything is little endian for now */
