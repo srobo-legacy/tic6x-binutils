@@ -1003,24 +1003,27 @@ read_execution_unit(char **curline, struct unitspec *spec)
 void
 fabricate_mv_insn(struct tic64x_insn *insn)
 {
-	struct read_operand op;
+	struct op_handler *handler;
 	uint8_t src_side, dst_side;
 
+	handler = &operand_handlers[1];
+
 	/* Assert here that each operand is a register... */
-	op.handler = &operand_handlers[1];
-	if (op.handler->reader(insn->mvfail_op1, TRUE, &op))
+	if (handler->reader(insn->mvfail_op1, TRUE, &insn->operand_values[0]))
 		return;
 
-	src_side = (op.u.reg.base->num & TIC64X_REG_UNIT2) ? 1 : 0;
+	src_side = (insn->operand_values[0].u.reg.base->num & TIC64X_REG_UNIT2)
+									? 1 : 0;
 
+	memset(&insn->operand_values[1], 0, sizeof(insn->operand_values[1]));
 
-	if (op.handler->reader(insn->mvfail_op2, TRUE, &op))
+	if (handler->reader(insn->mvfail_op2, TRUE, &insn->operand_values[2]))
 		return;
 
-	dst_side = (op.u.reg.base->num & TIC64X_REG_UNIT2) ? 1 : 0;
+	dst_side = (insn->operand_values[0].u.reg.base->num & TIC64X_REG_UNIT2)
+									? 1 : 0;
 
-	memset(insn->operand_values, 0, sizeof(insn->operand_values));
-	insn->operands = 0;
+	insn->operands = 0; /* To avoid any intermediate code tripping up */
 	insn->num_possible_templates = 1;
 	insn->possible_templates[0] = &tic64x_mv_template[0];
 	insn->template_validity[0] = 0;
