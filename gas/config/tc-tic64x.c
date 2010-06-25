@@ -321,6 +321,7 @@ static int find_operand_index(struct tic64x_op_template *templ,
 
 bfd_boolean beat_instruction_around_the_bush(char **operands,
 			struct tic64x_insn *insn);
+static void fabricate_mv_insn(struct tic64x_insn *insn);
 static void tic64x_output_insn(struct tic64x_insn *insn, char *out, fragS *f,
 								int pcoffs);
 static int read_execution_unit(char **curline, struct unitspec *spec);
@@ -996,6 +997,39 @@ read_execution_unit(char **curline, struct unitspec *spec)
 
 	*curline = line;
 	return 1;
+}
+
+void
+fabricate_mv_insn(struct tic64x_insn *insn)
+{
+	struct read_operand op;
+	uint8_t src_side, dst_side;
+
+	/* Assert here that each operand is a register... */
+	op.handler = &operand_handlers[1];
+	if (op.handler->reader(insn->mvfail_op1, TRUE, &op))
+		return;
+
+	src_side = (op.u.reg.base->num & TIC64X_REG_UNIT2) ? 1 : 0;
+
+
+	if (op.handler->reader(insn->mvfail_op2, TRUE, &op))
+		return;
+
+	dst_side = (op.u.reg.base->num & TIC64X_REG_UNIT2) ? 1 : 0;
+
+	memset(insn->operand_values, 0, sizeof(insn->operand_values));
+	insn->operands = 0;
+	insn->num_possible_templates = 1;
+	insn->possible_templates[0] = &tic64x_mv_template[0];
+	insn->template_validity[0] = 0;
+	insn->template_validity[0] |= (dst_side) ? VALID_ON_UNIT2
+						: VALID_ON_UNIT1;
+	if (src_side != dst_side)
+		insn->template_validity[0] |= (dst_side) ? VALID_USES_XPATH2
+							: VALID_USES_XPATH1;
+
+	return;
 }
 
 void
