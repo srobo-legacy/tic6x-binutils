@@ -1008,19 +1008,19 @@ fabricate_mv_insn(struct tic64x_insn *insn)
 
 	handler = &operand_handlers[1];
 
+	memset(&insn->operand_values[0], 0, sizeof(insn->operand_values[0]));
+
 	/* Assert here that each operand is a register... */
-	if (handler->reader(insn->mvfail_op1, TRUE, &insn->operand_values[0]))
+	if (handler->reader(insn->mvfail_op1, TRUE, &insn->operand_values[1]))
 		return;
 
-	src_side = (insn->operand_values[0].u.reg.base->num & TIC64X_REG_UNIT2)
+	src_side = (insn->operand_values[1].u.reg.base->num & TIC64X_REG_UNIT2)
 									? 1 : 0;
-
-	memset(&insn->operand_values[1], 0, sizeof(insn->operand_values[1]));
 
 	if (handler->reader(insn->mvfail_op2, TRUE, &insn->operand_values[2]))
 		return;
 
-	dst_side = (insn->operand_values[0].u.reg.base->num & TIC64X_REG_UNIT2)
+	dst_side = (insn->operand_values[2].u.reg.base->num & TIC64X_REG_UNIT2)
 									? 1 : 0;
 
 	insn->operands = 0; /* To avoid any intermediate code tripping up */
