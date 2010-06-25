@@ -2753,41 +2753,6 @@ opread_constant(char *line, struct tic64x_insn *insn,
 	return;
 }
 
-void
-opread_bfield(char *line, struct tic64x_insn *insn,
-			enum tic64x_text_operand type ATTRIBUTE_UNUSED)
-{
-	expressionS expr1, expr2;
-	char *part2;
-	int val1, val2;
-
-	/* This code remains untested until we actually run into a bfield op */
-
-	part2 = strchr(line, ',');
-	*part2++ = 0;
-
-	tic64x_parse_expr(line, &expr1);
-	tic64x_parse_expr(part2, &expr2);
-
-	if (expr1.X_op != O_constant || expr2.X_op != O_constant) {
-		as_bad("bitfield range operands not constants");
-		return;
-	}
-
-	val1 = expr1.X_add_number;
-	val2 = expr2.X_add_number;
-
-	if (val1 >= 32 || val2 >= 32 || val1 < 0 || val2 < 0) {
-		as_bad("bitfield operand out of range: must be 0-31");
-		return;
-	}
-
-	tic64x_set_operand(&insn->opcode, tic64x_operand_const5, val1, 0);
-	tic64x_set_operand(&insn->opcode, tic64x_operand_bitfldb, val2, 0);
-
-	return;
-}
-
 int
 opvalidate_memaccess(struct read_operand *in, bfd_boolean print_error,
 			enum tic64x_text_operand optype,
