@@ -328,9 +328,6 @@ static void fabricate_mv_insn(struct tic64x_insn *insn);
 static void finalise_mv_insn(struct tic64x_insn *insn);
 static bfd_boolean beat_instruction_around_the_bush(char **operands,
 			struct tic64x_insn *insn);
-static void generate_d_mv(struct tic64x_insn *insn);
-static void generate_l_mv(struct tic64x_insn *insn, int isdw);
-static void generate_s_mv(struct tic64x_insn *insn);
 
 int
 md_parse_option(int c, char *arg)
@@ -1643,92 +1640,6 @@ beat_instruction_around_the_bush(char **operands, struct tic64x_insn *insn)
 	 * because the memory data path specifier was wrong */
 	as_bad("Memory data path specified incorrectly used or omitted\n");
 	return TRUE;
-}
-
-
-void
-generate_l_mv(struct tic64x_insn *insn, int isdw)
-{
-	char buffer[4];
-	char *operands[TIC64X_MAX_TXT_OPERANDS];
-
-	if (isdw) {
-		insn->templ = hash_find(tic64x_ops, "add");
-		while (insn->templ->opcode != 0x58 &&
-					!strcmp("add", insn->templ->mnemonic)) {
-			insn->templ++;
-		}
-
-		if (insn->templ->opcode != 0x58)
-			as_fatal("L unit add operand has disappeared");
-
-		sprintf(buffer, "0");
-		operands[0] = insn->mvfail_op1;
-		operands[1] = buffer;
-		operands[2] = insn->mvfail_op2;
-		beat_instruction_around_the_bush(operands, insn);
-	} else {
-		insn->templ = hash_find(tic64x_ops, "or");
-		while (insn->templ->opcode != 0x8F0 &&
-					!strcmp("or", insn->templ->mnemonic)) {
-			insn->templ++;
-		}
-
-		if (insn->templ->opcode != 0x8F0)
-			as_fatal("L unit or operation has disappeared");
-
-		sprintf(buffer, "0");
-		operands[0] = buffer;
-		operands[1] = insn->mvfail_op1;
-		operands[2] = insn->mvfail_op2;
-		beat_instruction_around_the_bush(operands, insn);
-		/* munge operands */
-	}
-
-}
-
-void
-generate_d_mv(struct tic64x_insn *insn)
-{
-	char buffer[4];
-	char *operands[TIC64X_MAX_TXT_OPERANDS];
-
-	insn->templ = hash_find(tic64x_ops, "add");
-	while (insn->templ->opcode != 0xAF0 &&
-					!strcmp("add", insn->templ->mnemonic)) {
-		insn->templ++;
-	}
-
-	if (insn->templ->opcode != 0xAF0)
-		as_fatal("D unit or operation has disappeared");
-
-	sprintf(buffer, "0");
-	operands[0] = buffer;
-	operands[1] = insn->mvfail_op1;
-	operands[2] = insn->mvfail_op2;
-	beat_instruction_around_the_bush(operands, insn);
-}
-
-void
-generate_s_mv(struct tic64x_insn *insn)
-{
-	char buffer[4];
-	char *operands[TIC64X_MAX_TXT_OPERANDS];
-
-	insn->templ = hash_find(tic64x_ops, "add");
-	while (insn->templ->opcode != 0x1A0 &&
-					!strcmp("add", insn->templ->mnemonic)) {
-		insn->templ++;
-	}
-
-	if (insn->templ->opcode != 0x1A0)
-		as_fatal("S unit or operation has disappeared");
-
-	sprintf(buffer, "0");
-	operands[0] = buffer;
-	operands[1] = insn->mvfail_op1;
-	operands[2] = insn->mvfail_op2;
-	beat_instruction_around_the_bush(operands, insn);
 }
 
 /* Instruction unit selector - look at what units the specified instruction
