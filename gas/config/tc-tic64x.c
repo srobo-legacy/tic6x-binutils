@@ -2272,13 +2272,10 @@ opread_double_register(char *line, bfd_boolean print_error,
 {
 	struct tic64x_register *reg1, *reg2;
 	char *rtext;
-	enum tic64x_operand_type type;
-	int tmp, i, side, err;
 	char c;
 
 	/* Double register is of the form "A0:A1", or whatever symbolic names
-	 * user has assigned. Register numbers must be consecutive, and stored
-	 * as the top four bits */
+	 * user has assigned. Register numbers must be consecutive. */
 
 	/* Read up to ':' seperator */
 	rtext = line;
@@ -2287,17 +2284,17 @@ opread_double_register(char *line, bfd_boolean print_error,
 
 	/* Bail out if there wasn't one */
 	if (is_end_of_line[(int)*line]) {
-		as_bad("Unexpected end-of-line, expected ':' double register "
-			"seperator");
-		return;
+		READ_ERROR(("Unexpected end-of-line reading double register"));
+		return OPREADER_BAD;
 	}
 
 	/* Actually try and read register */
 	*line = 0;
 	reg1 = tic64x_sym_to_reg(rtext);
 	if (!reg1) {
-		as_bad("\"%s\" is not a register", rtext);
-		return;
+		READ_ERROR(("\"%s\" is not a register", rtext));
+		*line++ = ':';
+		return OPREADER_PARTIAL_MATCH;
 	}
 	*line++ = ':';
 
@@ -2311,81 +2308,21 @@ opread_double_register(char *line, bfd_boolean print_error,
 	*line = 0;
 	reg2 = tic64x_sym_to_reg(rtext);
 	if (!reg2) {
-		as_bad("\"%s\" is not a register", rtext);
+		READ_ERROR(("\"%s\" is not a register", rtext));
 		*line = c;
-		return;
+		return OPREADER_PARTIAL_MATCH;
 	}
 	*line = c;
 
-	/* Now for some validation - same side? */
-	if ((reg1->num & TIC64X_REG_UNIT2) != (reg2->num & TIC64X_REG_UNIT2)) {
-		as_bad("Double register operands must be on same side of "
-								"processor");
-		return;
-	}
+	/* To store this register pair, we _could_ just use the existing
+	 * opdetail struct, however then we'd lose checking for whether this
+	 * operand has consecutive/same-side/whatever registers. And I don't
+	 * want to put them here, because I want the reading phase to _just_
+	 * be parsing */
+	out->u.dreg.reg1 = reg1;
+	out->u.dreg.reg2 = reg2;
 
-	/* Consecutive? */
-	if ((reg1->num & 0x1F) != (reg2->num & 0x1F) + 1) {
-		as_bad("Double register operands must be consecutive");
-		return;
-	}
-
-	/* These are fine and can be written into opcode operand */
-	if (optype == tic64x_optxt_dwdst) {
-
-		/* dword destination operands can have two forms - 5 bit
-		 * register address of the even one of the pair, or four
-		 * bit address, top bits of destination regs. Identify
-		 * which way around we are, adjust value accordingly */
-
-		i = find_operand_index(insn->templ, tic64x_operand_dwdst5);
-		if (i < 0) {
-			i = find_operand_index(insn->templ,
-					tic64x_operand_dwdst4);
-			if (i < 0)
-				abort_no_operand(insn, "dwdst");
-
-			type = tic64x_operand_dwdst4;
-			tmp = (reg2->num & 0x1F) >> 1;
-		} else {
-			type = tic64x_operand_dwdst5;
-			tmp = (reg2->num & 0x1F);
-			if (tmp & 1) as_fatal(
-				"opread_double_register: low "
-				"bit set in register address");
-		}
-		insn->operand_values[i].resolved = 1;
-	} else if (optype == tic64x_optxt_dwsrc) {
-		type = tic64x_operand_dwsrc;
-		tmp = (reg2->num & 0x1F);
-	} else if (optype == tic64x_optxt_dwsrc2) {
-		type = tic64x_operand_srcreg1;
-		tmp = (reg2->num & 0x1F);
-	} else {
-		as_bad("opread_double_register: unknown operand type");
-		return;
-	}
-
-	err = tic64x_set_operand(&insn->opcode, type, tmp, 0);
-	if (err)
-		abort_setop_fail(insn, "dwreg");
-
-	if (insn->templ->flags & TIC64X_OP_NOSIDE)
-		abort_no_operand(insn, "tic64x_operand_s");
-
-	/* Validate that this pair comes from the right side. It has to be
-	 * the side of execution (can't put dw over xpath), unless it's memory
-	 * access */
-
-	side = (insn->templ->flags & TIC64X_OP_MEMACCESS)
-		? insn->mem_unit_num : insn->unit_num;
-
-	if ((side == 2 && !(reg2->num & TIC64X_REG_UNIT2)) ||
-	    (side == 1 && (reg2->num & TIC64X_REG_UNIT2)))
-		as_bad("Register pair differ in side from "
-			"execution unit specifier");
-
-	return;
+	return OPREADER_OK;
 }
 
 static const enum tic64x_operand_type constant_types[] = {
