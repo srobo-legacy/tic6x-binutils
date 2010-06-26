@@ -2040,8 +2040,7 @@ opread_memaccess(char *line, bfd_boolean print_error, struct read_operand *out)
 	expressionS expr;
 	char *regname, *offs;
 	struct tic64x_register *reg, *offsetreg;
-	int off_reg, pos_neg, pre_post, nomod_modify, has_offset, i, tmp, sc;
-	int offs_operand, offs_size, err;
+	int off_reg, pos_neg, pre_post, nomod_modify, has_offset;
 	char c, bracket;
 
 	off_reg = -1;
@@ -2190,11 +2189,11 @@ opread_memaccess(char *line, bfd_boolean print_error, struct read_operand *out)
 			if (expr.X_op == O_illegal) {
 				READ_ERROR(("Memory offset is neither a "
 					"register nor valid expression"));
-				return TIC64X_OPREADER_PARTIAL_MATCH;
+				return OPREADER_PARTIAL_MATCH;
 			} else if (expr.X_op == O_absent) {
 				READ_ERROR(("Expected an expression for memory "
 					"offset, found nothing"));
-				return TIC64X_OPREADER_PARTIAL_MATCH;
+				return OPREADER_PARTIAL_MATCH;
 			} else if (expr.X_op == O_symbol) {
 				as_warn("Caution - you have used a symbol based"
 					" expression for a memory _offset_ - "
