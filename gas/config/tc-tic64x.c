@@ -121,7 +121,7 @@ typedef int (opreader) (char *line, bfd_boolean print_error,
 typedef bfd_boolean (opvalidate) (struct read_operand *in,
 				bfd_boolean print_error,
 				enum tic64x_text_operand optype,
-				struct tic64x_insn *insn,
+				struct tic64x_op_template *templ,
 				bfd_boolean gen_unitspec,
 				struct unitspec *spec);
 
@@ -1388,7 +1388,7 @@ beat_instruction_around_the_bush(char **operands, struct tic64x_insn *insn)
 			for (i = 0; i < insn->operands; i++)
 				if (insn->operand_values[i].handler->validate(
 						&insn->operand_values[i],
-						cur->textops[i], FALSE, insn,
+						cur->textops[i], FALSE, cur,
 						TRUE, &spec))
 					break;
 
@@ -1509,7 +1509,7 @@ beat_instruction_around_the_bush(char **operands, struct tic64x_insn *insn)
 		spec.unit = spec.unit_num = spec.mem_path = spec.uses_xpath =-1;
 		if (!insn->operand_values[i].handler->validate(
 				&insn->operand_values[i], cur->textops[i], TRUE,
-				insn, FALSE, &spec))
+				cur, FALSE, &spec))
 			as_fatal("Validator for %s marked operand invalide, but"
 				"then changed its mind; internal error\n",
 				insn->operand_values[i].handler->name);
@@ -2357,7 +2357,8 @@ opread_constant(char *line, bfd_boolean print_error, struct read_operand *out)
 bfd_boolean
 opvalidate_memaccess(struct read_operand *in, bfd_boolean print_error,
 			enum tic64x_text_operand optype,
-			struct tic64x_insn *insn, bfd_boolean gen_unitspec,
+			struct tic64x_op_template *templ,
+			bfd_boolean gen_unitspec,
 			struct unitspec *spec)
 {
 
@@ -2374,7 +2375,8 @@ opvalidate_memaccess(struct read_operand *in, bfd_boolean print_error,
 bfd_boolean
 opvalidate_register(struct read_operand *in, bfd_boolean print_error,
 			enum tic64x_text_operand optype,
-			struct tic64x_insn *insn, bfd_boolean gen_unitspec,
+			struct tic64x_op_template *templ,
+			bfd_boolean gen_unitspec,
 			struct unitspec *spec)
 {
 
@@ -2391,7 +2393,8 @@ opvalidate_register(struct read_operand *in, bfd_boolean print_error,
 bfd_boolean
 opvalidate_double_register(struct read_operand *in, bfd_boolean print_error,
 			enum tic64x_text_operand optype,
-			struct tic64x_insn *insn, bfd_boolean gen_unitspec,
+			struct tic64x_op_template *templ,
+			bfd_boolean gen_unitspec,
 			struct unitspec *spec)
 {
 
@@ -2408,7 +2411,8 @@ opvalidate_double_register(struct read_operand *in, bfd_boolean print_error,
 bfd_boolean
 opvalidate_constant (struct read_operand *in, bfd_boolean print_error,
 			enum tic64x_text_operand optype,
-			struct tic64x_insn *insn, bfd_boolean gen_unitspec,
+			struct tic64x_op_template *templ,
+			bfd_boolean gen_unitspec,
 			struct unitspec *spec)
 {
 
