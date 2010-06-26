@@ -2197,9 +2197,33 @@ opread_memaccess(char *line, bfd_boolean print_error, struct read_operand *out)
 			off_reg = TIC64X_ADDRMODE_REGISTER;
 		} else {
 			/* No, must be a constant, parse that instead */
-/* XXX - constant parse error? */
 			tic64x_parse_expr(offs, &expr);
 			off_reg = TIC64X_ADDRMODE_OFFSET;
+
+			/* There are some kinds of expression that are either
+			 * invalid or likely to cause damage to your eyes: */
+			if (expr.X_op == O_illegal) {
+				if (print_error)
+					as_bad("Memory offset is neither a "
+						"register nor valid expression"
+						"\n");
+
+				return TIC64X_OPREADER_PARTIAL_MATCH;
+			} else if (expr.X_op == O_absent) {
+				if (print_error)
+					as_bad("Expected an expression for "
+						"memory offset, found nothing"
+						"\n");
+
+				return TIC64X_OPREADER_PARTIAL_MATCH;
+			} else if (expr.X_op == O_symbol) {
+				as_warn("Caution - you have used a symbol based"
+					" expression for a memory _offset_ - "
+					"this is supported by TIs relocations "
+					"and loader, but the codepath for "
+					"writing these in binutils is untested."
+					"\n");
+			}
 		}
 	} else {
 		/* No offset, implement as zero constant offs */
