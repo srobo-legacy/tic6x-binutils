@@ -134,7 +134,6 @@ static opreader opread_memaccess;
 static opreader opread_register;
 static opreader opread_double_register;
 static opreader opread_constant;
-static opreader opread_bfield;
 
 static opvalidate opvalidate_memaccess;
 static opvalidate opvalidate_register;
@@ -1115,9 +1114,8 @@ md_assemble(char *line)
 	char *operands[TIC64X_MAX_TXT_OPERANDS+1];
 	struct tic64x_insn *insn;
 	char *mnemonic;
-	int i, bfieldfail, ret;
+	int i,  ret;
 
-	bfieldfail = 0;
 	insn = malloc(sizeof(*insn));
 	memset(insn, 0, sizeof(*insn));
 
