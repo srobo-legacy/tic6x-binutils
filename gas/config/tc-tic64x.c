@@ -2148,7 +2148,7 @@ opread_memaccess(char *line, bfd_boolean print_error, struct read_operand *out)
 		pre_post = TIC64X_ADDRMODE_PRE;
 	}
 
-	/* Look for offset register of constant */
+	/* Look for offset register or constant */
 	offsetreg = NULL;
 	bracket = '\0';
 	if (*line == '[' || *line == '(') {
@@ -2171,20 +2171,17 @@ opread_memaccess(char *line, bfd_boolean print_error, struct read_operand *out)
 		c = *line;
 		*line = 0;
 
-/* XXX - use gas' built in register section / register symbols support,
- * so that expression parsing can handle our detection of registers */
-
-		/* Need to know early whether this is a register or not - if it
-		 * is, should just be a single symbol that we can translate. */
+		/* We have some text - is it a register? */
 		offsetreg = tic64x_sym_to_reg(offs);
 		if (offsetreg) {
-			/* joy */
 			off_reg = TIC64X_ADDRMODE_REGISTER;
 		} else {
+			/* No, must be a constant, parse that instead */
+/* XXX - constant parse error? */
 			tic64x_parse_expr(offs, &expr);
 		}
 	} else {
-		/* No offset, so set offs to constant zero */
+		/* No offset, implement as zero constant offs */
 		has_offset = 0;
 		off_reg = TIC64X_ADDRMODE_OFFSET;
 	}
