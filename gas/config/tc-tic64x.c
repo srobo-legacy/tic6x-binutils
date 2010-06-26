@@ -75,9 +75,11 @@ struct opdetail_memaccess {
 	const struct tic64x_register *base;
 	union {
 		const struct tic64x_register *reg;
-		uint32_t const_offs;
+		expressionS expr;
 	} offs;
 	bfd_boolean const_offs;
+	int addrmode;
+	bfd_boolean scale;
 };
 
 struct opdetail_register {
@@ -2219,6 +2221,23 @@ opread_memaccess(char *line, bfd_boolean print_error, struct read_operand *out)
 	if (*line != 0) {
 		READ_ERROR(("Trailing rubbish at end of address operand"));
 		return OPREADER_PARTIAL_MATCH;
+	}
+
+	/* Now that we've read some stuff, now fill out the read_operand struct
+	 * with the details of whats been parsed */
+	out->u.mem.base = reg;
+	out->u.mem.addrmode = off_reg | pos_neg | pre_post | nomod_modify;
+	out->u.mem.scale = (bracket == ']') ? TRUE : FALSE;
+	if (off_reg == TIC64X_ADDRMODE_OFFSET) {
+		out->u.mem.const_offs = TRUE;
+		if (has_offset) {
+			memcpy(&out->u.mem.offs.expr, &expr, sizeof(expr));
+		} else {
+			tic64x_parse_expr("0", &out->u.mem.offs.expr);
+		}
+	} else {
+		out->u.mem.const_offs = FALSE;
+		out->u.mem.offs.reg = offsetreg;
 	}
 
 	return OPREADER_OK;
