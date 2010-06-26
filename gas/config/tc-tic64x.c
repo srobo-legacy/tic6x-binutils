@@ -2333,67 +2333,20 @@ int
 opread_constant(char *line, bfd_boolean print_error, struct read_operand *out)
 {
 	expressionS expr;
-	enum tic64x_operand_type realtype;
-	int i, j, shift, err;
-
-	/* Pre-lookup the operand index we expect... */
-	if (type == tic64x_optxt_nops) {
-		realtype = tic64x_operand_nops;
-		i = find_operand_index(insn->templ, realtype);
-	} else {
-		for (j = 0; constant_types[j] != tic64x_operand_invalid; j++) {
-			if ((i = (find_operand_index(insn->templ,
-						constant_types[j]))) >= 0) {
-				realtype = constant_types[j];
-				break;
-			}
-		}
-
-		if (constant_types[j] == tic64x_operand_invalid) {
-			abort_no_operand(insn, "tic64x_operand_const*");
-		}
-	}
-
-	/* Do we need to shift at all? */
-	if (insn->templ->flags & TIC64X_OP_CONST_SCALE) {
-		shift = insn->templ->flags & TIC64X_OP_MEMSZ_MASK;
-		shift >>= TIC64X_OP_MEMSZ_SHIFT;
-	} else if (insn->templ->flags & TIC64X_OP_USE_TOP_HWORD) {
-		shift = 16;
-	} else {
-		shift = 0;
-	}
 
 	tic64x_parse_expr(line, &expr);
-	if (expr.X_op == O_constant) {
-		if ((type == tic64x_optxt_uconstant || type ==tic64x_optxt_nops)
-			&& expr.X_add_number < 0 &&
-			!(insn->templ->flags & TIC64X_OP_NO_RANGE_CHK)) {
-			as_bad("Negative operand, expected unsigned");
-			return;
-		}
-
-		err = tic64x_set_operand(&insn->opcode, realtype,
-					expr.X_add_number >> shift,
-					(type == tic64x_optxt_sconstant)
-					? 1 : 0);
-
-		/* Trying to set operand that's too big: that's an error, unless
-		 * it's an instruction that expects this and that has set the
-		 * no range check flag */
-		if (err && !(insn->templ->flags & TIC64X_OP_NO_RANGE_CHK)) {
-			as_bad("Constant operand exceeds permitted size");
-			return;
-		}
-
-		insn->operand_values[i].resolved = 1;
-	} else {
-		/* Not something useful right now, leave unresovled */
-		/*  Shifting will be handled by fixup/reloc code */
-		memcpy(&insn->operand_values[i].expr, &expr, sizeof(expr));
+	if (expr.X_op == O_illegal) {
+		READ_ERROR(("Illegal constant expression"));
+		return OPREADER_BAD;
+	} else if (expr.X_op == O_absent) {
+		READ_ERROR(("Expected constant expression"));
+		return OPREADER_BAD;
 	}
 
-	return;
+	/* Everything else is the job of the validator */
+	memcpy(&out->u.constant.expr, &expr, sizeof(expr));
+
+	return OPREADER_OK;
 }
 
 #undef READ_ERROR
