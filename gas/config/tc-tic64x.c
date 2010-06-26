@@ -156,7 +156,7 @@ struct op_handler {
 } operand_handlers[] = {
 {
 	tic64x_optxt_memaccess,
-	tic64x_optxt_memrel15,
+	tic64x_optxt_none,
 	tic64x_optxt_none,
 	"memacc",
 	opread_memaccess,
