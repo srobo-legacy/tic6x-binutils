@@ -117,7 +117,8 @@ typedef int (opreader) (char *line, bfd_boolean print_error,
  * instruction. If get_unitspec is set, inspect any fixed unit details in the
  * instruction and if it's possible for this situation to be valid, output any
  * further unitspec restrictions this operand would impose */
-typedef int (opvalidate) (struct read_operand *in, bfd_boolean print_error,
+typedef bfd_boolean (opvalidate) (struct read_operand *in,
+				bfd_boolean print_error,
 				enum tic64x_text_operand optype,
 				struct tic64x_insn *insn,
 				bfd_boolean gen_unitspec,
@@ -2350,8 +2351,9 @@ opread_constant(char *line, bfd_boolean print_error, struct read_operand *out)
 }
 
 #undef READ_ERROR
+#define NOT_VALID(x) if (print_error) as_bad x
 
-int
+bfd_boolean
 opvalidate_memaccess(struct read_operand *in, bfd_boolean print_error,
 			enum tic64x_text_operand optype,
 			struct tic64x_insn *insn, bfd_boolean gen_unitspec,
@@ -2368,7 +2370,7 @@ opvalidate_memaccess(struct read_operand *in, bfd_boolean print_error,
 	return 1;
 }
 
-int
+bfd_boolean
 opvalidate_register(struct read_operand *in, bfd_boolean print_error,
 			enum tic64x_text_operand optype,
 			struct tic64x_insn *insn, bfd_boolean gen_unitspec,
@@ -2385,7 +2387,7 @@ opvalidate_register(struct read_operand *in, bfd_boolean print_error,
 	return 1;
 }
 
-int
+bfd_boolean
 opvalidate_double_register(struct read_operand *in, bfd_boolean print_error,
 			enum tic64x_text_operand optype,
 			struct tic64x_insn *insn, bfd_boolean gen_unitspec,
@@ -2402,7 +2404,7 @@ opvalidate_double_register(struct read_operand *in, bfd_boolean print_error,
 	return 1;
 }
 
-int
+bfd_boolean
 opvalidate_constant (struct read_operand *in, bfd_boolean print_error,
 			enum tic64x_text_operand optype,
 			struct tic64x_insn *insn, bfd_boolean gen_unitspec,
