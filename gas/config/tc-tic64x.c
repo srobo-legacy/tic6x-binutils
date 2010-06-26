@@ -2056,28 +2056,24 @@ opread_memaccess(char *line, bfd_boolean print_error, struct read_operand *out)
 
 	/* See page 79 of spru732h for table of address modes */
 	if (*line == '+') {
+		pos_neg = TIC64X_ADDRMODE_POS;
+		pre_post = TIC64X_ADDRMODE_PRE;
 		if (*(line+1) == '+') {
 			/* Preincrement */
 			nomod_modify = TIC64X_ADDRMODE_MODIFY;
-			pos_neg = TIC64X_ADDRMODE_POS;
-			pre_post = TIC64X_ADDRMODE_PRE;
 			line += 2;
 		} else {
 			nomod_modify = TIC64X_ADDRMODE_NOMODIFY;
-			pos_neg = TIC64X_ADDRMODE_POS;
-			pre_post = TIC64X_ADDRMODE_PRE;
 			line++;
 		}
 	} else if (*line == '-') {
+		pos_neg = TIC64X_ADDRMODE_NEG;
+		pre_post = TIC64X_ADDRMODE_PRE;
 		if (*(line+1) == '-') {
 			nomod_modify = TIC64X_ADDRMODE_MODIFY;
-			pos_neg = TIC64X_ADDRMODE_NEG;
-			pre_post = TIC64X_ADDRMODE_PRE;
 			line += 2;
 		} else {
 			nomod_modify = TIC64X_ADDRMODE_NOMODIFY;
-			pos_neg = TIC64X_ADDRMODE_NEG;
-			pre_post = TIC64X_ADDRMODE_PRE;
 			line++;
 		}
 	}
