@@ -2179,6 +2179,7 @@ opread_memaccess(char *line, bfd_boolean print_error, struct read_operand *out)
 			/* No, must be a constant, parse that instead */
 /* XXX - constant parse error? */
 			tic64x_parse_expr(offs, &expr);
+			off_reg = TIC64X_ADDRMODE_OFFSET;
 		}
 	} else {
 		/* No offset, implement as zero constant offs */
