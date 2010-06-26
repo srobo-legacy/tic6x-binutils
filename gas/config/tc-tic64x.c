@@ -2338,7 +2338,7 @@ opread_constant(char *line, bfd_boolean print_error, struct read_operand *out)
 
 bfd_boolean
 opvalidate_memaccess(struct read_operand *in, bfd_boolean print_error,
-			enum tic64x_text_operand optype ATTRIBUTE_UNUSED,
+			enum tic64x_text_operand optype,
 			struct tic64x_op_template *templ,
 			bfd_boolean gen_unitspec,
 			struct unitspec *spec)
@@ -2351,6 +2351,10 @@ opvalidate_memaccess(struct read_operand *in, bfd_boolean print_error,
 	bfd_boolean do_scale, opt_scale;
 
 	detail = &in->u.mem;
+
+	if (optype != tic64x_optxt_memaccess)
+		as_fatal("Invalid operand type has made its way to memaccess "
+			"validator");
 
 	/* Gather some information on this template... */
 	if (templ->operands[0] == tic64x_operand_rcoffset ||
