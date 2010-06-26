@@ -2511,15 +2511,88 @@ opvalidate_register(struct read_operand *in, bfd_boolean print_error,
 			bfd_boolean gen_unitspec,
 			struct unitspec *spec)
 {
+	int flag;
+	int8_t reg_side;
+	bfd_boolean uses_xpath, uses_dpath;
 
-	UNUSED(in);
-	UNUSED(print_error);
-	UNUSED(optype);
-	UNUSED(templ);
-	UNUSED(gen_unitspec);
-	UNUSED(spec);
-	as_fatal("Unimplemented opvalidate_register\n");
-	return 1;
+	uses_xpath = FALSE;
+	uses_dpath = FALSE;
+	reg_side = (in->u.reg.base->num & TIC64X_REG_UNIT2) ? 1 : 0;
+
+	/* Registers: this is nice and simple to cope with. Destination regs
+	 * have to be on the execution side, the others too unless they can
+	 * xpath. Unfortunately a hack is required though: this is how we
+	 * determine what datapath a load/store instruction takes, by where
+	 * the destination register lies */
+
+	/* So what can we do? Check the side of each register */
+	switch (optype) {
+	case tic64x_optxt_srcreg1:
+		flag = TIC64X_OP_XPATH_SRC1;
+		break;
+	case tic64x_optxt_srcreg2:
+		flag = TIC64X_OP_XPATH_SRC2;
+		break;
+	case tic64x_optxt_dstreg:
+		flag = 0; /* No condition where dst reg can be on other side */
+		break;
+	default:
+		as_fatal("Invalid operand type has made its way into register "
+			"validator");
+	}
+
+	if (reg_side != spec->unit_num && spec->unit_num != -1) {
+		/* Can we xpath? */
+		if (!(templ->flags & flag)) {
+			NOT_VALID(("Register %C%d on wrong side of processor",
+						(reg_side) ? 'A' : 'B',
+						in->u.reg.base->num & 0x1F));
+			return TRUE;
+		}
+	}
+
+	if (templ->flags & flag)
+		uses_xpath = TRUE;
+
+	/* OK, what else? If it's a dst reg and we're a memaccess, that means
+	 * we're going to end up using the data path on this side */
+	if (templ->flags & TIC64X_OP_MEMACCESS && optype ==tic64x_optxt_dstreg){
+		uses_dpath = TRUE;
+
+		if (spec->mem_path != -1 && spec->mem_path != reg_side) {
+			NOT_VALID(("Memory datapath on wrong side of processor"
+									));
+			return TRUE;
+		}
+	}
+
+	/* We got this far, if we don't need to update constraints, return now*/
+	if (gen_unitspec == FALSE)
+		return FALSE;
+
+	/* Right. So, what constraints does this place? If the register can't
+	 * use the xpath then we're locked to that side (this is the case for
+	 * dstreg and srcregs that don't have the xpath flag). */
+	if (uses_xpath == FALSE && spec->unit_num == -1)
+		spec->unit_num = reg_side;
+
+	/* Alternately if we *could* use the xpath, but don't, say so */
+	if (uses_xpath == TRUE && spec->unit_num == reg_side)
+		spec->uses_xpath = 0;
+
+	/* If we're tied to a side that differs from the reg side and we got
+	 * this far, the xpath _has_ to be used */
+	if (uses_xpath == TRUE && spec->unit_num != -1 &&
+				 spec->unit_num != reg_side)
+		spec->uses_xpath = 1;
+
+	/* Finally, did we end up finding that we also decide the datapath? */
+	if (uses_dpath == TRUE)
+		spec->mem_path = reg_side;
+
+	/* I can't think of anything else. Erk. */
+
+	return 0;
 }
 
 bfd_boolean
