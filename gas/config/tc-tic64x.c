@@ -86,6 +86,11 @@ struct opdetail_register {
 	const struct tic64x_register *base;
 };
 
+struct opdetail_double_register {
+	const struct tic64x_register *reg1;
+	const struct tic64x_register *reg2;
+};
+
 struct opdetail_constant {
 	uint32_t const_val;
 	bfd_boolean is_signed;
@@ -98,6 +103,7 @@ struct read_operand {
 	union {
 		struct opdetail_memaccess mem;
 		struct opdetail_register reg;
+		struct opdetail_double_register dreg;
 		struct opdetail_constant constant;
 	} u;
 };
