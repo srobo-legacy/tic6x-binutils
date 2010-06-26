@@ -2180,16 +2180,6 @@ opread_memaccess(char *line, bfd_boolean print_error, struct read_operand *out)
 		if (offsetreg) {
 			/* joy */
 			off_reg = TIC64X_ADDRMODE_REGISTER;
-			/* Memory addr registers _have_ to come from the
-			 * side of the processor we're executing on */
-			if (((reg->num & TIC64X_REG_UNIT2) &&
-					insn->unit_num != 2) ||
-			    (!(reg->num & TIC64X_REG_UNIT2) &&
-					insn->unit_num != 1)) {
-				as_bad("Base address register must be on same "
-					"side of processor as instruction");
-				return;
-			}
 		} else {
 			tic64x_parse_expr(offs, &expr);
 		}
