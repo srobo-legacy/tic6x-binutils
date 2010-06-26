@@ -327,8 +327,6 @@ static void tic64x_output_insn(struct tic64x_insn *insn, char *out);
 static int read_execution_unit(char **curline, struct unitspec *spec);
 static char *tic64x_parse_expr(char *s, expressionS *exp);
 static struct tic64x_register *tic64x_sym_to_reg(char *name);
-static int find_operand_index(struct tic64x_op_template *templ,
-			enum tic64x_operand_type type);
 
 static int apply_conditional(struct tic64x_insn *insn);
 static void fabricate_mv_insn(struct tic64x_insn *insn, char *op1, char *op2);
@@ -814,19 +812,6 @@ type_to_rtype(struct tic64x_insn *insn, enum tic64x_operand_type type)
 	default:
 		as_fatal("Relocation on operand type that doesn't support it");
 	}
-}
-
-int
-find_operand_index(struct tic64x_op_template *templ,
-			enum tic64x_operand_type type)
-{
-	int i;
-
-	for (i = 0; i < TIC64X_MAX_OPERANDS; i++)
-		if (templ->operands[i] == type)
-			return i;
-
-	return -1;
 }
 
 /* Some kind of convention as to what can be md_blah and what needs to be
