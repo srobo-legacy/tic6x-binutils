@@ -2051,7 +2051,7 @@ opread_memaccess(char *line, bfd_boolean print_error, struct read_operand *out)
 	/* We expect firstly to start wih a '*' */
 	if (*line++ != '*') {
 		as_bad("expected '*' before memory operand");
-		return;
+		return OPREADER_BAD;
 	}
 
 	/* See page 79 of spru732h for table of address modes */
@@ -2087,7 +2087,7 @@ opread_memaccess(char *line, bfd_boolean print_error, struct read_operand *out)
 	 * complain about it */
 	if (regname == line) {
 		as_bad("Unexpected '%C' when reading memory base register\n");
-		retur ;
+		return OPREADER_PARTIAL_MATCH;
 	}
 
 	/* Now truncate the input line so that we only have the text of the
@@ -2098,7 +2098,7 @@ opread_memaccess(char *line, bfd_boolean print_error, struct read_operand *out)
 
 	if (!reg) {
 		as_bad("Expected base address register, found \"%s\"", regname);
-		return;
+		return OPREADER_PARTIAL_MATCH;
 	}
 
 	/* un-truncate input line */
@@ -2120,14 +2120,14 @@ opread_memaccess(char *line, bfd_boolean print_error, struct read_operand *out)
 			line += 2;
 		} else {
 			as_bad("Bad operator following address register");
-			return;
+			return OPREADER_PARTIAL_MATCH;
 		}
 	} else if (*line == '+') {
 		if (*(line+1) == '+') {
 			if (pos_neg != -1 || nomod_modify != -1) {
 				as_bad("Can't specify both pre and post "
 					"operators on address register");
-				return;
+				return OPREADER_PARTIAL_MATCH;
 			}
 
 			nomod_modify = TIC64X_ADDRMODE_MODIFY;
@@ -2136,7 +2136,7 @@ opread_memaccess(char *line, bfd_boolean print_error, struct read_operand *out)
 			line += 2;
 		} else {
 			as_bad("Bad operator following address register");
-			return;
+			return OPREADER_PARTIAL_MATCH;
 		}
 	}
 
@@ -2163,7 +2163,7 @@ opread_memaccess(char *line, bfd_boolean print_error, struct read_operand *out)
 		if (is_end_of_line[(int)*line]) {
 			as_bad("Unexpected end of file while reading address "
 				"register offset");
-			return;
+			return OPREADER_PARTIAL_MATCH;
 		}
 
 		/* We have an offset - read it into an expr, then
@@ -2196,10 +2196,10 @@ opread_memaccess(char *line, bfd_boolean print_error, struct read_operand *out)
 	 * we're at the end of the string we were passed */
 	if (*line != 0) {
 		as_bad("Trailing rubbish at end of address operand");
-		return;
+		return OPREADER_PARTIAL_MATCH;
 	}
 
-	return;
+	return OPREADER_OK;
 }
 
 int
