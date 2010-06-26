@@ -2032,6 +2032,8 @@ tic64x_output_insn(struct tic64x_insn *insn, char *out)
 	return;
 }
 
+#define READ_ERROR(x) if (print_error) as_bad x
+
 int
 opread_memaccess(char *line, bfd_boolean print_error, struct read_operand *out)
 {
@@ -2050,8 +2052,7 @@ opread_memaccess(char *line, bfd_boolean print_error, struct read_operand *out)
 
 	/* We expect firstly to start wih a '*' */
 	if (*line++ != '*') {
-		if (print_error)
-			as_bad("expected '*' before memory operand");
+		READ_ERROR(("expected '*' before memory operand"));
 
 		return OPREADER_BAD;
 	}
@@ -2088,10 +2089,8 @@ opread_memaccess(char *line, bfd_boolean print_error, struct read_operand *out)
 	/* If there's something that can't be a register name here,
 	 * complain about it */
 	if (regname == line) {
-		if (print_error)
-			as_bad("Unexpected '%C' when reading memory base "
-								"register\n");
-
+		READ_ERROR(("Unexpected '%C' reading memory base register",
+								*line));
 		return OPREADER_PARTIAL_MATCH;
 	}
 
@@ -2102,10 +2101,8 @@ opread_memaccess(char *line, bfd_boolean print_error, struct read_operand *out)
 	reg = tic64x_sym_to_reg(regname);
 
 	if (!reg) {
-		if (print_error)
-			as_bad("Expected base address register, found \"%s\"",
-								regname);
-
+		READ_ERROR(("Expected base address register, found \"%s\"",
+								regname));
 		return OPREADER_PARTIAL_MATCH;
 	}
 
@@ -2117,11 +2114,8 @@ opread_memaccess(char *line, bfd_boolean print_error, struct read_operand *out)
 	if (*line == '-') {
 		if (*(line+1) == '-') {
 			if (pos_neg != -1 || nomod_modify != -1) {
-				if (print_error)
-					as_bad("Can't specify both pre and post"
-						" operators on address "
-						"register");
-
+				READ_ERROR(("Can't specify both pre and post"
+					" operators on address register"));
 				return OPREADER_PARTIAL_MATCH;
 			}
 
@@ -2130,19 +2124,14 @@ opread_memaccess(char *line, bfd_boolean print_error, struct read_operand *out)
 			pre_post = TIC64X_ADDRMODE_POST;
 			line += 2;
 		} else {
-			if (print_error)
-				as_bad("Bad operator after address register");
-
+			READ_ERROR(("Bad operator after address register"));
 			return OPREADER_PARTIAL_MATCH;
 		}
 	} else if (*line == '+') {
 		if (*(line+1) == '+') {
 			if (pos_neg != -1 || nomod_modify != -1) {
-				if (print_error)
-					as_bad("Can't specify both pre and post"
-						" operators on address "
-						"register");
-
+				READ_ERROR(("Can't specify both pre and post"
+					" operators on address register"));
 				return OPREADER_PARTIAL_MATCH;
 			}
 
@@ -2151,9 +2140,7 @@ opread_memaccess(char *line, bfd_boolean print_error, struct read_operand *out)
 			pre_post = TIC64X_ADDRMODE_POST;
 			line += 2;
 		} else {
-			if (print_error)
-				as_bad("Bad operator after address register");
-
+			READ_ERROR(("Bad operator after address register"));
 			return OPREADER_PARTIAL_MATCH;
 		}
 	}
@@ -2179,10 +2166,8 @@ opread_memaccess(char *line, bfd_boolean print_error, struct read_operand *out)
 			line++;
 
 		if (is_end_of_line[(int)*line]) {
-			if (print_error)
-				as_bad("Unexpected end of file while reading "
-					"address register offset");
-
+			READ_ERROR(("Unexpected end of file while reading "
+						"address register offset"));
 			return OPREADER_PARTIAL_MATCH;
 		}
 
@@ -2203,18 +2188,12 @@ opread_memaccess(char *line, bfd_boolean print_error, struct read_operand *out)
 			/* There are some kinds of expression that are either
 			 * invalid or likely to cause damage to your eyes: */
 			if (expr.X_op == O_illegal) {
-				if (print_error)
-					as_bad("Memory offset is neither a "
-						"register nor valid expression"
-						"\n");
-
+				READ_ERROR(("Memory offset is neither a "
+					"register nor valid expression"));
 				return TIC64X_OPREADER_PARTIAL_MATCH;
 			} else if (expr.X_op == O_absent) {
-				if (print_error)
-					as_bad("Expected an expression for "
-						"memory offset, found nothing"
-						"\n");
-
+				READ_ERROR(("Expected an expression for memory "
+					"offset, found nothing"));
 				return TIC64X_OPREADER_PARTIAL_MATCH;
 			} else if (expr.X_op == O_symbol) {
 				as_warn("Caution - you have used a symbol based"
@@ -2239,9 +2218,7 @@ opread_memaccess(char *line, bfd_boolean print_error, struct read_operand *out)
 	/* Offset / reg should be the last thing we (might) read - ensure that
 	 * we're at the end of the string we were passed */
 	if (*line != 0) {
-		if (print_error)
-			as_bad("Trailing rubbish at end of address operand");
-
+		READ_ERROR(("Trailing rubbish at end of address operand"));
 		return OPREADER_PARTIAL_MATCH;
 	}
 
@@ -2543,6 +2520,8 @@ opread_constant(char *line, bfd_boolean print_error, struct read_operand *out)
 
 	return;
 }
+
+#undef READ_ERROR
 
 int
 opvalidate_memaccess(struct read_operand *in, bfd_boolean print_error,
