@@ -92,10 +92,7 @@ struct opdetail_double_register {
 };
 
 struct opdetail_constant {
-	uint32_t const_val;
-	bfd_boolean is_signed;
 	expressionS expr;
-	bfd_boolean is_expr;
 };
 
 struct read_operand {
