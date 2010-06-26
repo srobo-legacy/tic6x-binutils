@@ -2526,7 +2526,7 @@ opvalidate_register(struct read_operand *in, bfd_boolean print_error,
 	UNUSED(in);
 	UNUSED(print_error);
 	UNUSED(optype);
-	UNUSED(insn);
+	UNUSED(templ);
 	UNUSED(gen_unitspec);
 	UNUSED(spec);
 	as_fatal("Unimplemented opvalidate_register\n");
@@ -2544,7 +2544,7 @@ opvalidate_double_register(struct read_operand *in, bfd_boolean print_error,
 	UNUSED(in);
 	UNUSED(print_error);
 	UNUSED(optype);
-	UNUSED(insn);
+	UNUSED(templ);
 	UNUSED(gen_unitspec);
 	UNUSED(spec);
 	as_fatal("Unimplemented opvalidate_double_register\n");
@@ -2562,7 +2562,7 @@ opvalidate_constant (struct read_operand *in, bfd_boolean print_error,
 	UNUSED(in);
 	UNUSED(print_error);
 	UNUSED(optype);
-	UNUSED(insn);
+	UNUSED(templ);
 	UNUSED(gen_unitspec);
 	UNUSED(spec);
 	as_fatal("Unimplemented opvalidate_constant\n");
