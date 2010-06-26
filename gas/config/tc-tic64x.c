@@ -1469,7 +1469,7 @@ beat_instruction_around_the_bush(char **operands, struct tic64x_insn *insn)
 		if ((insn->template_validity[idx] & VALID_MASK) == 0)
 			break;
 
-	if (idx != insn->num_possible_templates) {
+	if (idx == insn->num_possible_templates) {
 		/* So an error occured; find an operand to print the error for*/
 
 		/* Try final operand... */
