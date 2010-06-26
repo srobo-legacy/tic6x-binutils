@@ -2083,29 +2083,26 @@ opread_memaccess(char *line, bfd_boolean print_error, struct read_operand *out)
 	while (ISALPHA(*line) || ISDIGIT(*line) || *line == '_')
 		line++;
 
-	if (regname == line) { /* Invalid register name */
-		as_bad("Expected register name in memory operand of \"%s\"",
-						insn->templ->mnemonic);
-		return;
+	/* If there's something that can't be a register name here,
+	 * complain about it */
+	if (regname == line) {
+		as_bad("Unexpected '%C' when reading memory base register\n");
+		retur ;
 	}
 
+	/* Now truncate the input line so that we only have the text of the
+	 * register name, try to look that up */
 	c = *line;
 	*line = 0;
 	reg = tic64x_sym_to_reg(regname);
-	*line = c;
+
 	if (!reg) {
-		as_bad("\"%s\" is not a register", regname);
+		as_bad("Expected base address register, found \"%s\"", regname);
 		return;
 	}
 
-	/* Memory addr registers _have_ to come from the side of the processor
-	 * we're executing on */
-	if (((reg->num & TIC64X_REG_UNIT2) && insn->unit_num != 2) ||
-	    (!(reg->num & TIC64X_REG_UNIT2) && insn->unit_num != 1)) {
-		as_bad("Base address register must be on same side of processor"
-			" as instruction");
-		return;
-	}
+	/* un-truncate input line */
+	*line = c;
 
 	/* We should now have a register to work with - it can be suffixed
 	 * with a postdecrement/increment, offset constant or register */
