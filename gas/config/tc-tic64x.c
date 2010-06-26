@@ -2247,100 +2247,17 @@ int
 opread_register(char *line, bfd_boolean print_error, struct read_operand *out)
 {
 	struct tic64x_register *reg;
-	enum tic64x_operand_type t2;
-	int tmp, err;
 
-	/* Expect only a single piece of text, should be register */
+	/* Expect only a single piece of text, should be register. Simple. */
 	reg = tic64x_sym_to_reg(line);
 	if (!reg) {
-		as_bad("Expected \"%s\" to be register", line);
-		return;
+		READ_ERROR(("Expected \"%s\" to be register", line));
+		return OPREADER_BAD;
 	}
 
-	switch (type) {
-	case tic64x_optxt_srcreg1:
-		t2 = tic64x_operand_srcreg1;
-		break;
-	case tic64x_optxt_srcreg2:
-		t2 = tic64x_operand_srcreg2;
-		break;
-	case tic64x_optxt_dstreg:
-		t2 = tic64x_operand_dstreg;
-		break;
-	default:
-		as_bad("Unexpected operand type in opread_register");
-		return;
-	}
+	out->u.reg.base = reg;
 
-	/* Verify register is in same unit num as this instruction, or that
-	 * we have a good excuse for using another one */
-	if (!tic64x_optest_register(line, insn, type)) {
-		as_bad("Register \"%s\" not suitable for this instruction "
-			"format", insn->templ->mnemonic);
-		return;
-	}
-
-	err = tic64x_set_operand(&insn->opcode, t2, reg->num & 0x1F, 0);
-	if (err)
-		abort_setop_fail(insn, "{register}");
-
-	/* Now set some more interesting fields - if working on destination reg,
-	 * set the side of processor we're working on. Also set xpath field */
-	if (t2 == tic64x_operand_dstreg) {
-
-		/* Destination must be on same side of processor as we're
-		 * executing, except when it's memory access. Bleaugh */
-
-		if (insn->templ->flags & TIC64X_OP_MEMACCESS) {
-			if ((insn->mem_path == 2 &&
-					!(reg->num & TIC64X_REG_UNIT2))
-				|| (insn->mem_path == 1 &&
-					(reg->num & TIC64X_REG_UNIT2))) {
-				as_bad("Destination register must match data "
-					"path specifier");
-				return;
-			}
-		} else {
-			/* Ensure destination is just on the correct side */
-			if ((insn->unit_num == 2 &&
-					!(reg->num & TIC64X_REG_UNIT2))
-					|| (insn->unit_num == 1 &&
-					reg->num & TIC64X_REG_UNIT2)) {
-				as_bad("Destination register must be on side "
-					"or processor where insn executes");
-				return;
-			}
-		}
-	} else if (TXTOPERAND_CAN_XPATH(insn, type)) {
-		/* This operand can use the xpath, do we? */
-		if (((reg->num & TIC64X_REG_UNIT2) && insn->unit_num == 1) ||
-		    (!(reg->num & TIC64X_REG_UNIT2) && insn->unit_num == 2)) {
-			/* Yes */
-			tmp = 1;
-		} else {
-			/* No */
-			tmp = 0;
-		}
-
-		/* Cross-check with what user said */
-                if (insn->uses_xpath == 0 && tmp == 1) {
-			as_bad("Specify 'X' in execution unit when "
-				"addressing registers in other side of "
-				"processor");
-			return;
-		} else if (insn->uses_xpath == 1 && tmp == 0) {
-			as_bad("'X' in execution unit, but cross-path register "
-				"is on same side of processor as instruction");
-			return;
-		}
-
-		err = tic64x_set_operand(&insn->opcode, tic64x_operand_x, tmp,
-									0);
-		if (err)
-			abort_setop_fail(insn, "tic64x_operand_x");
-	}
-
-	return;
+	return OPREADER_OK;
 }
 
 int
