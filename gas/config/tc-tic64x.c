@@ -2356,20 +2356,166 @@ opread_constant(char *line, bfd_boolean print_error, struct read_operand *out)
 
 bfd_boolean
 opvalidate_memaccess(struct read_operand *in, bfd_boolean print_error,
-			enum tic64x_text_operand optype,
+			enum tic64x_text_operand optype ATTRIBUTE_UNUSED,
 			struct tic64x_op_template *templ,
 			bfd_boolean gen_unitspec,
 			struct unitspec *spec)
 {
+	struct opdetail_memaccess *detail;
+	int field_sz, field_shift, max, mask;
+	int32_t val;
+	enum tic64x_operand_type offs_type;
+	int8_t base_side, offs_side;
+	bfd_boolean do_scale, opt_scale;
 
-	UNUSED(in);
-	UNUSED(print_error);
-	UNUSED(optype);
-	UNUSED(insn);
-	UNUSED(gen_unitspec);
-	UNUSED(spec);
-	as_fatal("Unimplemented opvalidate_memaccess\n");
-	return 1;
+	detail = &in->u.mem;
+
+	/* Gather some information on this template... */
+	if (templ->operands[0] == tic64x_operand_rcoffset ||
+		templ->operands[1] == tic64x_operand_rcoffset) {
+		offs_type = tic64x_operand_rcoffset;
+		field_sz = 5;
+	} else if (templ->operands[0] == tic64x_operand_const15 ||
+		templ->operands[1] == tic64x_operand_const15) {
+		offs_type = tic64x_operand_const15;
+		field_sz = 15;
+	} else {
+		as_fatal("memaccess operand with no corresponding offset field "
+								"size\n");
+	}
+
+	field_shift = templ->flags & TIC64X_OP_MEMSZ_MASK;
+	field_shift <<= TIC64X_OP_MEMSZ_SHIFT;
+
+	if (templ->flags & TIC64X_OP_MEMACC_SBIT)
+		opt_scale = TRUE;
+	else
+		opt_scale = FALSE;
+
+	if (templ->flags & TIC64X_OP_CONST_SCALE)
+		do_scale = TRUE;
+	else
+		do_scale = FALSE;
+
+	base_side = (detail->base->num & TIC64X_REG_UNIT2) ? 1 : 0;
+
+	if (detail->const_offs == FALSE)
+		offs_side = (detail->offs.reg->num & TIC64X_REG_UNIT2) ? 1 : 0;
+	else
+		offs_side = -1;
+
+	/* First of all, make some checks inre memrel15 instructions, which
+	 * have extra restrictions in addition to the usual... */
+	if (offs_type == tic64x_operand_const15) {
+		if (detail->const_offs == FALSE) {
+			NOT_VALID(("memrel15 instructions may only have "
+							"constant offsets"));
+			return TRUE;
+		}
+
+		if ((detail->base->num & 0x1F) != 15 &&
+					(detail->base->num & 0x1F) != 14) {
+			NOT_VALID(("memrel15 instructions may only take regs "
+					"14 and 15 as the base address"));
+			return TRUE;
+		}
+
+		if (spec->unit_num == 0) {
+			NOT_VALID(("memrel15 instructions may only execute "
+					"on side 2 of processor"));
+			return TRUE;
+		}
+
+		if (detail->addrmode != (TIC64X_ADDRMODE_POS |
+				TIC64X_ADDRMODE_PRE | TIC64X_ADDRMODE_OFFSET |
+				TIC64X_ADDRMODE_NOMODIFY)) {
+			NOT_VALID(("Invalid addressing mode for memrel15 "
+							"instruction"));
+			return TRUE;
+		}
+	}
+
+	/* Now do some actual operand-specific checks */
+	/* Does the base register sit on the correct side of the processor */
+	if (spec->unit_num != base_side && spec->unit_num != -1) {
+		NOT_VALID(("Base register must be on same side as "
+						"execution unit"));
+		return TRUE;
+	}
+
+	if (detail->const_offs == FALSE) {
+		/* Check that offset register is on same side as base */
+		if (base_side != offs_side) {
+			NOT_VALID(("Offset and base registers must be on "
+							"the same side"));
+			return TRUE;
+		}
+	} else {
+		/* Check constant fits in field. Rather intense. */
+		if (detail->offs.expr.X_op == O_constant) {
+			val = detail->offs.expr.X_add_number;
+			if (detail->offs.expr.X_unsigned == 0 && val < 0) {
+				NOT_VALID(("Negative constant as offset: use "
+					"negative addressing mode instead"));
+				return TRUE;
+			}
+
+			/* If the user encased the offset in [] brackets, then
+			 * the constant they gave us was prescaled to fit in
+			 * the field. Un-do that for testing. */
+			if (detail->scale_input)
+				val <<= field_shift;
+
+			max = 1 << field_sz;
+			if (do_scale)
+				max <<= field_shift;
+
+			if (val >= max && opt_scale) {
+				/* It's too large - invoke optional scale */
+				max <<= field_shift;
+				do_scale = TRUE;
+			}
+
+			if (val >= max) {
+				NOT_VALID(("Constant operand exceeds field "
+								"size"));
+				return TRUE;
+			}
+
+			/* Mkay, it fits in the field; but is it aligned? */
+			mask = (1 << field_shift) - 1;
+			if (do_scale && (val & mask)) {
+				NOT_VALID(("Constant operand not sufficiently "
+								"aligned"));
+				return TRUE;
+			}
+
+			/* Hurrah, it's a valid constant */
+		} else if (detail->offs.expr.X_op == O_symbol) {
+			/* We're a symbol based expression... we can't be
+			 * certain of what value we're going to get. So, ignore
+			 * this for the moment, and apply it as a fixup when
+			 * writing the operand */
+		} else {
+			NOT_VALID(("Offset expression neither a constant nor "
+				"based on a symbol"));
+			return TRUE;
+		}
+	}
+
+	/* Can't think of other things to check */
+
+	if (gen_unitspec == TRUE) {
+		/* Only constraint we impose is what side we execute on, given
+		 * where the base register is. Unless we're memrel15 */
+		if (offs_type == tic64x_operand_const15) {
+			spec->unit_num = 1;
+		 } else {
+			spec->unit_num = base_side;
+		}
+	}
+
+	return FALSE;
 }
 
 bfd_boolean
