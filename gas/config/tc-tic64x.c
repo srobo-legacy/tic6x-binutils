@@ -80,7 +80,6 @@ struct opdetail_memaccess {
 	bfd_boolean const_offs;
 	int addrmode;
 	bfd_boolean scale_input;	/* Input in [] brackets, to be scaled */
-	bfd_boolean scale_output;	/* Output 'scale' bit should be set */
 };
 
 struct opdetail_register {
