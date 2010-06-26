@@ -2050,7 +2050,9 @@ opread_memaccess(char *line, bfd_boolean print_error, struct read_operand *out)
 
 	/* We expect firstly to start wih a '*' */
 	if (*line++ != '*') {
-		as_bad("expected '*' before memory operand");
+		if (print_error)
+			as_bad("expected '*' before memory operand");
+
 		return OPREADER_BAD;
 	}
 
@@ -2086,7 +2088,10 @@ opread_memaccess(char *line, bfd_boolean print_error, struct read_operand *out)
 	/* If there's something that can't be a register name here,
 	 * complain about it */
 	if (regname == line) {
-		as_bad("Unexpected '%C' when reading memory base register\n");
+		if (print_error)
+			as_bad("Unexpected '%C' when reading memory base "
+								"register\n");
+
 		return OPREADER_PARTIAL_MATCH;
 	}
 
@@ -2097,7 +2102,10 @@ opread_memaccess(char *line, bfd_boolean print_error, struct read_operand *out)
 	reg = tic64x_sym_to_reg(regname);
 
 	if (!reg) {
-		as_bad("Expected base address register, found \"%s\"", regname);
+		if (print_error)
+			as_bad("Expected base address register, found \"%s\"",
+								regname);
+
 		return OPREADER_PARTIAL_MATCH;
 	}
 
@@ -2109,9 +2117,12 @@ opread_memaccess(char *line, bfd_boolean print_error, struct read_operand *out)
 	if (*line == '-') {
 		if (*(line+1) == '-') {
 			if (pos_neg != -1 || nomod_modify != -1) {
-				as_bad("Can't specify both pre and post "
-					"operators on address register");
-				return;
+				if (print_error)
+					as_bad("Can't specify both pre and post"
+						" operators on address "
+						"register");
+
+				return OPREADER_PARTIAL_MATCH;
 			}
 
 			nomod_modify = TIC64X_ADDRMODE_MODIFY;
@@ -2119,14 +2130,19 @@ opread_memaccess(char *line, bfd_boolean print_error, struct read_operand *out)
 			pre_post = TIC64X_ADDRMODE_POST;
 			line += 2;
 		} else {
-			as_bad("Bad operator following address register");
+			if (print_error)
+				as_bad("Bad operator after address register");
+
 			return OPREADER_PARTIAL_MATCH;
 		}
 	} else if (*line == '+') {
 		if (*(line+1) == '+') {
 			if (pos_neg != -1 || nomod_modify != -1) {
-				as_bad("Can't specify both pre and post "
-					"operators on address register");
+				if (print_error)
+					as_bad("Can't specify both pre and post"
+						" operators on address "
+						"register");
+
 				return OPREADER_PARTIAL_MATCH;
 			}
 
@@ -2135,7 +2151,9 @@ opread_memaccess(char *line, bfd_boolean print_error, struct read_operand *out)
 			pre_post = TIC64X_ADDRMODE_POST;
 			line += 2;
 		} else {
-			as_bad("Bad operator following address register");
+			if (print_error)
+				as_bad("Bad operator after address register");
+
 			return OPREADER_PARTIAL_MATCH;
 		}
 	}
@@ -2161,8 +2179,10 @@ opread_memaccess(char *line, bfd_boolean print_error, struct read_operand *out)
 			line++;
 
 		if (is_end_of_line[(int)*line]) {
-			as_bad("Unexpected end of file while reading address "
-				"register offset");
+			if (print_error)
+				as_bad("Unexpected end of file while reading "
+					"address register offset");
+
 			return OPREADER_PARTIAL_MATCH;
 		}
 
@@ -2195,7 +2215,9 @@ opread_memaccess(char *line, bfd_boolean print_error, struct read_operand *out)
 	/* Offset / reg should be the last thing we (might) read - ensure that
 	 * we're at the end of the string we were passed */
 	if (*line != 0) {
-		as_bad("Trailing rubbish at end of address operand");
+		if (print_error)
+			as_bad("Trailing rubbish at end of address operand");
+
 		return OPREADER_PARTIAL_MATCH;
 	}
 
