@@ -79,7 +79,8 @@ struct opdetail_memaccess {
 	} offs;
 	bfd_boolean const_offs;
 	int addrmode;
-	bfd_boolean scale;
+	bfd_boolean scale_input;	/* Input in [] brackets, to be scaled */
+	bfd_boolean scale_output;	/* Output 'scale' bit should be set */
 };
 
 struct opdetail_register {
@@ -2231,7 +2232,7 @@ opread_memaccess(char *line, bfd_boolean print_error, struct read_operand *out)
 	 * with the details of whats been parsed */
 	out->u.mem.base = reg;
 	out->u.mem.addrmode = off_reg | pos_neg | pre_post | nomod_modify;
-	out->u.mem.scale = (bracket == ']') ? TRUE : FALSE;
+	out->u.mem.scale_input = (bracket == ']') ? TRUE : FALSE;
 	if (off_reg == TIC64X_ADDRMODE_OFFSET) {
 		out->u.mem.const_offs = TRUE;
 		if (has_offset) {
