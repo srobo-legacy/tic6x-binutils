@@ -2300,13 +2300,6 @@ opread_double_register(char *line, bfd_boolean print_error,
 	return OPREADER_OK;
 }
 
-static const enum tic64x_operand_type constant_types[] = {
-	tic64x_operand_const5, tic64x_operand_const5p2,
-	tic64x_operand_const21, tic64x_operand_const16,
-	tic64x_operand_const15, tic64x_operand_const12,
-	tic64x_operand_const10, tic64x_operand_const7,
-	tic64x_operand_const4, tic64x_operand_invalid };
-
 int
 opread_constant(char *line, bfd_boolean print_error, struct read_operand *out)
 {
@@ -2659,6 +2652,14 @@ opvalidate_double_register(struct read_operand *in, bfd_boolean print_error,
 
 	return 0;
 }
+
+static const enum tic64x_operand_type constant_types[] = {
+	tic64x_operand_const5, tic64x_operand_const5p2,
+	tic64x_operand_const21, tic64x_operand_const16,
+	tic64x_operand_const15, tic64x_operand_const12,
+	tic64x_operand_const10, tic64x_operand_const7,
+	tic64x_operand_const4, tic64x_operand_invalid
+};
 
 bfd_boolean
 opvalidate_constant (struct read_operand *in, bfd_boolean print_error,
