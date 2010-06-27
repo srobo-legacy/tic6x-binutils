@@ -2596,15 +2596,68 @@ opvalidate_double_register(struct read_operand *in, bfd_boolean print_error,
 			bfd_boolean gen_unitspec,
 			struct unitspec *spec)
 {
+	const struct tic64x_register *reg1, *reg2;
+	int8_t reg1_side, reg2_side, reg1_num, reg2_num;
 
-	UNUSED(in);
-	UNUSED(print_error);
-	UNUSED(optype);
-	UNUSED(templ);
-	UNUSED(gen_unitspec);
-	UNUSED(spec);
-	as_fatal("Unimplemented opvalidate_double_register\n");
-	return 1;
+	if (optype != tic64x_optxt_dwdst && optype != tic64x_optxt_dwsrc &&
+					optype != tic64x_optxt_dwsrc2)
+		as_fatal("Non-dword operand has made its way to dword "
+							"validator");
+
+	reg1 = in->u.dreg.reg1;
+	reg2 = in->u.dreg.reg2;
+	reg1_num = reg1->num & 0x1F;
+	reg2_num = reg2->num & 0x1F;
+	reg1_side = (reg1->num & TIC64X_REG_UNIT2) ? 1 : 0;
+	reg2_side = (reg2->num & TIC64X_REG_UNIT2) ? 1 : 0;
+
+	/* Double register restrictions: we can't use the xpath, so they're
+	 * always on the same side. They *can* also be the target of a load
+	 * or store, so check for data path constraints too. First though, some
+	 * more obvious issues */
+	if (reg1_num != reg2_num + 1) {
+		NOT_VALID(("Double register pairs must be sequential, "
+							"decreasing"));
+		return TRUE;
+	}
+
+	if (reg1_side != reg2_side) {
+		NOT_VALID(("Double register pairs must be on same side"));
+		return TRUE;
+	}
+
+	if (reg1_num & 1) {
+		NOT_VALID(("Double register pair must start on odd register"));
+		return TRUE;
+	}
+
+	/* So the registers specified are ok, how about side issues? Can't
+	 * do dregs over xpath, so they must only ever be on the same side
+	 * as the execution unit */
+	if (spec->unit_num != -1 && spec->unit_num != reg1_side) {
+		NOT_VALID(("Double register pair must be on same side of "
+				"processor"));
+		return TRUE;
+	}
+
+	/* We can also load and store double registers */
+	if (templ->flags & TIC64X_OP_MEMACCESS && spec->mem_path != -1 &&
+					spec->mem_path != reg1_side) {
+		NOT_VALID(("Double-reg data path on wrong side of processor"));
+		return TRUE;
+	}
+
+	/* So its good; now extra specifiers? */
+	if (gen_unitspec == FALSE)
+		return 0;
+
+	if (spec->unit_num == -1)
+		spec->unit_num = reg1_side;
+
+	if (templ->flags & TIC64X_OP_MEMACCESS && spec->mem_path == -1)
+		spec->mem_path = reg1_side;
+
+	return 0;
 }
 
 bfd_boolean
