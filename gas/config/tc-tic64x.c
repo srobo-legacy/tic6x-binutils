@@ -2664,18 +2664,83 @@ bfd_boolean
 opvalidate_constant (struct read_operand *in, bfd_boolean print_error,
 			enum tic64x_text_operand optype,
 			struct tic64x_op_template *templ,
-			bfd_boolean gen_unitspec,
-			struct unitspec *spec)
+			bfd_boolean gen_unitspec ATTRIBUTE_UNUSED,
+			struct unitspec *spec ATTRIBUTE_UNUSED)
 {
+	expressionS *e;
+	uint32_t unum;
+	int32_t snum;
+	int field_sz, i, max, mask;
+	enum tic64x_operand_type type;
 
-	UNUSED(in);
-	UNUSED(print_error);
-	UNUSED(optype);
-	UNUSED(templ);
-	UNUSED(gen_unitspec);
-	UNUSED(spec);
-	as_fatal("Unimplemented opvalidate_constant\n");
-	return 1;
+	if (optype != tic64x_optxt_uconstant && optype !=tic64x_optxt_sconstant)
+		as_fatal("Non-constant reached constant validator routine");
+
+	e = &in->u.constant.expr;
+	snum = e->X_add_number;
+	unum = e->X_add_number;
+
+	for (i = 0; type != tic64x_operand_invalid; i++) {
+		type = constant_types[i];
+		if (type == templ->operands[0] || type == templ->operands[1])
+			break;
+	}
+
+	if (type == tic64x_operand_invalid)
+		as_fatal("Insn with constant operand, but no corresponding "
+								"field");
+
+	field_sz = tic64x_operand_positions[type].size;
+	max = 1 << field_sz;
+
+	/* There _are_ some instructions that shift their constant operands */
+	if (templ->flags & TIC64X_OP_CONST_SCALE) {
+		int tmp;
+
+		tmp = templ->flags & TIC64X_OP_MEMSZ_MASK;
+		tmp >>= TIC64X_OP_MEMSZ_SHIFT;
+
+		max <<= tmp;
+		mask = (1 << tmp) - 1;
+	} else {
+		mask = 0;
+	}
+
+	/* Some different tests depending on whether we expected a signed or
+	 * unsigned constant */
+	if (optype == tic64x_optxt_sconstant) {
+		if (e->X_unsigned == 1 && snum < 0) {
+			NOT_VALID(("Negative constant, expected unsigned"));
+			return TRUE;
+		}
+
+		max >>= 1;
+		if (snum < -max || snum >= max) {
+			NOT_VALID(("Signed constant exceeds field size"));
+			return TRUE;
+		}
+	} else {
+		if (snum < -max || snum >= max) {
+			NOT_VALID(("Unsigned constant exceeds field size"));
+			return TRUE;
+		}
+	}
+
+	/* Happily there's no munging of scale bits - however if we had a
+	 * constant shift factored into the maximum number comparisons above,
+	 * ensure that the alignment of the number is sufficient to fit into
+	 * the field without dropping lower bits */
+	if (unum & mask) {
+		NOT_VALID(("Constant is not sufficiently aligned to fit in "
+						"shifted const field"));
+		return TRUE;
+	}
+
+	/* Mkay, I can't think of any other constraints. Happily, there are no
+	 * constraints on units, sides, xpaths and suchlike imposed by
+	 * constants */
+
+	return FALSE;
 }
 
 void
