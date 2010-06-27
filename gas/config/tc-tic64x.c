@@ -2579,7 +2579,7 @@ opvalidate_register(struct read_operand *in, bfd_boolean print_error,
 
 	/* I can't think of anything else. Erk. */
 
-	return 0;
+	return FALSE;
 }
 
 bfd_boolean
@@ -2650,7 +2650,7 @@ opvalidate_double_register(struct read_operand *in, bfd_boolean print_error,
 	if (templ->flags & TIC64X_OP_MEMACCESS && spec->mem_path == -1)
 		spec->mem_path = reg1_side;
 
-	return 0;
+	return FALSE;
 }
 
 static const enum tic64x_operand_type constant_types[] = {
