@@ -1478,7 +1478,7 @@ beat_instruction_around_the_bush(char **operands, struct tic64x_insn *insn)
 		/* Call validator, permit it to print error */
 		spec.unit = spec.unit_num = spec.mem_path = spec.uses_xpath =-1;
 		if (!insn->operand_values[i].handler->validate(
-				&insn->operand_values[i], cur->textops[i], TRUE,
+				&insn->operand_values[i], TRUE, cur->textops[i],
 				cur, FALSE, &spec))
 			as_fatal("Validator for %s marked operand invalide, but"
 				"then changed its mind; internal error\n",
