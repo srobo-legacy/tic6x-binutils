@@ -195,7 +195,7 @@ struct tic64x_insn {
 	/* Template holds everything needed to build the instruction, but
 	 * we need some data to actually build with. Each entry in operands
 	 * array corresponds to the operand in the op template */
-	struct read_operand operand_values[TIC64X_MAX_OPERANDS];
+	struct read_operand operand_values[TIC64X_MAX_TXT_OPERANDS];
 	int operands;
 
 	/* Hack for ti's mv instruction failery -  we store its operands and
