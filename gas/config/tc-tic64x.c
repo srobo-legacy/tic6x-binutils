@@ -2780,10 +2780,10 @@ opwrite_memaccess(struct read_operand *in, enum tic64x_text_operand optype,
 
 			tmp = insn->templ->flags & TIC64X_OP_MEMSZ_MASK;
 			tmp >>= TIC64X_OP_MEMSZ_SHIFT;
-			offs >>= tmp;
+			offs = mem->offs.expr.X_add_number;
 
 			if (insn->templ->flags & TIC64X_OP_CONST_SCALE)
-				offs = mem->offs.expr.X_add_number;
+				offs >>= tmp;
 
 			/* Do we have to twiddle with the optional scale bit? */
 			if (insn->templ->flags & TIC64X_OP_MEMACC_SBIT) {
