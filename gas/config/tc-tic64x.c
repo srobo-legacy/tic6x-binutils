@@ -1303,6 +1303,9 @@ beat_instruction_around_the_bush(char **operands, struct tic64x_insn *insn)
 				= cur;
 			insn->num_possible_templates++;
 		}
+
+		/* Point at next instruction in the opcode template table */
+		cur++;
 	}
 
 	/* If nothing matched at all, bail and inform the user. Picking the
