@@ -2865,11 +2865,43 @@ opwrite_double_register(struct read_operand *in,
 			enum tic64x_text_operand optype,
 			struct tic64x_insn *insn)
 {
+	enum tic64x_operand_type type;
+	int reg;
 
-	UNUSED(in);
-	UNUSED(optype);
-	UNUSED(insn);
-	as_fatal("Unimplemented opwrite_double_register\n");
+	/* Double register writer is slightly nontrivial - there are two forms
+	 * they can be written as, 4 bits identifying the higher 4 bits of the
+	 * register address, or 5 bits specifying the lower register address */
+
+	/* Second reg should be the even numbered address */
+	reg = in->u.dreg.reg2->num & 0x1F;
+
+	switch (optype) {
+	case tic64x_optxt_dwdst:
+		if (insn->templ->operands[0] == tic64x_operand_dwdst5 ||
+			insn->templ->operands[0] == tic64x_operand_dwdst5) {
+			type = tic64x_operand_dwdst5;
+		} else if (insn->templ->operands[0] == tic64x_operand_dwdst4 ||
+			insn->templ->operands[0] == tic64x_operand_dwdst4) {
+			type = tic64x_operand_dwdst4;
+			/* Shift right 1 bit: we address with top four bits of
+			 * the register pair */
+			reg >>= 1;
+		}
+		break;
+
+	case tic64x_optxt_dwsrc:
+		type = tic64x_operand_dwsrc;
+		break;
+
+	case tic64x_optxt_dwsrc2:
+		type = tic64x_operand_srcreg1;
+		break;
+
+	default:
+		as_fatal("Non-dword operand reached dword writer");
+	}
+
+	tic64x_set_operand(&insn->opcode, type, reg);
 	return;
 }
 
