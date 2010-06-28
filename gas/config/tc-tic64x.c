@@ -2683,7 +2683,7 @@ opvalidate_constant (struct read_operand *in, bfd_boolean print_error,
 	snum = e->X_add_number;
 	unum = e->X_add_number;
 
-	for (i = 0; type != tic64x_operand_invalid; i++) {
+	for (i = 0; constant_types[i] != tic64x_operand_invalid; i++) {
 		type = constant_types[i];
 		if (type == templ->operands[0] || type == templ->operands[1])
 			break;
