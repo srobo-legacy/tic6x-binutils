@@ -2837,11 +2837,26 @@ void
 opwrite_register(struct read_operand *in, enum tic64x_text_operand optype,
 			struct tic64x_insn *insn)
 {
+	enum tic64x_operand_type type;
+	int reg;
 
-	UNUSED(in);
-	UNUSED(optype);
-	UNUSED(insn);
-	as_fatal("Unimplemented opwrite_register\n");
+	/* There is precisely nothing interesting about writing these back */
+	switch (optype) {
+	case tic64x_optxt_srcreg1:
+		type = tic64x_operand_srcreg1;
+		break;
+	case tic64x_optxt_srcreg2:
+		type = tic64x_operand_srcreg2;
+		break;
+	case tic64x_optxt_dstreg:
+		type = tic64x_operand_dstreg;
+		break;
+	default:
+		as_fatal("Non-register operand has reached register writer");
+	}
+
+	reg = in->u.reg.base->num & 0x1F;
+	tic64x_set_operand(&insn->opcode, type, reg);
 	return;
 }
 
