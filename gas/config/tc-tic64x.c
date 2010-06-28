@@ -2755,11 +2755,91 @@ void
 opwrite_memaccess(struct read_operand *in, enum tic64x_text_operand optype,
 			struct tic64x_insn *insn)
 {
+	struct opdetail_memaccess *mem;
+	enum tic64x_operand_type type;
+	uint32_t offs;
 
-	UNUSED(in);
-	UNUSED(optype);
-	UNUSED(insn);
-	as_fatal("Unimplemented opwrite_memaccess\n");
+	if (optype != tic64x_optxt_memaccess)
+		as_fatal("Non-memaccess operand made its way to opwriter");
+
+	mem = &in->u.mem;
+
+	/* Two kinds of memaccess... memrel15 and normal */
+	if (insn->templ->operands[0] == tic64x_operand_rcoffset ||
+		insn->templ->operands[1] == tic64x_operand_rcoffset)
+		type = tic64x_operand_rcoffset;
+	else if (insn->templ->operands[0] == tic64x_operand_const15 ||
+		insn->templ->operands[1] == tic64x_operand_const15)
+		type = tic64x_operand_const15;
+	else
+		as_fatal("Memaccess operand without corresponding field being"
+			" written");
+
+	/* So, the main emit opcode routine will have set the generic fields,
+	 * including 'y', so lets start with anything common to all memaccess.
+	 * Oh, there aren't. Except the destination, but that's handled like
+	 * all other registers */
+	if (type == tic64x_operand_rcoffset) {
+		tic64x_set_operand(&insn->opcode, tic64x_operand_addrmode,
+							mem->addrmode, 0);
+		tic64x_set_operand(&insn->opcode, tic64x_operand_basereg,
+						mem->base->num & 0x1F, 0);
+		if (mem->const_offs) {
+			/* Uuurgh, not this again */
+			unsigned int tmp;
+
+			tmp = insn->templ->flags & TIC64X_OP_MEMSZ_MASK;
+			tmp >>= TIC64X_OP_MEMSZ_SHIFT;
+			offs >>= tmp;
+
+			if (insn->templ->flags & TIC64X_OP_CONST_SCALE)
+				offs = mem->offs.expr.X_add_number;
+
+			/* Do we have to twiddle with the optional scale bit? */
+			if (insn->templ->flags & TIC64X_OP_MEMACC_SBIT) {
+				if (offs >= (unsigned int)(32 << tmp)) {
+					offs >>= tmp;
+					tic64x_set_operand(&insn->opcode,
+						tic64x_operand_scale, 1, 0);
+				} else {
+					tic64x_set_operand(&insn->opcode,
+						tic64x_operand_scale, 0, 0);
+				}
+			}
+
+			tic64x_set_operand(&insn->opcode, type, offs, 0);
+		} else {
+			/* We use a register instead */
+			tic64x_set_operand(&insn->opcode, type,
+						mem->offs.reg->num & 0x1F, 0);
+		}
+
+		/* Ho-kay, I think that's it */
+	} else {
+		/* For memrel15 we have some different situations: the base
+		 * register is restricted and the y bit specifies whether it's
+		 * B14 or B15. Validator must have checked that it's one or
+		 * the other */
+
+		if (mem->base->num == TIC64X_REG_UNIT2 + 14)
+			tic64x_set_operand(&insn->opcode, tic64x_operand_y, 0, 0);
+		else
+			tic64x_set_operand(&insn->opcode, tic64x_operand_y, 1, 0);
+
+		/* Validator will reject non-const offsets */
+		if (mem->offs.expr.X_op == O_constant) {
+			offs = mem->offs.expr.X_add_number;
+			tic64x_set_operand(&insn->opcode, type, offs, 0);
+		} else if (mem->offs.expr.X_op == O_symbol) {
+			as_bad("FIXME: issue fixup for memrel15 offset");
+		} else {
+			as_fatal("Non constant/symbol offset for memrel15 "
+								"operand");
+		}
+
+		/* And that seems to be it */
+	}
+
 	return;
 }
 
