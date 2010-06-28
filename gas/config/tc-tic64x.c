@@ -1665,7 +1665,7 @@ select_insn_unit(struct resource_rec *input, int idx)
 
 				/* Eliminate all uses of this unit */
 				flag = 1 << j;
-				for (k = 0; i < 8; k++)
+				for (k = 0; k < 8; k++)
 					res.units[k] &= ~flag;
 
 				/* Except for _this_ insn */
