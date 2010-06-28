@@ -2950,8 +2950,19 @@ opwrite_constant(struct read_operand *in, enum tic64x_text_operand optype,
 
 		tic64x_set_operand(&insn->opcode, type, val);
 	} else if (e->X_op == O_symbol) {
-		/* We need to emit a fixup */
-#error bees
+		fixS *fix;
+		bfd_boolean pcrel;
+		int rtype;
+
+		/* Emit a fixup - this symbol may jump around and will need
+		 * relaxing later */
+
+		pcrel = (insn->templ->flags & TIC64X_OP_CONST_PCREL)
+				? TRUE : FALSE;
+		rtype = type_to_rtype(insn, type);
+		fix = fix_new_exp(insn->output_frag, insn->output_frag_offs, 4,
+							e, pcrel, rtype);
+		fix->fx_pcrel_adjust = insn->output_pcoffs;
 	} else {
 		as_fatal("Invalid expression type in constant writer");
 	}
