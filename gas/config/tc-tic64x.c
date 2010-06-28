@@ -1438,7 +1438,7 @@ beat_instruction_around_the_bush(char **operands, struct tic64x_insn *insn)
 	 * error message */
 	/* First, did we find anything valid at all? */
 	for (idx = 0; idx < insn->num_possible_templates; idx++)
-		if ((insn->template_validity[idx] & VALID_MASK) == 0)
+		if ((insn->template_validity[idx] & VALID_MASK) != 0)
 			break;
 
 	if (idx == insn->num_possible_templates) {
