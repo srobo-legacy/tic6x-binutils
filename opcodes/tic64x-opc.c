@@ -71,27 +71,14 @@ struct tic64x_operand_pos tic64x_operand_positions [] = {
 
 /* Returns zero on success, nonzero if too large for field. Always actually
  * sets operand, as some code doesn't care about data loss here */
-int
-tic64x_set_operand(uint32_t *op, enum tic64x_operand_type type, int value,
-				int is_signed)
+void
+tic64x_set_operand(uint32_t *op, enum tic64x_operand_type type, int value)
 {
-	int err, maxval;
-
-	err = 0;
-	if (is_signed) {
-		maxval = 1 << (tic64x_operand_positions[type].size - 1);
-	} else {
-		maxval = 1 << tic64x_operand_positions[type].size;
-	}
-
-	if (value < -maxval || value >= maxval) {
-		err = 1;
-	}
 
 	value &= ((1 << tic64x_operand_positions[type].size) - 1);
 	value <<= tic64x_operand_positions[type].position;
 	*op |= value;
-	return err;
+	return;
 }
 
 static int

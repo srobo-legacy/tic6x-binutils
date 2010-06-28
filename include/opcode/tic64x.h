@@ -160,8 +160,7 @@ extern struct tic64x_op_template tic64x_mv_template[];
 extern struct tic64x_register tic64x_regs[];
 
 /* get/set calls for actual operands. Returns nonzero if value is too large */
-int tic64x_set_operand(uint32_t *opcode, enum tic64x_operand_type type,
-						 int value, int is_signed);
+void tic64x_set_operand(uint32_t *opcode, enum tic64x_operand_type type, int v);
 int tic64x_get_operand(uint32_t opcode,  enum tic64x_operand_type t, int signx);
 
 /* Utility macros(s) */

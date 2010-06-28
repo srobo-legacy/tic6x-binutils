@@ -723,7 +723,7 @@ as_fatal("FIXME: relocations of const15s need to know memory access size");
 
 	opcode = bfd_get_32(stdoutput, loc);
 	ret = tic64x_set_operand(&opcode, type, (shift) ? value >> shift
-						: value, 0);
+								: value);
 	bfd_put_32(stdoutput, opcode, loc);
 
 	/* XXX FIXME: Ensure that too-large relocs are handled somehow. Test. */
@@ -1978,24 +1978,24 @@ tic64x_output_insn(struct tic64x_insn *insn, char *out)
 	}
 
 	if (!(insn->templ->flags & TIC64X_OP_NOSIDE))
-		tic64x_set_operand(&insn->opcode, tic64x_operand_s, s, 0);
+		tic64x_set_operand(&insn->opcode, tic64x_operand_s, s);
 
 	if (insn->templ->flags & TIC64X_OP_UNITNO) {
 		if (!(insn->templ->flags & TIC64X_OP_MEMACCESS))
 			as_fatal("Insn marked UNITNO but not MEMACCESS");
 
-		tic64x_set_operand(&insn->opcode, tic64x_operand_y, y, 0);
+		tic64x_set_operand(&insn->opcode, tic64x_operand_y, y);
 	}
 
 	if (insn->parallel)
-		tic64x_set_operand(&insn->opcode, tic64x_operand_p, 1, 0);
+		tic64x_set_operand(&insn->opcode, tic64x_operand_p, 1);
 
 	if (!(insn->templ->flags & TIC64X_OP_NOCOND) &&
 					insn->cond_reg != 0) {
 		tic64x_set_operand(&insn->opcode, tic64x_operand_z,
-					(insn->cond_nz) ? 0 : 1, 0);
+					(insn->cond_nz) ? 0 : 1);
 		tic64x_set_operand(&insn->opcode, tic64x_operand_creg,
-					insn->cond_reg, 0);
+					insn->cond_reg);
 	}
 
 	/* Now, pump out some operands */
@@ -2772,9 +2772,9 @@ opwrite_memaccess(struct read_operand *in, enum tic64x_text_operand optype,
 	 * all other registers */
 	if (type == tic64x_operand_rcoffset) {
 		tic64x_set_operand(&insn->opcode, tic64x_operand_addrmode,
-							mem->addrmode, 0);
+							mem->addrmode);
 		tic64x_set_operand(&insn->opcode, tic64x_operand_basereg,
-						mem->base->num & 0x1F, 0);
+						mem->base->num & 0x1F);
 		if (mem->const_offs) {
 			/* Uuurgh, not this again */
 			unsigned int tmp;
@@ -2791,18 +2791,18 @@ opwrite_memaccess(struct read_operand *in, enum tic64x_text_operand optype,
 				if (offs >= (unsigned int)(32 << tmp)) {
 					offs >>= tmp;
 					tic64x_set_operand(&insn->opcode,
-						tic64x_operand_scale, 1, 0);
+						tic64x_operand_scale, 1);
 				} else {
 					tic64x_set_operand(&insn->opcode,
-						tic64x_operand_scale, 0, 0);
+						tic64x_operand_scale, 0);
 				}
 			}
 
-			tic64x_set_operand(&insn->opcode, type, offs, 0);
+			tic64x_set_operand(&insn->opcode, type, offs);
 		} else {
 			/* We use a register instead */
 			tic64x_set_operand(&insn->opcode, type,
-						mem->offs.reg->num & 0x1F, 0);
+					mem->offs.reg->num & 0x1F);
 		}
 
 		/* Ho-kay, I think that's it */
@@ -2813,14 +2813,14 @@ opwrite_memaccess(struct read_operand *in, enum tic64x_text_operand optype,
 		 * the other */
 
 		if (mem->base->num == TIC64X_REG_UNIT2 + 14)
-			tic64x_set_operand(&insn->opcode, tic64x_operand_y, 0, 0);
+			tic64x_set_operand(&insn->opcode, tic64x_operand_y, 0);
 		else
-			tic64x_set_operand(&insn->opcode, tic64x_operand_y, 1, 0);
+			tic64x_set_operand(&insn->opcode, tic64x_operand_y, 1);
 
 		/* Validator will reject non-const offsets */
 		if (mem->offs.expr.X_op == O_constant) {
 			offs = mem->offs.expr.X_add_number;
-			tic64x_set_operand(&insn->opcode, type, offs, 0);
+			tic64x_set_operand(&insn->opcode, type, offs);
 		} else if (mem->offs.expr.X_op == O_symbol) {
 			as_bad("FIXME: issue fixup for memrel15 offset");
 		} else {
