@@ -1974,13 +1974,16 @@ tic64x_output_insn(struct tic64x_insn *insn, char *out)
 	/* The side bit is a special case - most of the time it does mean which
 	 * side the instruction executes on, but in the case of memory access
 	 * the 'y' bit does that job, and the 's' bit specifies which data path
-	 * the data takes. So, here are some special cases: */
+	 * the data takes. Except in the case of memrel15, where s still
+	 * specifies the datapath, but y is something else.
+	 * ANYWAY: so we have to swap the meaning of s and maybe write y if the
+	 * instruction is memory access */
 	if (insn->templ->flags & TIC64X_OP_MEMACCESS) {
 		s = (insn->unitspecs.mem_path == 2) ? 1 : 0;
 		y = (insn->unitspecs.unit_num == 2) ? 1 : 0;
 	} else {
 		s = (insn->unitspecs.unit_num == 2) ? 1 : 0;
-		y = (insn->unitspecs.unit_num == 2) ? 1 : 0;
+		y = 0;
 	}
 
 	if (!(insn->templ->flags & TIC64X_OP_NOSIDE))
