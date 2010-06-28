@@ -939,8 +939,8 @@ read_execution_unit(char **curline, struct unitspec *spec)
 		return -1;
 	}
 
-	spec->unit_num = *line++ - 0x30;
-	if (spec->unit_num != 1 && spec->unit_num != 2) {
+	spec->unit_num = *line++ - 0x31;
+	if (spec->unit_num != 0 && spec->unit_num != 1) {
 		as_bad("Bad execution unit number %d", spec->unit_num);
 		return -1;
 	}
@@ -949,8 +949,8 @@ read_execution_unit(char **curline, struct unitspec *spec)
 	 * which data path the loaded/stored data will travel through */
 	if (*line == 'T') {
 		line++;
-		spec->mem_path = *line++ - 0x30;
-		if (spec->mem_path != 1 && spec->mem_path != 2) {
+		spec->mem_path = *line++ - 0x31;
+		if (spec->mem_path != 0 && spec->mem_path != 1) {
 			as_bad("'%d' is not a valid unit number for memory data"					" path\n", spec->mem_path);
 			return -1;
 		}
