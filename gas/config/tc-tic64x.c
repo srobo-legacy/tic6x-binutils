@@ -908,6 +908,10 @@ apply_conditional(struct tic64x_insn *insn)
 			as_bad("Invalid register for conditional, must be 0-2");
 			return 1;
 		}
+	} else {
+		/* No conditional, signal this with -1 */
+		insn->cond_nz = -1;
+		insn->cond_reg = -1;
 	}
 
 	return 0;
