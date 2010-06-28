@@ -2909,10 +2909,51 @@ void
 opwrite_constant(struct read_operand *in, enum tic64x_text_operand optype,
 			struct tic64x_insn *insn)
 {
+	expressionS *e = &in->u.constant.expr;
+	enum tic64x_operand_type type;
+	int i, tmp;
+	int32_t val;
 
-	UNUSED(in);
-	UNUSED(optype);
-	UNUSED(insn);
-	as_fatal("Unimplemented opwrite_constant\n");
+	if (optype != tic64x_optxt_sconstant && optype !=tic64x_optxt_uconstant)
+		as_fatal("Non-constant operand reached constant writer");
+
+	/* So the variety of oddities we can experience with constants - the
+	 * usual set of different field sizes that can be extracted from the
+	 * operand type list and scaling. There is no optional scaling. Also,
+	 * normally we only have one constant in an instruction, the exception
+	 * is nops. Those shouldn't be scaled, even if the instruction does
+	 * scaling (see: bnop) */
+
+	/* So first, find operand type */
+	for (i = 0; type != tic64x_operand_invalid; i++) {
+		type = constant_types[i];
+		if (type == insn->templ->operands[0] ||
+					type == insn->templ->operands[1])
+			break;
+	}
+
+	if (type == tic64x_operand_invalid)
+		as_fatal("Instruction with constant text operand, but no "
+				"corresponding constant field operand");
+
+	if (e->X_op == O_constant) {
+
+		/* Do we scale? */
+		val = e->X_add_number;
+		if (insn->templ->flags & TIC64X_OP_CONST_SCALE) {
+			tmp = insn->templ->flags & TIC64X_OP_MEMSZ_MASK;
+			tmp >>= TIC64X_OP_MEMSZ_SHIFT;
+			val >>= tmp;
+		}
+
+		tic64x_set_operand(&insn->opcode, type, val);
+	} else if (e->X_op == O_symbol) {
+		/* We need to emit a fixup */
+#error bees
+	} else {
+		as_fatal("Invalid expression type in constant writer");
+	}
+
+	/* And I believe that's it */
 	return;
 }
