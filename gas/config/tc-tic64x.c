@@ -10,15 +10,6 @@
 
 #define UNUSED(x) ((x) = (x))
 
-#define abort_no_operand(insn, type)					\
-		as_fatal("Instruction \"%s\" does not have expected "	\
-			"operand type " type " (internal error)",	\
-					insn->templ->mnemonic);
-
-#define abort_setop_fail(insn, type) 					\
-		as_fatal("Couldn't set operand " type " for "		\
-			"instruction %s", insn->templ->mnemonic);
-
 static void tic64x_asg(int x);
 static void tic64x_noop(int x);
 static void tic64x_comm(int x);
