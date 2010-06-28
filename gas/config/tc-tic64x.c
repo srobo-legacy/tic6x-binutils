@@ -1989,8 +1989,12 @@ tic64x_output_insn(struct tic64x_insn *insn, char *out)
 	if (!(insn->templ->flags & TIC64X_OP_NOSIDE))
 		tic64x_set_operand(&insn->opcode, tic64x_operand_s, s, 0);
 
-	if (insn->templ->flags & TIC64X_OP_UNITNO)
+	if (insn->templ->flags & TIC64X_OP_UNITNO) {
+		if (!(insn->templ->flags & TIC64X_OP_MEMACCESS))
+			as_fatal("Insn marked UNITNO but not MEMACCESS");
+
 		tic64x_set_operand(&insn->opcode, tic64x_operand_y, y, 0);
+	}
 
 	if (insn->parallel)
 		tic64x_set_operand(&insn->opcode, tic64x_operand_p, 1, 0);
