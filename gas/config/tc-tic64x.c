@@ -237,6 +237,7 @@ struct tic64x_insn {
 	 * fixups and relocations - namely what fragment we're in, and the pcrel
 	 * offset of this instruction. */
 	fragS *output_frag;
+	int output_frag_offs;
 	int output_pcoffs;
 };
 
@@ -1937,6 +1938,7 @@ tic64x_output_insn_packet()
 			insn->parallel = 1;
 
 		insn->output_frag = frag;
+		insn->output_frag_offs = out - frag->fr_literal;
 		insn->output_pcoffs = i *4;
 		tic64x_output_insn(insn, out);
 #if 0
