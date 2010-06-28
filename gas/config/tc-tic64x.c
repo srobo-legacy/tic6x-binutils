@@ -2823,7 +2823,20 @@ opwrite_memaccess(struct read_operand *in, enum tic64x_text_operand optype,
 			offs = mem->offs.expr.X_add_number;
 			tic64x_set_operand(&insn->opcode, type, offs);
 		} else if (mem->offs.expr.X_op == O_symbol) {
-			as_bad("FIXME: issue fixup for memrel15 offset");
+			fixS *fix;
+			int rtype;
+
+			/* Create a fixup for this field - code largely stolen
+			 * from the constant writer handler */
+			if (insn->templ->flags & TIC64X_OP_CONST_PCREL)
+				as_fatal("Instruction with PCREL flag, in "
+					"operand writer for memrel15");
+
+			rtype = type_to_rtype(insn, type);
+			fix = fix_new_exp(insn->output_frag,
+						insn->output_frag_offs,
+						4, &mem->offs.expr, FALSE,
+						rtype);
 		} else {
 			as_fatal("Non constant/symbol offset for memrel15 "
 								"operand");
