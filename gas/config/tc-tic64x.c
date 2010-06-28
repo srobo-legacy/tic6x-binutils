@@ -352,7 +352,7 @@ md_begin()
 
 	for (op = tic64x_opcodes; op->mnemonic; op++) {
 		if (hash_insert(tic64x_ops, op->mnemonic, (void *)op))
-			as_fatal("md_begin: couldn't enter %s in hash table\n",
+			as_fatal("md_begin: couldn't enter %s in hash table",
 				op->mnemonic);
 
 		/* In the unpleasent circumstance when there are more than
@@ -366,7 +366,7 @@ md_begin()
 
 	for (reg = tic64x_regs; reg->name; reg++)
 		if (hash_insert(tic64x_reg_names, reg->name, (void *)reg))
-			as_fatal("md_begin: couldn't enter %s in hash table\n",
+			as_fatal("md_begin: couldn't enter %s in hash table",
 				reg->name);
 
 	return;
@@ -703,7 +703,7 @@ as_fatal("FIXME: relocations of const15s need to know memory access size");
 		type = tic64x_operand_data32;
 		break;
 	default:
-		as_fatal("Bad relocation type 0x%X\n", fixP->fx_r_type);
+		as_fatal("Bad relocation type 0x%X", fixP->fx_r_type);
 		return;
 	}
 
@@ -951,7 +951,7 @@ read_execution_unit(char **curline, struct unitspec *spec)
 		line++;
 		spec->mem_path = *line++ - 0x31;
 		if (spec->mem_path != 0 && spec->mem_path != 1) {
-			as_bad("'%d' is not a valid unit number for memory data"					" path\n", spec->mem_path);
+			as_bad("'%d' is not a valid unit number for memory data"					" path", spec->mem_path);
 			return -1;
 		}
 	} else {
@@ -1028,12 +1028,12 @@ finalise_mv_insn(struct tic64x_insn *insn)
 	if (insn->unitspecs.unit == -1 || insn->unitspecs.unit_num == -1 ||
 					insn->unitspecs.uses_xpath == -1)
 		as_fatal("Finalising mv instruction with no internal unit "
-			"specifier\n");
+			"specifier");
 
 	handler = &operand_handlers[3];
 	if (handler->reader("0", FALSE, &op))
 		as_fatal("Error finalising mv instruction when parsing constant"
-			" expression\n");
+			" expression");
 
 	switch (insn->unitspecs.unit) {
 	case 'S':
@@ -1047,9 +1047,9 @@ finalise_mv_insn(struct tic64x_insn *insn)
 		wanted_opcode = 0xAF0;
 		break;
 	case 'M':
-		as_bad("mv instruction cannot execute on 'M' unit\n");
+		as_bad("mv instruction cannot execute on 'M' unit");
 	default:
-		as_fatal("Invalid execution unit in internal record\n");
+		as_fatal("Invalid execution unit in internal record");
 	}
 
 	insn->templ = hash_find(tic64x_ops, "add");
@@ -1059,7 +1059,7 @@ finalise_mv_insn(struct tic64x_insn *insn)
 
 	if (insn->templ->opcode != wanted_opcode)
 		as_fatal("Desired template when finalising mv instruction has "
-			"disappeared\n");
+			"disappeared");
 
 	if (swap_constant) {
 		memcpy(&insn->operand_values[0], &insn->operand_values[1],
@@ -1296,7 +1296,7 @@ beat_instruction_around_the_bush(char **operands, struct tic64x_insn *insn)
 							MAX_NUM_INSN_TEMPLATES)
 				as_fatal("More than %d potential instructions "
 					"when parsing %s, increase max template"
-					" cap\n", MAX_NUM_INSN_TEMPLATES,
+					" cap", MAX_NUM_INSN_TEMPLATES,
 					cur->mnemonic);
 
 			insn->possible_templates[insn->num_possible_templates]
@@ -1419,7 +1419,7 @@ beat_instruction_around_the_bush(char **operands, struct tic64x_insn *insn)
 					break;
 				default:
 					as_fatal("Can't have more than 3 "
-						"internal operands\n");
+						"internal operands");
 				}
 
 				insn->template_validity[idx] |= i;
@@ -1464,7 +1464,7 @@ beat_instruction_around_the_bush(char **operands, struct tic64x_insn *insn)
 		if (idx == insn->num_possible_templates)
 			as_fatal("No valid instruction templates found, but no "
 				"invalid operands found either - internal error"
-				"\n");
+				);
 
 		cur = insn->possible_templates[idx];
 		/* OK, we have a template to play with. Which instruction? */
@@ -1481,7 +1481,7 @@ beat_instruction_around_the_bush(char **operands, struct tic64x_insn *insn)
 				&insn->operand_values[i], TRUE, cur->textops[i],
 				cur, FALSE, &spec))
 			as_fatal("Validator for %s marked operand invalide, but"
-				"then changed its mind; internal error\n",
+				"then changed its mind; internal error",
 				insn->operand_values[i].handler->name);
 
 		/* kdone */
@@ -1513,7 +1513,7 @@ beat_instruction_around_the_bush(char **operands, struct tic64x_insn *insn)
 			break;
 		default:
 			as_fatal("Invalid unit specifier in internal unitspec "
-								"record\n");
+								"record");
 		}
 
 		/* Does this template run on the specified unit? */
@@ -1536,7 +1536,7 @@ beat_instruction_around_the_bush(char **operands, struct tic64x_insn *insn)
 					VALID_USES_XPATH2;
 		} else {
 			as_fatal("Invalid side specifier in internal unitspec "
-								"record\n");
+								"record");
 		}
 
 		matched_side = TRUE;
@@ -1551,7 +1551,7 @@ beat_instruction_around_the_bush(char **operands, struct tic64x_insn *insn)
 				continue;
 		} else {
 			as_fatal("Invalid xpath specifier in internal unitspec "
-								"record\n");
+								"record");
 		}
 
 		matched_xpath = TRUE;
@@ -1572,7 +1572,7 @@ beat_instruction_around_the_bush(char **operands, struct tic64x_insn *insn)
 					continue;
 			} else {
 				as_fatal("Invalid memory path specifier in "
-						"internal unitspec record\n");
+						"internal unitspec record");
 			}
 		} else {
 			/* did user specify it on a non-data-path insn? */
@@ -1594,24 +1594,24 @@ beat_instruction_around_the_bush(char **operands, struct tic64x_insn *insn)
 	 * being accepted */
 
 	if (matched_unit == FALSE) {
-		as_bad("Instruction cannot execute on %C unit\n",
+		as_bad("Instruction cannot execute on %C unit",
 				insn->unitspecs.unit);
 		return TRUE;
 	}
 
 	if (matched_side == FALSE) {
-		as_bad("Instruction must execute on other side of processor\n");
+		as_bad("Instruction must execute on other side of processor");
 		return TRUE;
 	}
 
 	if (matched_xpath == FALSE) {
-		as_bad("'X'path unit specifier incorrectly used or omitted\n");
+		as_bad("'X'path unit specifier incorrectly used or omitted");
 		return TRUE;
 	}
 
 	/* Otherwise, the only other reason we could have rejected this is
 	 * because the memory data path specifier was wrong */
-	as_bad("Memory data path specified incorrectly used or omitted\n");
+	as_bad("Memory data path specified incorrectly used or omitted");
 	return TRUE;
 }
 
@@ -1694,7 +1694,7 @@ select_insn_unit(struct resource_rec *input, int idx)
 		if (weights[i] != 8)
 			as_fatal("Reached end of unit selection pass, but not "
 				"all units are marked as impossible to "
-				"select\n");
+				"select");
 
 	return TRUE;
 }
@@ -1784,9 +1784,9 @@ tic64x_output_insn_packet()
 	/* Attempt to schedule existing instructions into available units */
 	if (pick_units_for_insn_packet(&res)) {
 		as_bad("Unable to allocate all instructions to units in "
-			"execute packet: a resource conflict occured\n");
+			"execute packet: a resource conflict occured");
 		as_bad("Coming soon to an assembler near you: descriptive "
-			"error messages!\n");
+			"error messages!");
 		return;
 	}
 
@@ -1876,14 +1876,14 @@ tic64x_output_insn_packet()
 			if (insn->unitspecs.unit_num == 0) {
 				if (xpath1_used == TRUE) {
 					as_bad("Mutiple uses of x-path 1 in "
-						"execute packet\n");
+						"execute packet");
 				} else {
 					xpath1_used = TRUE;
 				}
 			} else {
 				if (xpath2_used == TRUE) {
 					as_bad("Multiple uses of x-path 2 in "
-						"execute packet\n");
+						"execute packet");
 				} else {
 					xpath2_used = TRUE;
 				}
@@ -1893,14 +1893,14 @@ tic64x_output_insn_packet()
 		if (insn->unitspecs.mem_path == 0) {
 			if (dpath1_used) {
 				as_bad("Multiple uses of data path 1 in "
-					"execute packet\n");
+					"execute packet");
 			} else {
 				dpath1_used = TRUE;
 			}
 		} else if (insn->unitspecs.mem_path == 1) {
 			if (dpath2_used) {
 				as_bad("Multiple uses of data path 2 in "
-					"execute packet\n");
+					"execute packet");
 			}
 		}
 
@@ -1913,7 +1913,7 @@ tic64x_output_insn_packet()
 				if (insn->unitspecs.unit_num == 0) {
 					as_bad("Condition register read from "
 						"wrong side of processor in "
-						"execute packet\n");
+						"execute packet");
 					/* XXX - how about printing which
 					 * particular instruction it is that
 					 * went wrong, eh? */
@@ -1922,7 +1922,7 @@ tic64x_output_insn_packet()
 				if (insn->unitspecs.unit_num == 1) {
 					as_bad("Condition register read from "
 						"wrong side of processor in "
-						"execute packet\n");
+						"execute packet");
 				}
 			}
 		}
@@ -2185,7 +2185,7 @@ opread_memaccess(char *line, bfd_boolean print_error, struct read_operand *out)
 					"this is supported by TIs relocations "
 					"and loader, but the codepath for "
 					"writing these in binutils is untested."
-					"\n");
+					);
 			}
 		}
 	} else {
@@ -2356,7 +2356,7 @@ opvalidate_memaccess(struct read_operand *in, bfd_boolean print_error,
 		field_sz = 15;
 	} else {
 		as_fatal("memaccess operand with no corresponding offset field "
-								"size\n");
+								"size");
 	}
 
 	field_shift = templ->flags & TIC64X_OP_MEMSZ_MASK;
