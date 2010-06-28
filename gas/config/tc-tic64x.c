@@ -1358,7 +1358,7 @@ beat_instruction_around_the_bush(char **operands, struct tic64x_insn *insn)
 			for (i = 0; i < insn->operands; i++)
 				if (insn->operand_values[i].handler->validate(
 						&insn->operand_values[i],
-						cur->textops[i], FALSE, cur,
+						FALSE, cur->textops[i], cur,
 						TRUE, &spec))
 					break;
 
