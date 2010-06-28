@@ -151,8 +151,8 @@ struct tic64x_op_template {
 
 #define TIC64X_MAX_TXT_OPERANDS	3
 	enum tic64x_text_operand textops[TIC64X_MAX_TXT_OPERANDS];
-#define TIC64X_MAX_OPERANDS	2
-	enum tic64x_operand_type operands[TIC64X_MAX_OPERANDS];
+#define TIC64X_MAX_INDIRECT_OPERANDS	2
+	enum tic64x_operand_type operands[TIC64X_MAX_INDIRECT_OPERANDS];
 };
 
 extern struct tic64x_op_template tic64x_opcodes[];

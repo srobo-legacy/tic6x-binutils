@@ -692,7 +692,7 @@ print_op_dwreg(struct tic64x_op_template *t,
 	} else if (type == tic64x_optxt_dwsrc2) {
 		t2 = tic64x_operand_srcreg1;
 	} else if (type == tic64x_optxt_dwdst) {
-		for (i = 0; i < TIC64X_MAX_OPERANDS; i++) {
+		for (i = 0; i < TIC64X_MAX_INDIRECT_OPERANDS; i++) {
 			if ((t->operands[i] == tic64x_operand_dwdst4 &&
 						type == tic64x_optxt_dwdst) ||
 			    (t->operands[i] == tic64x_operand_dwdst5 &&
@@ -701,7 +701,7 @@ print_op_dwreg(struct tic64x_op_template *t,
 				break;
 			}
 		}
-		if (i == TIC64X_MAX_OPERANDS) {
+		if (i == TIC64X_MAX_INDIRECT_OPERANDS) {
 			fprintf(stderr, "tic64x print_op_dwreg: \"%s\" has no "
 				"matching dword reg operand\n", t->mnemonic);
 			snprintf(buffer, len, "%C", '\0');
@@ -783,7 +783,7 @@ print_op_constant(struct tic64x_op_template *t,
 		t2 = tic64x_operand_nops;
 		i = 0;
 	} else {
-		for (i = 0; i < TIC64X_MAX_OPERANDS; i++) {
+		for (i = 0; i < TIC64X_MAX_INDIRECT_OPERANDS; i++) {
 			if (t->operands[i] == tic64x_operand_const5 ||
 				t->operands[i] == tic64x_operand_const5p2 ||
 				t->operands[i] == tic64x_operand_const21 ||
@@ -800,7 +800,7 @@ print_op_constant(struct tic64x_op_template *t,
 		}
 	}
 
-	if (i == TIC64X_MAX_OPERANDS) {
+	if (i == TIC64X_MAX_INDIRECT_OPERANDS) {
 		fprintf(stderr, "tic64x print_op_constant: \"%s\" has no "
 				"matching dword reg operand\n", t->mnemonic);
 		snprintf(buffer, len, "%C", '\0');
