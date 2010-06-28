@@ -1576,7 +1576,7 @@ beat_instruction_around_the_bush(char **operands, struct tic64x_insn *insn)
 			}
 		} else {
 			/* did user specify it on a non-data-path insn? */
-			if (insn->unitspecs.uses_xpath != -1)
+			if (insn->unitspecs.mem_path != -1)
 				continue;
 		}
 
