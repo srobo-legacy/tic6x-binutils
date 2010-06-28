@@ -2621,7 +2621,7 @@ opvalidate_double_register(struct read_operand *in, bfd_boolean print_error,
 		return TRUE;
 	}
 
-	if (reg1_num & 1) {
+	if (!(reg1_num & 1)) {
 		NOT_VALID(("Double register pair must start on odd register"));
 		return TRUE;
 	}
