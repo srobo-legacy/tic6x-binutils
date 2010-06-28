@@ -148,9 +148,24 @@ struct tic64x_op_template {
 #define TIC64X_OP_ALL_UNITS (TIC64X_OP_UNIT_S | TIC64X_OP_UNIT_L |\
 				TIC64X_OP_UNIT_D | TIC64X_OP_UNIT_M)
 
-
+/* Text operands - these correspond directly to the actual comma seperated
+ * chunks of text that follow the mnemonic. For each one there are, in general,
+ * two properties: how it's to be parsed (IE, what is _is_), and where it's to
+ * be written into the operand (IE, what field to fill).
+ * An attempt to rigidly seperate the two led to some unpleasentry; instead we
+ * have a situation where text operands describe both, fully or partially. For
+ * example srcreg1, srcreg2, dstreg are all read as registers, and all are
+ * written to their own fields in the opcode.
+ * sconstant and uconstant partially describe their operand: it says what
+ * constant they are, but not where it goes.  For that we use the indirect
+ * operand stuff */
 #define TIC64X_MAX_TXT_OPERANDS	3
 	enum tic64x_text_operand textops[TIC64X_MAX_TXT_OPERANDS];
+
+/* Indirect operands: text operands like dwdst or sconstant/uconstant place
+ * an enum in this array describing which field in the opcode its value should
+ * be written to. Which element in the array doesn't matter, the operand writer
+ * should know what it's looking for */
 #define TIC64X_MAX_INDIRECT_OPERANDS	2
 	enum tic64x_operand_type operands[TIC64X_MAX_INDIRECT_OPERANDS];
 };
