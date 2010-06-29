@@ -3031,6 +3031,10 @@ opwrite_constant(struct read_operand *in, enum tic64x_text_operand optype,
 			val >>= tmp;
 		}
 
+		/* Some insns (mvkh) only uses the top half of the constant */
+		if (insn->templ->flags & TIC64X_OP_USE_TOP_HWORD)
+			val >>= 16;
+
 		tic64x_set_operand(&insn->opcode, type, val);
 	} else if (e->X_op == O_symbol) {
 		fixS *fix;
