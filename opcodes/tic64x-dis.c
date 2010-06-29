@@ -46,7 +46,6 @@ typedef int (op_printer) (const struct tic64x_op_template *t,
 
 op_printer print_op_none;
 op_printer print_op_memaccess;
-op_printer print_op_memrel15;
 op_printer print_op_register;
 op_printer print_op_dwreg;
 op_printer print_op_constant;
@@ -57,7 +56,6 @@ struct {
 } operand_printers[] = {
 { tic64x_optxt_none,		print_op_none		},
 { tic64x_optxt_memaccess,	print_op_memaccess	},
-{ tic64x_optxt_memrel15,	print_op_memrel15	},
 { tic64x_optxt_dstreg,		print_op_register	},
 { tic64x_optxt_srcreg1,		print_op_register	},
 { tic64x_optxt_srcreg2,		print_op_register	},
@@ -221,8 +219,7 @@ print_insn_tic64x(bfd_vma addr, struct disassemble_info *info)
 
 			sz = 2;
 			if (p)
-				tic64x_set_operand(&opcode, tic64x_operand_p,
-									1, 0);
+				tic64x_set_operand(&opcode, tic64x_operand_p,1);
 		}
 	}
 
@@ -443,7 +440,7 @@ print_op_memaccess(const struct tic64x_op_template *t,
 		int len)
 {
 	const char *pre, *regchar, *post, *offs;
-	int addrmode, basereg, offset, scale, scalenum, y, s;
+	int addrmode, basereg, offset, scale, scalenum, y, s, is_memrel15;
 	char offsetstr[8];
 	char regno[4];
 
@@ -454,11 +451,29 @@ print_op_memaccess(const struct tic64x_op_template *t,
 	/* Hopefully this won't become the pile of pain the assembler
 	 * version is */
 
-	addrmode = tic64x_get_operand(opcode, tic64x_operand_addrmode, 0);
-	basereg = tic64x_get_operand(opcode, tic64x_operand_basereg, 0);
+	/* Offset is always ucst5 or register, no sign extension, or const15 */
+	if (t->operands[0] == tic64x_operand_rcoffset ||
+		t->operands[1] == tic64x_operand_rcoffset)
+		is_memrel15 = 0;
+	else if (t->operands[0] == tic64x_operand_const15 ||
+		t->operands[1] == tic64x_operand_const15)
+		is_memrel15 = 1;
 
-	/* Offset is always ucst5 or register, no sign extension */
-	offset = tic64x_get_operand(opcode, tic64x_operand_rcoffset, 0);
+	if (is_memrel15)
+		offset = tic64x_get_operand(opcode, tic64x_operand_const15, 0);
+	else
+		offset = tic64x_get_operand(opcode, tic64x_operand_rcoffset, 0);
+
+	if (is_memrel15)
+		addrmode = TIC64X_ADDRMODE_POS | TIC64X_ADDRMODE_PRE |
+			TIC64X_ADDRMODE_OFFSET | TIC64X_ADDRMODE_NOMODIFY;
+	else
+		addrmode = tic64x_get_operand(opcode,tic64x_operand_addrmode,0);
+
+	if (is_memrel15)
+		basereg = tic64x_get_operand(opcode, tic64x_operand_y, 0) + 14;
+	else
+		basereg = tic64x_get_operand(opcode, tic64x_operand_basereg, 0);
 
 	/* scale bit? Might not have one, read it anyway */
 	scale = tic64x_get_operand(opcode, tic64x_operand_rcoffset, 0);
@@ -466,7 +481,11 @@ print_op_memaccess(const struct tic64x_op_template *t,
 	/* Memory accesses set destination side with s bit, source regs with
 	 * y bit. Confirm later TIX64X_OP_UNITNO is set*/
 	s = tic64x_get_operand(opcode, tic64x_operand_s, 0);
-	y = tic64x_get_operand(opcode, tic64x_operand_y, 0);
+
+	if (is_memrel15)
+		y = 1; /* Always executes on side B */
+	else
+		y = tic64x_get_operand(opcode, tic64x_operand_y, 0);
 
 	/* Pre inc/decrementer, or offset +/- */
 	if (!(addrmode & TIC64X_ADDRMODE_MODIFY)) {
@@ -486,11 +505,7 @@ print_op_memaccess(const struct tic64x_op_template *t,
 	}
 
 	/* Base register */
-	if (!(t->flags & TIC64X_OP_UNITNO)) {
-		fprintf(stderr, "tic64x_print_memaccess: \"%s\" has no y bit?",
-								t->mnemonic);
-		regchar = "?";
-	} else if (y) {
+	if (y) {
 		regchar = "B";
 	} else {
 		regchar = "A";
@@ -557,30 +572,6 @@ print_op_memaccess(const struct tic64x_op_template *t,
 		snprintf(buffer, len, "*%s%s%s%s(%s)", pre, regchar, regno,
 							post, offsetstr);
 	}
-	return PRINT_STRING;
-}
-
-int
-print_op_memrel15(const struct tic64x_op_template *t,
-		struct disassemble_info *i ATTRIBUTE_UNUSED, uint32_t opcode,
-		enum tic64x_text_operand type ATTRIBUTE_UNUSED, char *buffer,
-		int len)
-{
-	int regno, offset, scale;
-
-	if (tic64x_get_operand(opcode, tic64x_operand_y, 0))
-		regno = 15;
-	else
-		regno = 14;
-
-	offset = tic64x_get_operand(opcode, tic64x_operand_const15, 0);
-	if (t->flags & TIC64X_OP_CONST_SCALE) {
-		scale = t->flags & TIC64X_OP_MEMSZ_MASK;
-		scale >>= TIC64X_OP_MEMSZ_SHIFT;
-		offset <<= scale;
-	}
-
-	snprintf(buffer, len, "*+B%d(%X)", regno, offset);
 	return PRINT_STRING;
 }
 
@@ -717,7 +708,7 @@ print_op_dwreg(const struct tic64x_op_template *t,
 	} else if (type == tic64x_optxt_dwsrc2) {
 		t2 = tic64x_operand_srcreg1;
 	} else if (type == tic64x_optxt_dwdst) {
-		for (i = 0; i < TIC64X_MAX_OPERANDS; i++) {
+		for (i = 0; i < TIC64X_MAX_INDIRECT_OPERANDS; i++) {
 			if ((t->operands[i] == tic64x_operand_dwdst4 &&
 						type == tic64x_optxt_dwdst) ||
 			    (t->operands[i] == tic64x_operand_dwdst5 &&
@@ -726,7 +717,7 @@ print_op_dwreg(const struct tic64x_op_template *t,
 				break;
 			}
 		}
-		if (i == TIC64X_MAX_OPERANDS) {
+		if (i == TIC64X_MAX_INDIRECT_OPERANDS) {
 			fprintf(stderr, "tic64x print_op_dwreg: \"%s\" has no "
 				"matching dword reg operand\n", t->mnemonic);
 			snprintf(buffer, len, "%C", '\0');
@@ -808,7 +799,7 @@ print_op_constant(const struct tic64x_op_template *t,
 		t2 = tic64x_operand_nops;
 		i = 0;
 	} else {
-		for (i = 0; i < TIC64X_MAX_OPERANDS; i++) {
+		for (i = 0; i < TIC64X_MAX_INDIRECT_OPERANDS; i++) {
 			if (t->operands[i] == tic64x_operand_const5 ||
 				t->operands[i] == tic64x_operand_const5p2 ||
 				t->operands[i] == tic64x_operand_const21 ||
@@ -825,7 +816,7 @@ print_op_constant(const struct tic64x_op_template *t,
 		}
 	}
 
-	if (i == TIC64X_MAX_OPERANDS) {
+	if (i == TIC64X_MAX_INDIRECT_OPERANDS) {
 		fprintf(stderr, "tic64x print_op_constant: \"%s\" has no "
 				"matching dword reg operand\n", t->mnemonic);
 		snprintf(buffer, len, "%C", '\0');

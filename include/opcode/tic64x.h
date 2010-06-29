@@ -74,7 +74,6 @@ enum tic64x_operand_type {
 enum tic64x_text_operand {
 	tic64x_optxt_none = 0,
 	tic64x_optxt_memaccess,
-	tic64x_optxt_memrel15,	/* see note */
 	tic64x_optxt_dstreg,
 	tic64x_optxt_srcreg1,
 	tic64x_optxt_srcreg2,
@@ -87,19 +86,6 @@ enum tic64x_text_operand {
 	tic64x_optxt_nops,
 	tic64x_optxt_bfield	/* Double operand for clr insn */
 };
-
-/* Note: So, memaccess and memrel15 operands can be near indistinguishable,
- * and if we pick memaccess and hit something that needs relocating or is large,
- * user will look like this: >:|. So, put memrel15 opcodes ahead of memaccess
- * ones in opcode table, to ensure they're selected in ambiguous circumtances.
- *
- * The correct solution is see in a memaccess opcode that this could need to
- * be bumped up to memrel15, and either switch there, or reserve some space
- * in the fragment and come back to it later. Which is more complicated. So
- * avoid that for now.
- *
- * Unfortunately this isn't going to end with the user getting enlightening
- * error messages */
 
 #define TIC64X_ADDRMODE_NEG		0
 #define TIC64X_ADDRMODE_POS		1
@@ -173,21 +159,39 @@ struct tic64x_op_template {
 					 * inserting into opcode - for some
 					 * things like mvkh and mvkl, this is
 					 * entirely valid */
-#define TIC64X_OP_ALL_UNITS     0x400000/* Instruction can execute on any unit*/
 
+/* Instruction can execute on any unit - no point having it as a special flag*/
+#define TIC64X_OP_ALL_UNITS (TIC64X_OP_UNIT_S | TIC64X_OP_UNIT_L |\
+				TIC64X_OP_UNIT_D | TIC64X_OP_UNIT_M)
 
+/* Text operands - these correspond directly to the actual comma seperated
+ * chunks of text that follow the mnemonic. For each one there are, in general,
+ * two properties: how it's to be parsed (IE, what is _is_), and where it's to
+ * be written into the operand (IE, what field to fill).
+ * An attempt to rigidly seperate the two led to some unpleasentry; instead we
+ * have a situation where text operands describe both, fully or partially. For
+ * example srcreg1, srcreg2, dstreg are all read as registers, and all are
+ * written to their own fields in the opcode.
+ * sconstant and uconstant partially describe their operand: it says what
+ * constant they are, but not where it goes.  For that we use the indirect
+ * operand stuff */
 #define TIC64X_MAX_TXT_OPERANDS	3
 	enum tic64x_text_operand textops[TIC64X_MAX_TXT_OPERANDS];
-#define TIC64X_MAX_OPERANDS	2
-	enum tic64x_operand_type operands[TIC64X_MAX_OPERANDS];
+
+/* Indirect operands: text operands like dwdst or sconstant/uconstant place
+ * an enum in this array describing which field in the opcode its value should
+ * be written to. Which element in the array doesn't matter, the operand writer
+ * should know what it's looking for */
+#define TIC64X_MAX_INDIRECT_OPERANDS	2
+	enum tic64x_operand_type operands[TIC64X_MAX_INDIRECT_OPERANDS];
 };
 
 extern const struct tic64x_op_template tic64x_opcodes[];
+extern const struct tic64x_op_template tic64x_mv_template[];
 extern const struct tic64x_register tic64x_regs[];
 
 /* get/set calls for actual operands. Returns nonzero if value is too large */
-int tic64x_set_operand(uint32_t *opcode, enum tic64x_operand_type type,
-						 int value, int is_signed);
+void tic64x_set_operand(uint32_t *opcode, enum tic64x_operand_type type, int v);
 int tic64x_get_operand(uint32_t opcode,  enum tic64x_operand_type t, int signx);
 
 /* Utility macros(s) */
