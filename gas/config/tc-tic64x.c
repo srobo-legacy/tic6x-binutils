@@ -533,12 +533,6 @@ pseudo_sect(int x ATTRIBUTE_UNUSED)
 	int len, sz;
 	char c;
 
-	/* Pad all sections so that they start on 0x20 alignments. Later on in
-	 * linking it becomes highly painful to recalculate a bunch of PC
-	 * relative addresses because the whole section has shifted by 4 bytes
-	 * or something like that */
-	frag_align(5, 0, 0);
-
 	if (*input_line_pointer == '"') {
 		name = demand_copy_C_string(&len);
 		name = strdup(name);
@@ -640,8 +634,11 @@ valueT
 md_section_align(segT segment ATTRIBUTE_UNUSED, valueT section_size)
 {
 
-	/* No alignment rules for sections, AFAIK */
-	return section_size;
+	/* Pad all sections so that they start on 0x20 alignments. Later on in
+	 * linking it becomes highly painful to recalculate a bunch of PC
+	 * relative addresses because the whole section has shifted by 4 bytes
+	 * or something like that */
+	return (section_size + 0x1F) & ~0x1F;
 }
 
 void
