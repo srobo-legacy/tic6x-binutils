@@ -3032,6 +3032,10 @@ opwrite_constant(struct read_operand *in, enum tic64x_text_operand optype,
 		bfd_boolean pcrel;
 		int rtype;
 
+		if (is_nops)
+			as_bad("Nops constant *really* *shouldn't* be a symbol "
+				"based expression");
+
 		/* Emit a fixup - this symbol may jump around and will need
 		 * relaxing later */
 
