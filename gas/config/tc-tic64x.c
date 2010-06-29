@@ -203,7 +203,7 @@ struct tic64x_insn {
 	struct unitspec unitspecs;	/* Details about this instruction, what
 					 * unit, side, datapath etc that it
 					 * happens to use */
-	int8_t parallel;		/* || prefix? */
+	bfd_boolean parallel;		/* || prefix? */
 	int8_t cond_nz;			/* Condition flag, zero or nz?*/
 	int16_t cond_reg;		/* Register for comparison */
 
@@ -1119,7 +1119,7 @@ md_assemble(char *line)
 
 	/* pre-read hook will tell us if this had parallel double bar */
 	if (tic64x_line_had_parallel_prefix)
-		insn->parallel = 1;
+		insn->parallel = TRUE;
 
 	mnemonic = line;
 	while (!ISSPACE(*line) && !is_end_of_line[(int)*line])
@@ -1970,9 +1970,9 @@ tic64x_output_insn_packet()
 
 		if (i == read_insns_index - 1)
 			/* Last insn in packet - no p bit */
-			insn->parallel = 0;
+			insn->parallel = FALSE;
 		else
-			insn->parallel = 1;
+			insn->parallel = TRUE;
 
 		insn->output_frag = frag;
 		insn->output_frag_offs = out - frag->fr_literal;
