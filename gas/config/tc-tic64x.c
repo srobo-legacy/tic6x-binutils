@@ -1734,7 +1734,7 @@ select_insn_unit(struct resource_rec *input, int idx)
 					res.units[k] &= ~flag;
 
 				/* Except for _this_ insn */
-				res.units[idx] |= flag;
+				res.units[idx] = flag;
 
 				/* Does that work? */
 				if (!select_insn_unit(&res, idx+1)) {
