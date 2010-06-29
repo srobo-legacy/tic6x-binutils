@@ -2648,7 +2648,7 @@ opvalidate_double_register(struct read_operand *in, bfd_boolean print_error,
 	}
 
 	if (reg1_side != reg2_side) {
-		NOT_VALID(("Double register pairs must be on same side"));
+		NOT_VALID(("Double register pairs must both be on same side"));
 		return TRUE;
 	}
 
@@ -2661,8 +2661,7 @@ opvalidate_double_register(struct read_operand *in, bfd_boolean print_error,
 	 * do dregs over xpath, so they must only ever be on the same side
 	 * as the execution unit */
 	if (spec->unit_num != -1 && spec->unit_num != reg1_side) {
-		NOT_VALID(("Double register pair must be on same side of "
-				"processor"));
+		NOT_VALID(("Double register pair on wrong side of processor"));
 		return TRUE;
 	}
 
