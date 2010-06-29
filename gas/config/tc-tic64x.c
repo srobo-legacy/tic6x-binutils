@@ -337,7 +337,7 @@ static void tic64x_output_insn_packet(void);
 static void tic64x_output_insn(struct tic64x_insn *insn, char *out);
 
 static int read_execution_unit(char **curline, struct unitspec *spec);
-static char *tic64x_parse_expr(char *s, expressionS *exp);
+static char *parse_expr(char *s, expressionS *exp);
 static struct tic64x_register *tic64x_sym_to_reg(char *name);
 
 static int apply_conditional(struct tic64x_insn *insn);
@@ -399,7 +399,7 @@ md_begin()
 }
 
 char *
-tic64x_parse_expr(char *s, expressionS *exp)
+parse_expr(char *s, expressionS *exp)
 {
 	char *tmp, *end;
 
@@ -2208,7 +2208,7 @@ opread_memaccess(char *line, bfd_boolean print_error, struct read_operand *out)
 			off_reg = TIC64X_ADDRMODE_REGISTER;
 		} else {
 			/* No, must be a constant, parse that instead */
-			tic64x_parse_expr(offs, &expr);
+			parse_expr(offs, &expr);
 			off_reg = TIC64X_ADDRMODE_OFFSET;
 
 			/* There are some kinds of expression that are either
@@ -2258,7 +2258,7 @@ opread_memaccess(char *line, bfd_boolean print_error, struct read_operand *out)
 		if (has_offset) {
 			memcpy(&out->u.mem.offs.expr, &expr, sizeof(expr));
 		} else {
-			tic64x_parse_expr("0", &out->u.mem.offs.expr);
+			parse_expr("0", &out->u.mem.offs.expr);
 		}
 	} else {
 		out->u.mem.const_offs = FALSE;
@@ -2349,7 +2349,7 @@ opread_constant(char *line, bfd_boolean print_error, struct read_operand *out)
 {
 	expressionS expr;
 
-	tic64x_parse_expr(line, &expr);
+	parse_expr(line, &expr);
 	if (expr.X_op == O_illegal) {
 		READ_ERROR(("Illegal constant expression"));
 		return OPREADER_BAD;
