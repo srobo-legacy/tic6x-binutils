@@ -1658,7 +1658,7 @@ beat_instruction_around_the_bush(char **operands, struct tic64x_insn *insn)
 
 	/* Otherwise, the only other reason we could have rejected this is
 	 * because the memory data path specifier was wrong */
-	as_bad("Memory data path specified incorrectly used or omitted");
+	as_bad("Memory data path specifier incorrectly used or omitted");
 	return TRUE;
 }
 
