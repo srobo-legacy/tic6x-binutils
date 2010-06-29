@@ -10,35 +10,35 @@
 
 #define UNUSED(x) ((x) = (x))
 
-static void tic64x_asg(int x);
-static void tic64x_noop(int x);
-static void tic64x_comm(int x);
-static void tic64x_sect(int x);
-static void tic64x_fail(int x);
+static void pseudo_asg(int x);
+static void pseudo_noop(int x);
+static void pseudo_comm(int x);
+static void pseudo_sect(int x);
+static void pseudo_fail(int x);
 
 /* A few things we might want to handle - more complete table in tic54x, also
  * see spru186 for a full reference */
 const pseudo_typeS md_pseudo_table[] =
 {
-	{"asg", 	tic64x_asg,		0},
-	{"bss",		tic64x_fail,		0},
+	{"asg", 	pseudo_asg,		0},
+	{"bss",		pseudo_fail,		0},
 	{"byte",	cons,			1},
-	{"comm",	tic64x_comm,		0},
-	{"copy",	tic64x_fail,		0},
-	{"def",		tic64x_fail,		0},
+	{"comm",	pseudo_comm,		0},
+	{"copy",	pseudo_fail,		0},
+	{"def",		pseudo_fail,		0},
 	{"dword",	cons,			8},
 	{"hword",	cons,			2},
-	{"include",	tic64x_fail,		0},
-	{"mlib",	tic64x_fail,		0},
-	{"ref",		tic64x_fail,		0},
-	{"sect",	tic64x_sect,		0},
-	{"section",	tic64x_sect,		0},
-	{"set",		tic64x_fail,		0},
-	{"size",	tic64x_noop,		0},
-	{"string",	tic64x_fail,		0},
+	{"include",	pseudo_fail,		0},
+	{"mlib",	pseudo_fail,		0},
+	{"ref",		pseudo_fail,		0},
+	{"sect",	pseudo_sect,		0},
+	{"section",	pseudo_sect,		0},
+	{"set",		pseudo_fail,		0},
+	{"size",	pseudo_noop,		0},
+	{"string",	pseudo_fail,		0},
 	{"text",	s_text,			0},
-	{"type",	tic64x_noop,		0},
-	{"usect",	tic64x_fail,		0},
+	{"type",	pseudo_noop,		0},
+	{"usect",	pseudo_fail,		0},
 	{"word",	cons, 			4},
 	{NULL, 		NULL,			0}
 };
@@ -438,7 +438,7 @@ tic64x_cons_fix (fragS *frag, unsigned int offset, unsigned int len,
 }
 
 static void
-tic64x_fail(int x ATTRIBUTE_UNUSED)
+pseudo_fail(int x ATTRIBUTE_UNUSED)
 {
 
 	as_fatal("Encountered supported but unimplemented pseudo-op");
@@ -446,7 +446,7 @@ tic64x_fail(int x ATTRIBUTE_UNUSED)
 }
 
 static void
-tic64x_noop(int x ATTRIBUTE_UNUSED)
+pseudo_noop(int x ATTRIBUTE_UNUSED)
 {
 
 	ignore_rest_of_line();
@@ -454,7 +454,7 @@ tic64x_noop(int x ATTRIBUTE_UNUSED)
 }
 
 static void
-tic64x_comm(int x ATTRIBUTE_UNUSED)
+pseudo_comm(int x ATTRIBUTE_UNUSED)
 {
 
 	s_lcomm(1); // Alignment required
@@ -462,7 +462,7 @@ tic64x_comm(int x ATTRIBUTE_UNUSED)
 }
 
 static void
-tic64x_asg(int x ATTRIBUTE_UNUSED)
+pseudo_asg(int x ATTRIBUTE_UNUSED)
 {
 	const char *err;
 	char *str, *sym;
@@ -512,7 +512,7 @@ tic64x_asg(int x ATTRIBUTE_UNUSED)
 }
 
 static void
-tic64x_sect(int x ATTRIBUTE_UNUSED)
+pseudo_sect(int x ATTRIBUTE_UNUSED)
 {
 
 	char *name, *mod, *sect, *tmp;
