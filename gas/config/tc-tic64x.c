@@ -637,10 +637,9 @@ md_pcrel_from_seg (fixS *fixP, segT segment)
 }
 
 valueT
-md_section_align(segT segment, valueT section_size)
+md_section_align(segT segment ATTRIBUTE_UNUSED, valueT section_size)
 {
 
-	UNUSED(segment);
 	/* No alignment rules for sections, AFAIK */
 	return section_size;
 }
