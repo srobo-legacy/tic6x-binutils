@@ -2624,6 +2624,7 @@ opvalidate_double_register(struct read_operand *in, bfd_boolean print_error,
 {
 	const struct tic64x_register *reg1, *reg2;
 	int8_t reg1_side, reg2_side, reg1_num, reg2_num;
+	bfd_boolean is_memacc;
 
 	if (optype != tic64x_optxt_dwdst && optype != tic64x_optxt_dwsrc &&
 					optype != tic64x_optxt_dwsrc2)
@@ -2636,6 +2637,7 @@ opvalidate_double_register(struct read_operand *in, bfd_boolean print_error,
 	reg2_num = reg2->num & 0x1F;
 	reg1_side = (reg1->num & TIC64X_REG_UNIT2) ? 1 : 0;
 	reg2_side = (reg2->num & TIC64X_REG_UNIT2) ? 1 : 0;
+	is_memacc = (templ->flags & TIC64X_OP_MEMACCESS) ? TRUE : FALSE;
 
 	/* Double register restrictions: we can't use the xpath, so they're
 	 * always on the same side. They *can* also be the target of a load
@@ -2659,15 +2661,16 @@ opvalidate_double_register(struct read_operand *in, bfd_boolean print_error,
 
 	/* So the registers specified are ok, how about side issues? Can't
 	 * do dregs over xpath, so they must only ever be on the same side
-	 * as the execution unit */
-	if (spec->unit_num != -1 && spec->unit_num != reg1_side) {
+	 * as the execution unit. Except in the case where it's a memory
+	 * load/store, in which case it can be on either side, but we need
+	 * to check the data path specifier */
+	if (!is_memacc && spec->unit_num != -1 && spec->unit_num != reg1_side) {
 		NOT_VALID(("Double register pair on wrong side of processor"));
 		return TRUE;
 	}
 
 	/* We can also load and store double registers */
-	if (templ->flags & TIC64X_OP_MEMACCESS && spec->mem_path != -1 &&
-					spec->mem_path != reg1_side) {
+	if (is_memacc && spec->mem_path != -1 && spec->mem_path != reg1_side) {
 		NOT_VALID(("Double-reg data path on wrong side of processor"));
 		return TRUE;
 	}
@@ -2676,10 +2679,10 @@ opvalidate_double_register(struct read_operand *in, bfd_boolean print_error,
 	if (gen_unitspec == FALSE)
 		return 0;
 
-	if (spec->unit_num == -1)
+	if (!is_memacc && spec->unit_num == -1)
 		spec->unit_num = reg1_side;
 
-	if (templ->flags & TIC64X_OP_MEMACCESS && spec->mem_path == -1)
+	if (is_memacc && spec->mem_path == -1)
 		spec->mem_path = reg1_side;
 
 	return FALSE;
