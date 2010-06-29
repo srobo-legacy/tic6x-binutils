@@ -339,6 +339,8 @@ static void tic64x_output_insn(struct tic64x_insn *insn, char *out);
 static int read_execution_unit(char **curline, struct unitspec *spec);
 static char *parse_expr(char *s, expressionS *exp);
 static struct tic64x_register *sym_to_reg(char *name);
+static enum bfd_reloc_code_real type_to_rtype(struct tic64x_insn *insn,
+					enum tic64x_operand_type type);
 
 static int apply_conditional(struct tic64x_insn *insn);
 static void fabricate_mv_insn(struct tic64x_insn *insn, char *op1, char *op2);
@@ -781,7 +783,7 @@ sym_to_reg(char *regname)
 	return reg;
 }
 
-static enum bfd_reloc_code_real
+enum bfd_reloc_code_real
 type_to_rtype(struct tic64x_insn *insn, enum tic64x_operand_type type)
 {
 
