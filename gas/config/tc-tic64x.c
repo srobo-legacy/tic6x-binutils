@@ -333,8 +333,8 @@ struct resource_rec {
 
 static bfd_boolean pick_units_for_insn_packet(struct resource_rec *res);
 static bfd_boolean select_insn_unit(struct resource_rec *res, int idx);
-static void tic64x_output_insn_packet(void);
-static void tic64x_output_insn(struct tic64x_insn *insn, char *out);
+static void output_insn_packet(void);
+static void output_insn(struct tic64x_insn *insn, char *out);
 
 static int read_execution_unit(char **curline, struct unitspec *spec);
 static int apply_conditional(struct tic64x_insn *insn);
@@ -1806,7 +1806,7 @@ pick_units_for_insn_packet(struct resource_rec *res)
 }
 
 void
-tic64x_output_insn_packet()
+output_insn_packet()
 {
 	struct resource_rec res;
 	struct tic64x_insn *insn;
@@ -1982,7 +1982,7 @@ tic64x_output_insn_packet()
 		insn->output_frag = frag;
 		insn->output_frag_offs = out - frag->fr_literal;
 		insn->output_pcoffs = i *4;
-		tic64x_output_insn(insn, out);
+		output_insn(insn, out);
 #if 0
 /* Insn can't be freed, it might be being fixed up. Needs more thought
  * about insn lifetime */
@@ -1994,7 +1994,7 @@ tic64x_output_insn_packet()
 }
 
 void
-tic64x_output_insn(struct tic64x_insn *insn, char *out)
+output_insn(struct tic64x_insn *insn, char *out)
 {
 	int i, s, y;
 
