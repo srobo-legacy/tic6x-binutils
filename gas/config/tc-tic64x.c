@@ -2017,6 +2017,11 @@ tic64x_output_insn(struct tic64x_insn *insn, char *out)
 					insn->cond_reg);
 	} /* else, leaving those as zero means unconditional execution */
 
+	/* Do we use the xpath? If 0, no, if -1 then nothing saw the need to
+	 * use the xpath anyway, so we don't use the xpath either */
+	if (insn->unitspecs.uses_xpath == 1)
+		tic64x_set_operand(&insn->opcode, tic64x_operand_x, 1);
+
 	/* Now, pump out some operands */
 	for (i = 0; i < insn->operands; i++) {
 
