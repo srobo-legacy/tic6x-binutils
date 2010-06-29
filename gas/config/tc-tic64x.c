@@ -1990,10 +1990,10 @@ tic64x_output_insn(struct tic64x_insn *insn, char *out)
 	 * ANYWAY: so we have to swap the meaning of s and maybe write y if the
 	 * instruction is memory access */
 	if (insn->templ->flags & TIC64X_OP_MEMACCESS) {
-		s = (insn->unitspecs.mem_path == 2) ? 1 : 0;
-		y = (insn->unitspecs.unit_num == 2) ? 1 : 0;
+		s = (insn->unitspecs.mem_path == 1) ? 1 : 0;
+		y = (insn->unitspecs.unit_num == 1) ? 1 : 0;
 	} else {
-		s = (insn->unitspecs.unit_num == 2) ? 1 : 0;
+		s = (insn->unitspecs.unit_num == 1) ? 1 : 0;
 		y = 0;
 	}
 
