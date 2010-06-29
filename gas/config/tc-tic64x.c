@@ -2728,13 +2728,14 @@ opvalidate_constant (struct read_operand *in, bfd_boolean print_error,
 	int32_t snum;
 	int field_sz, i, max, mask;
 	enum tic64x_operand_type type;
-	bfd_boolean is_nops;
+	bfd_boolean is_nops, no_field_check;
 
 	if (optype != tic64x_optxt_uconstant && optype != tic64x_optxt_sconstant
 						&& optype != tic64x_optxt_nops)
 		as_fatal("Non-constant reached constant validator routine");
 
 	is_nops = (optype == tic64x_optxt_nops) ? TRUE : FALSE;
+	no_field_check = (templ->flags & TIC64X_OP_NO_RANGE_CHK) ? TRUE : FALSE;
 	e = &in->u.constant.expr;
 	snum = e->X_add_number;
 	unum = e->X_add_number;
@@ -2770,7 +2771,7 @@ opvalidate_constant (struct read_operand *in, bfd_boolean print_error,
 
 	/* Some different tests depending on whether we expected a signed or
 	 * unsigned constant */
-	if (optype == tic64x_optxt_sconstant) {
+	if (optype == tic64x_optxt_sconstant && !no_field_check) {
 		if (e->X_unsigned == 1 && snum < 0) {
 			NOT_VALID(("Negative constant, expected unsigned"));
 			return TRUE;
@@ -2781,7 +2782,7 @@ opvalidate_constant (struct read_operand *in, bfd_boolean print_error,
 			NOT_VALID(("Signed constant exceeds field size"));
 			return TRUE;
 		}
-	} else {
+	} else if (!no_field_check) {
 		if (unum >= (unsigned int)max) {
 			NOT_VALID(("Unsigned constant exceeds field size"));
 			return TRUE;
@@ -2792,7 +2793,7 @@ opvalidate_constant (struct read_operand *in, bfd_boolean print_error,
 	 * constant shift factored into the maximum number comparisons above,
 	 * ensure that the alignment of the number is sufficient to fit into
 	 * the field without dropping lower bits */
-	if (unum & mask) {
+	if (unum & mask && !no_field_check) {
 		NOT_VALID(("Constant is not sufficiently aligned to fit in "
 						"shifted const field"));
 		return TRUE;
