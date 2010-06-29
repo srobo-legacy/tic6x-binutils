@@ -2823,12 +2823,17 @@ opwrite_memaccess(struct read_operand *in, enum tic64x_text_operand optype,
 {
 	struct opdetail_memaccess *mem;
 	enum tic64x_operand_type type;
+	unsigned int scale;
 	uint32_t offs;
 
 	if (optype != tic64x_optxt_memaccess)
 		as_fatal("Non-memaccess operand made its way to opwriter");
 
 	mem = &in->u.mem;
+	/* The following are only used if we're writing a constant */
+	scale = insn->templ->flags & TIC64X_OP_MEMSZ_MASK;
+	scale >>= TIC64X_OP_MEMSZ_SHIFT;
+	offs = mem->offs.expr.X_add_number;
 
 	/* Two kinds of memaccess... memrel15 and normal */
 	if (insn->templ->operands[0] == tic64x_operand_rcoffset ||
@@ -2851,20 +2856,16 @@ opwrite_memaccess(struct read_operand *in, enum tic64x_text_operand optype,
 		tic64x_set_operand(&insn->opcode, tic64x_operand_basereg,
 						mem->base->num & 0x1F);
 		if (mem->const_offs) {
-			/* Uuurgh, not this again */
-			unsigned int tmp;
-
-			tmp = insn->templ->flags & TIC64X_OP_MEMSZ_MASK;
-			tmp >>= TIC64X_OP_MEMSZ_SHIFT;
-			offs = mem->offs.expr.X_add_number;
-
-			if (insn->templ->flags & TIC64X_OP_CONST_SCALE)
-				offs >>= tmp;
+			/* If we always scale, and the user didn't already
+			 * scale it for us, do that now */
+			if (insn->templ->flags & TIC64X_OP_CONST_SCALE &&
+						!mem->scaled_input)
+				offs >>= scale;
 
 			/* Do we have to twiddle with the optional scale bit? */
 			if (insn->templ->flags & TIC64X_OP_MEMACC_SBIT) {
-				if (offs >= (unsigned int)(32 << tmp)) {
-					offs >>= tmp;
+				if (offs >= (unsigned int)(32 << scale)) {
+					offs >>= scale;
 					tic64x_set_operand(&insn->opcode,
 						tic64x_operand_scale, 1);
 				} else {
@@ -2894,7 +2895,11 @@ opwrite_memaccess(struct read_operand *in, enum tic64x_text_operand optype,
 
 		/* Validator will reject non-const offsets */
 		if (mem->offs.expr.X_op == O_constant) {
-			offs = mem->offs.expr.X_add_number;
+			/* Scale the input if it wasn't already done by the user
+			 * and write field out */
+			if (insn->templ->flags & TIC64X_OP_CONST_SCALE &&
+						!mem->scaled_input)
+				offs >>= scale;
 			tic64x_set_operand(&insn->opcode, type, offs);
 		} else if (mem->offs.expr.X_op == O_symbol) {
 			fixS *fix;
