@@ -205,6 +205,9 @@ struct tic64x_insn {
 					 * happens to use */
 	bfd_boolean parallel;		/* || prefix? */
 	int8_t cond_nz;			/* Condition flag, zero or nz?*/
+/* Use "NOT_SET" value of -1 defined above */
+#define COND_ZERO	0
+#define COND_NZ		1
 	int16_t cond_reg;		/* Register for comparison */
 
 	/* Template holds everything needed to build the instruction, but
@@ -288,7 +291,7 @@ static struct hash_control *tic64x_subsyms;
 
 /* Data picked up by the pre-md-assemble hook about the incoming instruction */
 int tic64x_line_had_parallel_prefix;
-int tic64x_line_had_cond;
+bfd_boolean tic64x_line_had_cond;
 int tic64x_line_had_nz_cond;
 struct tic64x_register *tic64x_line_had_cond_reg;
 
@@ -857,9 +860,9 @@ tic64x_start_line_hook(void)
 		line++;
 
 	if (*line == '[') {
-		tic64x_line_had_cond = 1;
+		tic64x_line_had_cond = TRUE;
 		*line++ = ' ';
-		tic64x_line_had_nz_cond = (*line == '!') ? 0 : 1;
+		tic64x_line_had_nz_cond = (*line == '!') ? COND_ZERO : COND_NZ;
 		*line++ = ' ';
 
 		reg = line;
@@ -886,7 +889,7 @@ tic64x_start_line_hook(void)
 
 		*line = ' ';
 	} else {
-		tic64x_line_had_cond = 0;
+		tic64x_line_had_cond = FALSE;
 		tic64x_line_had_cond_reg = NULL;
 	}
 
@@ -933,8 +936,8 @@ apply_conditional(struct tic64x_insn *insn)
 		}
 	} else {
 		/* No conditional, signal this with -1 */
-		insn->cond_nz = -1;
-		insn->cond_reg = -1;
+		insn->cond_nz = NOT_SET;
+		insn->cond_reg = NOT_SET;
 	}
 
 	return 0;
@@ -2028,9 +2031,10 @@ tic64x_output_insn(struct tic64x_insn *insn, char *out)
 	if (insn->parallel)
 		tic64x_set_operand(&insn->opcode, tic64x_operand_p, 1);
 
-	if (!(insn->templ->flags & TIC64X_OP_NOCOND) && insn->cond_nz != -1) {
+	if (!(insn->templ->flags & TIC64X_OP_NOCOND) &&
+						insn->cond_nz != NOT_SET) {
 		tic64x_set_operand(&insn->opcode, tic64x_operand_z,
-					(insn->cond_nz) ? 0 : 1);
+					(insn->cond_nz == COND_ZERO) ? 1 : 0);
 		tic64x_set_operand(&insn->opcode, tic64x_operand_creg,
 					insn->cond_reg);
 	} /* else, leaving those as zero means unconditional execution */
