@@ -1936,27 +1936,12 @@ tic64x_output_insn_packet()
 		}
 
 		/* That checks for resource violations. Finally, are the
-		 * conditional attributes attached to this sane? */
-
-		if (insn->cond_nz != -1) {
-			/* This is the band for side-B registers */
-			if (insn->cond_reg >= 1 && insn->cond_reg <= 3) {
-				if (insn->unitspecs.unit_num == 0) {
-					as_bad("Condition register read from "
-						"wrong side of processor in "
-						"execute packet");
-					/* XXX - how about printing which
-					 * particular instruction it is that
-					 * went wrong, eh? */
-				}
-			} else {
-				if (insn->unitspecs.unit_num == 1) {
-					as_bad("Condition register read from "
-						"wrong side of processor in "
-						"execute packet");
-				}
-			}
-		}
+		 * conditional attributes attached to this sane? There's nothing
+		 * in the TI documentation I've come across that _says_ they're
+		 * side restricted, you can address them from either side, and
+		 * some of TIs example assembly crosses them: so I say they can
+		 * cross register side safely */
+		/* (So actually, don't do sanity checks */
 	} /* End of loop checking instruction resources */
 
 	/* Emit insns, with correct p-bits this time */
