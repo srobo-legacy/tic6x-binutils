@@ -1030,7 +1030,7 @@ fabricate_mv_insn(struct tic64x_insn *insn, char *op1, char *op2)
 	dst_side = (insn->operand_values[2].u.reg.base->num & TIC64X_REG_UNIT2)
 							? SIDE_2 : SIDE_1;
 
-	insn->operands = 0; /* To avoid any intermediate code tripping up */
+	insn->operands = 3;
 	insn->num_possible_templates = 1;
 	insn->possible_templates[0] = &tic64x_mv_template[0];
 	insn->template_validity[0] = 0;
