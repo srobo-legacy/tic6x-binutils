@@ -1883,6 +1883,9 @@ output_insn_packet()
 			insn->unitspecs.unit = UNIT_M;
 			wanted_unit = TIC64X_OP_UNIT_M;
 			break;
+		default:
+			as_fatal("Unit selection did not produce a single "
+								"result");
 		}
 
 		switch (unit_flag) {
@@ -1897,6 +1900,10 @@ output_insn_packet()
 		case CAN_D2:
 		case CAN_M2:
 			insn->unitspecs.unit_num = SIDE_2;
+			break;
+		default:
+			as_fatal("Unit side selection did not produce a single "
+								"result");
 		}
 
 		/* We now have a unit and a side - go and find the first thing
