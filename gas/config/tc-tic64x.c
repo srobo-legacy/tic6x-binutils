@@ -46,11 +46,26 @@ const pseudo_typeS md_pseudo_table[] =
 struct tic64x_insn;
 struct op_handler;
 
+/* Unit specifiers - struct and constants for describing what unit / side /
+ * mempath / suchlike we're working with. IE, resources. NB, read_execution_unit
+ * relies on the constants not being altered */
 struct unitspec {
-	int8_t		unit;		/* Character (ie 'L') or -1 */
-	int8_t		unit_num;	/* 0 -> side 1, 1 -> side 2, or -1 */
-	int8_t		mem_path;	/* 0 -> T1, 1 -> T2, not set: -1 */
-	int8_t		uses_xpath;	/* 0 -> No, 1-> Yes, not set: -1 */
+	/* All of the following can be not set / not specified */
+#define NOT_SET		-1
+	int8_t		unit;
+#define UNIT_S		'S'
+#define UNIT_L		'L'
+#define UNIT_D		'D'
+#define UNIT_M		'M'
+	int8_t		unit_num;
+#define SIDE_1		0
+#define SIDE_2		1
+	int8_t		mem_path;
+#define MEMPATH_1	0
+#define MEMPATH_2	1
+	int8_t		uses_xpath;
+#define NO_XPATH	0
+#define USE_XPATH	1
 };
 
 /* Parser stuff to read a particularly kind of operand */
