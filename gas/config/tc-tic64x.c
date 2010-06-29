@@ -2772,7 +2772,7 @@ opvalidate_constant (struct read_operand *in, bfd_boolean print_error,
 			return TRUE;
 		}
 	} else {
-		if (snum < -max || snum >= max) {
+		if (unum >= (unsigned int)max) {
 			NOT_VALID(("Unsigned constant exceeds field size"));
 			return TRUE;
 		}
