@@ -2010,8 +2010,7 @@ tic64x_output_insn(struct tic64x_insn *insn, char *out)
 	if (insn->parallel)
 		tic64x_set_operand(&insn->opcode, tic64x_operand_p, 1);
 
-	if (!(insn->templ->flags & TIC64X_OP_NOCOND) &&
-					insn->cond_reg != 0) {
+	if (!(insn->templ->flags & TIC64X_OP_NOCOND) && insn->cond_nz != -1) {
 		tic64x_set_operand(&insn->opcode, tic64x_operand_z,
 					(insn->cond_nz) ? 0 : 1);
 		tic64x_set_operand(&insn->opcode, tic64x_operand_creg,
