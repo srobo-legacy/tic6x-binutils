@@ -1232,10 +1232,6 @@ md_assemble(char *line)
 	read_insns_frags[read_insns_index] = frag_now;
 	read_insns[read_insns_index++] = insn;
 
-	if (insn->templ && insn->templ->flags & TIC64X_OP_BITFIELD) {
-		free(operands[1]);
-	}
-
 	return;
 }
 
