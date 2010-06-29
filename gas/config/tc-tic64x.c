@@ -2547,10 +2547,10 @@ opvalidate_register(struct read_operand *in, bfd_boolean print_error,
 {
 	int flag;
 	int8_t reg_side;
-	bfd_boolean uses_xpath, uses_dpath;
+	bfd_boolean uses_xpath, is_memaccess_excempt;
 
 	uses_xpath = FALSE;
-	uses_dpath = FALSE;
+	is_memaccess_excempt = FALSE;
 	reg_side = (in->u.reg.base->num & TIC64X_REG_UNIT2) ? SIDE_2 : SIDE_1;
 
 	/* Registers: this is nice and simple to cope with. Destination regs
@@ -2568,14 +2568,20 @@ opvalidate_register(struct read_operand *in, bfd_boolean print_error,
 		flag = TIC64X_OP_XPATH_SRC2;
 		break;
 	case tic64x_optxt_dstreg:
-		flag = 0; /* No condition where dst reg can be on other side */
+		flag = 0; /* No xpath condition where dstreg can be other side*/
+
+		/* If this is memory access, then this register can in fact
+		 * be on either side of the processor */
+		if (templ->flags & TIC64X_OP_MEMACCESS)
+			is_memaccess_excempt = TRUE;
 		break;
 	default:
 		as_fatal("Invalid operand type has made its way into register "
 			"validator");
 	}
 
-	if (reg_side != spec->unit_num && spec->unit_num != NOT_SET) {
+	if (reg_side != spec->unit_num && spec->unit_num != NOT_SET &&
+						!is_memaccess_excempt) {
 		/* Can we xpath? */
 		if (!(templ->flags & flag)) {
 			NOT_VALID(("Register %C%d on wrong side of processor",
@@ -2590,9 +2596,7 @@ opvalidate_register(struct read_operand *in, bfd_boolean print_error,
 
 	/* OK, what else? If it's a dst reg and we're a memaccess, that means
 	 * we're going to end up using the data path on this side */
-	if (templ->flags & TIC64X_OP_MEMACCESS && optype ==tic64x_optxt_dstreg){
-		uses_dpath = TRUE;
-
+	if (is_memaccess_excempt) {
 		if (spec->mem_path != NOT_SET && spec->mem_path != reg_side) {
 			NOT_VALID(("Memory datapath on wrong side of processor"
 									));
@@ -2621,7 +2625,7 @@ opvalidate_register(struct read_operand *in, bfd_boolean print_error,
 		spec->uses_xpath = USE_XPATH;
 
 	/* Finally, did we end up finding that we also decide the datapath? */
-	if (uses_dpath == TRUE)
+	if (is_memaccess_excempt)
 		spec->mem_path = reg_side;
 
 	/* I can't think of anything else. Erk. */
