@@ -1115,6 +1115,10 @@ finalise_mv_insn(struct tic64x_insn *insn)
 	 * place and set the template to the correct add instruction for the
 	 * unit specified */
 
+	/* Mark as as not being a mv any more - stops us from being "finalised"
+	 * again. */
+	insn->mvfail = 0;
+
 	return;
 }
 
