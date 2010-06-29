@@ -338,7 +338,7 @@ static void tic64x_output_insn(struct tic64x_insn *insn, char *out);
 
 static int read_execution_unit(char **curline, struct unitspec *spec);
 static char *parse_expr(char *s, expressionS *exp);
-static struct tic64x_register *tic64x_sym_to_reg(char *name);
+static struct tic64x_register *sym_to_reg(char *name);
 
 static int apply_conditional(struct tic64x_insn *insn);
 static void fabricate_mv_insn(struct tic64x_insn *insn, char *op1, char *op2);
@@ -763,7 +763,7 @@ as_fatal("FIXME: relocations of const15s need to know memory access size");
 }
 
 struct tic64x_register *
-tic64x_sym_to_reg(char *regname)
+sym_to_reg(char *regname)
 {
 	char *subsym;
 	struct tic64x_register *reg;
@@ -876,7 +876,7 @@ tic64x_start_line_hook(void)
 		}
 
 		*line = 0;
-		line_had_cond_reg = tic64x_sym_to_reg(reg);
+		line_had_cond_reg = sym_to_reg(reg);
 		if (line_had_cond_reg == NULL) {
 			as_bad("Expected register in conditional prefix");
 			return;
@@ -2124,7 +2124,7 @@ opread_memaccess(char *line, bfd_boolean print_error, struct read_operand *out)
 	 * register name, try to look that up */
 	c = *line;
 	*line = 0;
-	reg = tic64x_sym_to_reg(regname);
+	reg = sym_to_reg(regname);
 
 	if (!reg) {
 		READ_ERROR(("Expected base address register, found \"%s\"",
@@ -2203,7 +2203,7 @@ opread_memaccess(char *line, bfd_boolean print_error, struct read_operand *out)
 		*line = 0;
 
 		/* We have some text - is it a register? */
-		offsetreg = tic64x_sym_to_reg(offs);
+		offsetreg = sym_to_reg(offs);
 		if (offsetreg) {
 			off_reg = TIC64X_ADDRMODE_REGISTER;
 		} else {
@@ -2274,7 +2274,7 @@ opread_register(char *line, bfd_boolean print_error, struct read_operand *out)
 	struct tic64x_register *reg;
 
 	/* Expect only a single piece of text, should be register. Simple. */
-	reg = tic64x_sym_to_reg(line);
+	reg = sym_to_reg(line);
 	if (!reg) {
 		READ_ERROR(("Expected \"%s\" to be register", line));
 		return OPREADER_BAD;
@@ -2309,7 +2309,7 @@ opread_double_register(char *line, bfd_boolean print_error,
 
 	/* Actually try and read register */
 	*line = 0;
-	reg1 = tic64x_sym_to_reg(rtext);
+	reg1 = sym_to_reg(rtext);
 	if (!reg1) {
 		READ_ERROR(("\"%s\" is not a register", rtext));
 		*line++ = ':';
@@ -2325,7 +2325,7 @@ opread_double_register(char *line, bfd_boolean print_error,
 	/* And find register */
 	c = *line;
 	*line = 0;
-	reg2 = tic64x_sym_to_reg(rtext);
+	reg2 = sym_to_reg(rtext);
 	if (!reg2) {
 		READ_ERROR(("\"%s\" is not a register", rtext));
 		*line = c;
