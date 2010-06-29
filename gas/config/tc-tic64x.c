@@ -1779,6 +1779,35 @@ pick_units_for_insn_packet(struct resource_rec *res)
 		insn = read_insns[i];
 		res->units[i] = 0;
 
+		/* If the user already specified a unit for this to execute
+		 * on, mark this insn as only executing there */
+		if (insn->unitspecs.unit != NOT_SET) {
+			switch (insn->unitspecs.unit) {
+			case UNIT_S:
+				res->units[i] =
+					(insn->unitspecs.unit_num == SIDE_1)
+							? CAN_S1 : CAN_S2;
+				break;
+			case UNIT_L:
+				res->units[i] =
+					(insn->unitspecs.unit_num == SIDE_1)
+							? CAN_L1 : CAN_L2;
+				break;
+			case UNIT_D:
+				res->units[i] =
+					(insn->unitspecs.unit_num == SIDE_1)
+							? CAN_D1 : CAN_D2;
+				break;
+			case UNIT_M:
+				res->units[i] =
+					(insn->unitspecs.unit_num == SIDE_1)
+							? CAN_M1 : CAN_M2;
+				break;
+			}
+
+			continue;
+		}
+
 		for (idx = 0; idx < insn->num_possible_templates; idx++) {
 			templ = insn->possible_templates[idx];
 
