@@ -79,7 +79,7 @@ struct opdetail_memaccess {
 	} offs;
 	bfd_boolean const_offs;
 	int addrmode;
-	bfd_boolean scale_input;	/* Input in [] brackets, to be scaled */
+	bfd_boolean scaled_input;	/* Input in [] brackets, to be scaled */
 };
 
 struct opdetail_register {
@@ -2265,7 +2265,7 @@ opread_memaccess(char *line, bfd_boolean print_error, struct read_operand *out)
 	 * with the details of whats been parsed */
 	out->u.mem.base = reg;
 	out->u.mem.addrmode = off_reg | pos_neg | pre_post | nomod_modify;
-	out->u.mem.scale_input = (bracket == ']') ? TRUE : FALSE;
+	out->u.mem.scaled_input = (bracket == ']') ? TRUE : FALSE;
 	if (off_reg == TIC64X_ADDRMODE_OFFSET) {
 		out->u.mem.const_offs = TRUE;
 		if (has_offset) {
@@ -2494,7 +2494,7 @@ opvalidate_memaccess(struct read_operand *in, bfd_boolean print_error,
 			/* If the user encased the offset in [] brackets, then
 			 * the constant they gave us was prescaled to fit in
 			 * the field. Un-do that for testing. */
-			if (detail->scale_input)
+			if (detail->scaled_input)
 				val <<= field_shift;
 
 			max = 1 << field_sz;
