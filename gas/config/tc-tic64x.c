@@ -950,24 +950,24 @@ read_execution_unit(char **curline, struct unitspec *spec)
 	 * by 'T' specifier saying which memory data path is being used */
 	if (*line++ != '.') {
 		/* No execution unit */
-		spec->unit = -1;
-		spec->unit_num = -1;
-		spec->mem_path = -1;
-		spec->uses_xpath = -1;
+		spec->unit = NOT_SET;
+		spec->unit_num = NOT_SET;
+		spec->mem_path = NOT_SET;
+		spec->uses_xpath = NOT_SET;
 		return 0;
 	}
 
 	/* Stuff from here on should be an execution unit, so error if it's
 	 * wrong */
 	spec->unit = *line++;
-	if (spec->unit != 'D' && spec->unit != 'L' && spec->unit != 'S' &&
-							spec->unit != 'M') {
+	if (spec->unit != UNIT_D && spec->unit != UNIT_L &&
+				spec->unit != UNIT_S && spec->unit != UNIT_M) {
 		as_bad("Unrecognised execution unit %C", spec->unit);
 		return -1;
 	}
 
-	spec->unit_num = *line++ - 0x31;
-	if (spec->unit_num != 0 && spec->unit_num != 1) {
+	spec->unit_num = *line++ - 0x31; /*relies on side consts being 0 and 1*/
+	if (spec->unit_num != SIDE_1 && spec->unit_num != SIDE_2) {
 		as_bad("Bad execution unit number %d", spec->unit_num);
 		return -1;
 	}
@@ -977,21 +977,21 @@ read_execution_unit(char **curline, struct unitspec *spec)
 	if (*line == 'T') {
 		line++;
 		spec->mem_path = *line++ - 0x31;
-		if (spec->mem_path != 0 && spec->mem_path != 1) {
+		if (spec->mem_path != MEMPATH_1 && spec->mem_path != MEMPATH_2){
 			as_bad("'%d' is not a valid unit number for memory data"					" path", spec->mem_path);
 			return -1;
 		}
 	} else {
-		spec->mem_path = -1;
+		spec->mem_path = NOT_SET;
 	}
 
 	/* There's also an 'X' suffix used to indicate we're using the cross
 	 * path. */
 	if (*line == 'X') {
 		line++;
-		spec->uses_xpath = 1;
+		spec->uses_xpath = USE_XPATH;
 	} else {
-		spec->uses_xpath = 0;
+		spec->uses_xpath = NO_XPATH;
 	}
 
 	/* Nom any following spaces */
@@ -1017,13 +1017,13 @@ fabricate_mv_insn(struct tic64x_insn *insn, char *op1, char *op2)
 		return;
 
 	src_side = (insn->operand_values[1].u.reg.base->num & TIC64X_REG_UNIT2)
-									? 1 : 0;
+							? SIDE_2 : SIDE_1;
 
 	if (handler->reader(op2, TRUE, &insn->operand_values[2]))
 		return;
 
 	dst_side = (insn->operand_values[2].u.reg.base->num & TIC64X_REG_UNIT2)
-									? 1 : 0;
+							? SIDE_2 : SIDE_1;
 
 	insn->operands = 0; /* To avoid any intermediate code tripping up */
 	insn->num_possible_templates = 1;
@@ -1037,7 +1037,7 @@ fabricate_mv_insn(struct tic64x_insn *insn, char *op1, char *op2)
 
 	/* However, if there's a unit specifier given in the assembly line,
 	 * we should honour that */
-	if (insn->unitspecs.unit != -1)
+	if (insn->unitspecs.unit != NOT_SET)
 		finalise_mv_insn(insn);
 
 	return;
@@ -1052,8 +1052,9 @@ finalise_mv_insn(struct tic64x_insn *insn)
 	bfd_boolean swap_constant;
 
 	/* Righty; at this point we should have a tied down unit specifier */
-	if (insn->unitspecs.unit == -1 || insn->unitspecs.unit_num == -1 ||
-					insn->unitspecs.uses_xpath == -1)
+	if (insn->unitspecs.unit == NOT_SET ||
+					insn->unitspecs.unit_num == NOT_SET ||
+					insn->unitspecs.uses_xpath == NOT_SET)
 		as_fatal("Finalising mv instruction with no internal unit "
 			"specifier");
 
@@ -1063,17 +1064,17 @@ finalise_mv_insn(struct tic64x_insn *insn)
 			" expression");
 
 	switch (insn->unitspecs.unit) {
-	case 'S':
+	case UNIT_S:
 		wanted_opcode = 0x1A0;
 		break;
-	case 'L':
+	case UNIT_L:
 		wanted_opcode = 0x58;
 		swap_constant = TRUE;
 		break;
-	case 'D':
+	case UNIT_D:
 		wanted_opcode = 0xAF0;
 		break;
-	case 'M':
+	case UNIT_M:
 		as_bad("mv instruction cannot execute on 'M' unit");
 	default:
 		as_fatal("Invalid execution unit in internal record");
@@ -1379,7 +1380,7 @@ beat_instruction_around_the_bush(char **operands, struct tic64x_insn *insn)
 
 		/* The important part: work out what side this will
 		 * work on, and what extra constraints there are */
-		spec.unit = spec.mem_path = spec.uses_xpath = -1;
+		spec.unit = spec.mem_path = spec.uses_xpath = NOT_SET;
 
 		for (spec.unit_num = 0; spec.unit_num < 2; spec.unit_num++) {
 			for (i = 0; i < insn->operands; i++)
@@ -1397,27 +1398,27 @@ beat_instruction_around_the_bush(char **operands, struct tic64x_insn *insn)
 				 * now? */
 				if (cur->flags & TIC64X_OP_FIXED_UNITNO) {
 					if (cur->flags & TIC64X_OP_FIXED_UNIT2){
-						if (spec.unit_num == 0)
+						if (spec.unit_num == SIDE_1)
 							continue;
 					} else {
-						if (spec.unit_num == 1)
+						if (spec.unit_num == SIDE_2)
 							continue;
 					}
 				}
 
-				if (spec.unit_num == 0) {
+				if (spec.unit_num == SIDE_1) {
 					tmp_byte = VALID_ON_UNIT1;
-					if (spec.uses_xpath == 1)
+					if (spec.uses_xpath == USE_XPATH)
 						tmp_byte |= VALID_USES_XPATH1;
 
 				} else {
 					tmp_byte = VALID_ON_UNIT2;
-					if (spec.uses_xpath == 1)
+					if (spec.uses_xpath == USE_XPATH)
 						tmp_byte |= VALID_USES_XPATH2;
 				}
 
 				insn->template_validity[idx] |= tmp_byte;
-				if (spec.mem_path == 1) {
+				if (spec.mem_path == USE_XPATH) {
 					insn->template_validity[idx] |=
 							VALID_USES_DPATH_2;
 				}
@@ -1427,7 +1428,7 @@ beat_instruction_around_the_bush(char **operands, struct tic64x_insn *insn)
 				 * TIC64X_OP_MEMACCESS set, ensure validator
 				 * handler actually set the mem_path field */
 				if (cur->flags & TIC64X_OP_MEMACCESS)
-					if (spec.mem_path == -1)
+					if (spec.mem_path == NOT_SET)
 						as_fatal("Memory access insn "
 							"encountered, but "
 							"register handler did "
@@ -1436,17 +1437,17 @@ beat_instruction_around_the_bush(char **operands, struct tic64x_insn *insn)
 			} else { /* If we didn't match an operand... */
 				switch (i) {
 				case 0:
-					i = (spec.unit_num == 0)
+					i = (spec.unit_num == SIDE_1)
 							? NOTVALID_OP1_S1
 							: NOTVALID_OP1_S2;
 					break;
 				case 1:
-					i = (spec.unit_num == 0)
+					i = (spec.unit_num == SIDE_1)
 							? NOTVALID_OP2_S1
 							: NOTVALID_OP2_S2;
 					break;
 				case 2:
-					i = (spec.unit_num == 0)
+					i = (spec.unit_num == SIDE_1)
 							? NOTVALID_OP3_S1
 							: NOTVALID_OP3_S2;
 					break;
@@ -1504,25 +1505,25 @@ beat_instruction_around_the_bush(char **operands, struct tic64x_insn *insn)
 		if (insn->template_validity[idx] & NOTVALID_OP3) {
 			i = 2;
 			if (insn->template_validity[idx] & NOTVALID_OP3_S1)
-				spec.unit_num = 0;
+				spec.unit_num = SIDE_1;
 			else
-				spec.unit_num = 1;
+				spec.unit_num = SIDE_2;
 		 } else if (insn->template_validity[idx] & NOTVALID_OP2) {
 			i = 1;
 			if (insn->template_validity[idx] & NOTVALID_OP2_S1)
-				spec.unit_num = 0;
+				spec.unit_num = SIDE_1;
 			else
-				spec.unit_num = 1;
+				spec.unit_num = SIDE_2;
 		 } else {
 			i = 0;
 			if (insn->template_validity[idx] & NOTVALID_OP1_S1)
-				spec.unit_num = 0;
+				spec.unit_num = SIDE_1;
 			else
-				spec.unit_num = 1;
+				spec.unit_num = SIDE_2;
 		}
 
 		/* Call validator, permit it to print error */
-		spec.unit = spec.mem_path = spec.uses_xpath =-1;
+		spec.unit = spec.mem_path = spec.uses_xpath = NOT_SET;
 		if (!insn->operand_values[i].handler->validate(
 				&insn->operand_values[i], TRUE, cur->textops[i],
 				cur, FALSE, &spec))
@@ -1537,7 +1538,7 @@ beat_instruction_around_the_bush(char **operands, struct tic64x_insn *insn)
 	/* Bonus points! If the user added a unit specifier, check whether
 	 * any of the matching templates can be used with those constraints */
 	/* If they didn't, we're good */
-	if (insn->unitspecs.unit == -1)
+	if (insn->unitspecs.unit == NOT_SET)
 		return FALSE;
 
 	matched_unit = matched_side = matched_xpath = FALSE;
@@ -1545,16 +1546,16 @@ beat_instruction_around_the_bush(char **operands, struct tic64x_insn *insn)
 		cur = insn->possible_templates[idx];
 
 		switch (insn->unitspecs.unit) {
-		case 'S':
+		case UNIT_S:
 			i = TIC64X_OP_UNIT_S;
 			break;
-		case 'L':
+		case UNIT_L:
 			i = TIC64X_OP_UNIT_L;
 			break;
-		case 'D':
+		case UNIT_D:
 			i = TIC64X_OP_UNIT_D;
 			break;
-		case 'M':
+		case UNIT_M:
 			i = TIC64X_OP_UNIT_M;
 			break;
 		default:
@@ -1570,12 +1571,12 @@ beat_instruction_around_the_bush(char **operands, struct tic64x_insn *insn)
 
 		/* How about the specified side? Also store the xpath flag
 		 * for this side for checking a little later */
-		if (insn->unitspecs.unit_num == 0) {
+		if (insn->unitspecs.unit_num == SIDE_1) {
 			if (!(insn->template_validity[idx] & VALID_ON_UNIT1))
 				continue;
 			valid = insn->template_validity[idx] &
 					VALID_USES_XPATH1;
-		} else if (insn->unitspecs.unit_num == 1) {
+		} else if (insn->unitspecs.unit_num == SIDE_2) {
 			if (!(insn->template_validity[idx] & VALID_ON_UNIT2))
 				continue;
 			valid = insn->template_validity[idx] &
@@ -1589,10 +1590,10 @@ beat_instruction_around_the_bush(char **operands, struct tic64x_insn *insn)
 
 		/* Finally; if the xpath was specified check it concurs with the
 		 * operand parser; and the same if it wasn't specified */
-		if (insn->unitspecs.uses_xpath == 0) {
+		if (insn->unitspecs.uses_xpath == NO_XPATH) {
 			if (valid != 0)
 				continue;
-		} else if (insn->unitspecs.uses_xpath == 1) {
+		} else if (insn->unitspecs.uses_xpath == USE_XPATH) {
 			if (valid == 0)
 				continue;
 		} else {
@@ -1605,14 +1606,14 @@ beat_instruction_around_the_bush(char **operands, struct tic64x_insn *insn)
 		/* Looks like its good. See if the memory path is needed for
 		 * this instruction */
 		if (cur->flags & TIC64X_OP_MEMACCESS) {
-			if (insn->unitspecs.uses_xpath == -1)
+			if (insn->unitspecs.uses_xpath == NOT_SET)
 				continue;
 
-			if (insn->unitspecs.mem_path == 0) {
+			if (insn->unitspecs.mem_path == MEMPATH_1) {
 				if (insn->template_validity[idx] &
 							VALID_USES_DPATH_2)
 					continue;
-			} else if (insn->unitspecs.mem_path == 1) {
+			} else if (insn->unitspecs.mem_path == MEMPATH_2) {
 				if (!(insn->template_validity[idx] &
 							VALID_USES_DPATH_2))
 					continue;
@@ -1622,7 +1623,7 @@ beat_instruction_around_the_bush(char **operands, struct tic64x_insn *insn)
 			}
 		} else {
 			/* did user specify it on a non-data-path insn? */
-			if (insn->unitspecs.mem_path != -1)
+			if (insn->unitspecs.mem_path != NOT_SET)
 				continue;
 		}
 
@@ -1846,22 +1847,22 @@ tic64x_output_insn_packet()
 		switch (unit_flag) {
 		case CAN_S1:
 		case CAN_S2:
-			insn->unitspecs.unit = 'S';
+			insn->unitspecs.unit = UNIT_S;
 			wanted_unit = TIC64X_OP_UNIT_S;
 			break;
 		case CAN_L1:
 		case CAN_L2:
-			insn->unitspecs.unit = 'L';
+			insn->unitspecs.unit = UNIT_L;
 			wanted_unit = TIC64X_OP_UNIT_L;
 			break;
 		case CAN_D1:
 		case CAN_D2:
-			insn->unitspecs.unit = 'D';
+			insn->unitspecs.unit = UNIT_D;
 			wanted_unit = TIC64X_OP_UNIT_D;
 			break;
 		case CAN_M1:
 		case CAN_M2:
-			insn->unitspecs.unit = 'M';
+			insn->unitspecs.unit = UNIT_M;
 			wanted_unit = TIC64X_OP_UNIT_M;
 			break;
 		}
@@ -1871,13 +1872,13 @@ tic64x_output_insn_packet()
 		case CAN_L1:
 		case CAN_D1:
 		case CAN_M1:
-			insn->unitspecs.unit_num = 0;
+			insn->unitspecs.unit_num = SIDE_1;
 			break;
 		case CAN_S2:
 		case CAN_L2:
 		case CAN_D2:
 		case CAN_M2:
-			insn->unitspecs.unit_num = 1;
+			insn->unitspecs.unit_num = SIDE_2;
 		}
 
 		/* We now have a unit and a side - go and find the first thing
@@ -1890,16 +1891,18 @@ tic64x_output_insn_packet()
 
 				if (insn->template_validity[idx] &
 					(VALID_USES_XPATH1 | VALID_USES_XPATH2))
-					insn->unitspecs.uses_xpath = 1;
+					insn->unitspecs.uses_xpath = USE_XPATH;
 				else
-					insn->unitspecs.uses_xpath = 0;
+					insn->unitspecs.uses_xpath = NO_XPATH;
 
 				if (cur->flags & TIC64X_OP_MEMACCESS) {
 					if (insn->template_validity[idx] &
 							VALID_USES_DPATH_2)
-						insn->unitspecs.mem_path = 1;
+						insn->unitspecs.mem_path =
+								MEMPATH_2;
 					else
-						insn->unitspecs.mem_path = 0;
+						insn->unitspecs.mem_path =
+								MEMPATH_1;
 				}
 
 				break;
@@ -1918,8 +1921,8 @@ tic64x_output_insn_packet()
 	for (i = 0; i < read_insns_index; i++) {
 		insn = read_insns[i];
 
-		if (insn->unitspecs.uses_xpath == 1) {
-			if (insn->unitspecs.unit_num == 0) {
+		if (insn->unitspecs.uses_xpath == USE_XPATH) {
+			if (insn->unitspecs.unit_num == SIDE_1) {
 				if (xpath1_used == TRUE) {
 					as_bad("Mutiple uses of x-path 1 in "
 						"execute packet");
@@ -1936,14 +1939,14 @@ tic64x_output_insn_packet()
 			}
 		}
 
-		if (insn->unitspecs.mem_path == 0) {
+		if (insn->unitspecs.mem_path == MEMPATH_1) {
 			if (dpath1_used) {
 				as_bad("Multiple uses of data path 1 in "
 					"execute packet");
 			} else {
 				dpath1_used = TRUE;
 			}
-		} else if (insn->unitspecs.mem_path == 1) {
+		} else if (insn->unitspecs.mem_path == MEMPATH_2) {
 			if (dpath2_used) {
 				as_bad("Multiple uses of data path 2 in "
 					"execute packet");
@@ -2005,10 +2008,10 @@ tic64x_output_insn(struct tic64x_insn *insn, char *out)
 	 * ANYWAY: so we have to swap the meaning of s and maybe write y if the
 	 * instruction is memory access */
 	if (insn->templ->flags & TIC64X_OP_MEMACCESS) {
-		s = (insn->unitspecs.mem_path == 1) ? 1 : 0;
-		y = (insn->unitspecs.unit_num == 1) ? 1 : 0;
+		s = (insn->unitspecs.mem_path == MEMPATH_2) ? 1 : 0;
+		y = (insn->unitspecs.unit_num == SIDE_2) ? 1 : 0;
 	} else {
-		s = (insn->unitspecs.unit_num == 1) ? 1 : 0;
+		s = (insn->unitspecs.unit_num == SIDE_2) ? 1 : 0;
 		y = 0;
 	}
 
@@ -2032,9 +2035,9 @@ tic64x_output_insn(struct tic64x_insn *insn, char *out)
 					insn->cond_reg);
 	} /* else, leaving those as zero means unconditional execution */
 
-	/* Do we use the xpath? If 0, no, if -1 then nothing saw the need to
-	 * use the xpath anyway, so we don't use the xpath either */
-	if (insn->unitspecs.uses_xpath == 1)
+	/* Do we use the xpath? If 0, no, if not set then nothing saw the need
+	 * to use the xpath anyway, so we don't use the xpath either */
+	if (insn->unitspecs.uses_xpath == USE_XPATH)
 		tic64x_set_operand(&insn->opcode, tic64x_operand_x, 1);
 
 	/* Now, pump out some operands */
@@ -2407,12 +2410,13 @@ opvalidate_memaccess(struct read_operand *in, bfd_boolean print_error,
 	else
 		do_scale = FALSE;
 
-	base_side = (detail->base->num & TIC64X_REG_UNIT2) ? 1 : 0;
+	base_side = (detail->base->num & TIC64X_REG_UNIT2) ? SIDE_2 : SIDE_1;
 
 	if (detail->const_offs == FALSE)
-		offs_side = (detail->offs.reg->num & TIC64X_REG_UNIT2) ? 1 : 0;
+		offs_side = (detail->offs.reg->num & TIC64X_REG_UNIT2)
+							? SIDE_2 : SIDE_1;
 	else
-		offs_side = -1;
+		offs_side = NOT_SET;
 
 	/* First of all, make some checks inre memrel15 instructions, which
 	 * have extra restrictions in addition to the usual... */
@@ -2447,7 +2451,7 @@ opvalidate_memaccess(struct read_operand *in, bfd_boolean print_error,
 
 	/* Now do some actual operand-specific checks */
 	/* Does the base register sit on the correct side of the processor */
-	if (spec->unit_num != base_side && spec->unit_num != -1) {
+	if (spec->unit_num != base_side && spec->unit_num != NOT_SET) {
 		NOT_VALID(("Base register must be on same side as "
 						"execution unit"));
 		return TRUE;
@@ -2519,7 +2523,7 @@ opvalidate_memaccess(struct read_operand *in, bfd_boolean print_error,
 		/* Only constraint we impose is what side we execute on, given
 		 * where the base register is. Unless we're memrel15 */
 		if (offs_type == tic64x_operand_const15) {
-			spec->unit_num = 1;
+			spec->unit_num = SIDE_2;
 		 } else {
 			spec->unit_num = base_side;
 		}
@@ -2541,7 +2545,7 @@ opvalidate_register(struct read_operand *in, bfd_boolean print_error,
 
 	uses_xpath = FALSE;
 	uses_dpath = FALSE;
-	reg_side = (in->u.reg.base->num & TIC64X_REG_UNIT2) ? 1 : 0;
+	reg_side = (in->u.reg.base->num & TIC64X_REG_UNIT2) ? SIDE_2 : SIDE_1;
 
 	/* Registers: this is nice and simple to cope with. Destination regs
 	 * have to be on the execution side, the others too unless they can
@@ -2565,7 +2569,7 @@ opvalidate_register(struct read_operand *in, bfd_boolean print_error,
 			"validator");
 	}
 
-	if (reg_side != spec->unit_num && spec->unit_num != -1) {
+	if (reg_side != spec->unit_num && spec->unit_num != NOT_SET) {
 		/* Can we xpath? */
 		if (!(templ->flags & flag)) {
 			NOT_VALID(("Register %C%d on wrong side of processor",
@@ -2583,7 +2587,7 @@ opvalidate_register(struct read_operand *in, bfd_boolean print_error,
 	if (templ->flags & TIC64X_OP_MEMACCESS && optype ==tic64x_optxt_dstreg){
 		uses_dpath = TRUE;
 
-		if (spec->mem_path != -1 && spec->mem_path != reg_side) {
+		if (spec->mem_path != NOT_SET && spec->mem_path != reg_side) {
 			NOT_VALID(("Memory datapath on wrong side of processor"
 									));
 			return TRUE;
@@ -2597,18 +2601,18 @@ opvalidate_register(struct read_operand *in, bfd_boolean print_error,
 	/* Right. So, what constraints does this place? If the register can't
 	 * use the xpath then we're locked to that side (this is the case for
 	 * dstreg and srcregs that don't have the xpath flag). */
-	if (uses_xpath == FALSE && spec->unit_num == -1)
+	if (uses_xpath == FALSE && spec->unit_num == NOT_SET)
 		spec->unit_num = reg_side;
 
 	/* Alternately if we *could* use the xpath, but don't, say so */
 	if (uses_xpath == TRUE && spec->unit_num == reg_side)
-		spec->uses_xpath = 0;
+		spec->uses_xpath = NO_XPATH;
 
 	/* If we're tied to a side that differs from the reg side and we got
 	 * this far, the xpath _has_ to be used */
-	if (uses_xpath == TRUE && spec->unit_num != -1 &&
+	if (uses_xpath == TRUE && spec->unit_num != NOT_SET &&
 				 spec->unit_num != reg_side)
-		spec->uses_xpath = 1;
+		spec->uses_xpath = USE_XPATH;
 
 	/* Finally, did we end up finding that we also decide the datapath? */
 	if (uses_dpath == TRUE)
@@ -2639,8 +2643,8 @@ opvalidate_double_register(struct read_operand *in, bfd_boolean print_error,
 	reg2 = in->u.dreg.reg2;
 	reg1_num = reg1->num & 0x1F;
 	reg2_num = reg2->num & 0x1F;
-	reg1_side = (reg1->num & TIC64X_REG_UNIT2) ? 1 : 0;
-	reg2_side = (reg2->num & TIC64X_REG_UNIT2) ? 1 : 0;
+	reg1_side = (reg1->num & TIC64X_REG_UNIT2) ? SIDE_2 : SIDE_1;
+	reg2_side = (reg2->num & TIC64X_REG_UNIT2) ? SIDE_2 : SIDE_1;
 	is_memacc = (templ->flags & TIC64X_OP_MEMACCESS) ? TRUE : FALSE;
 
 	/* Double register restrictions: we can't use the xpath, so they're
@@ -2668,13 +2672,15 @@ opvalidate_double_register(struct read_operand *in, bfd_boolean print_error,
 	 * as the execution unit. Except in the case where it's a memory
 	 * load/store, in which case it can be on either side, but we need
 	 * to check the data path specifier */
-	if (!is_memacc && spec->unit_num != -1 && spec->unit_num != reg1_side) {
+	if (!is_memacc && spec->unit_num != NOT_SET &&
+				spec->unit_num != reg1_side) {
 		NOT_VALID(("Double register pair on wrong side of processor"));
 		return TRUE;
 	}
 
 	/* We can also load and store double registers */
-	if (is_memacc && spec->mem_path != -1 && spec->mem_path != reg1_side) {
+	if (is_memacc && spec->mem_path != NOT_SET &&
+				spec->mem_path != reg1_side) {
 		NOT_VALID(("Double-reg data path on wrong side of processor"));
 		return TRUE;
 	}
@@ -2683,10 +2689,10 @@ opvalidate_double_register(struct read_operand *in, bfd_boolean print_error,
 	if (gen_unitspec == FALSE)
 		return 0;
 
-	if (!is_memacc && spec->unit_num == -1)
+	if (!is_memacc && spec->unit_num == NOT_SET)
 		spec->unit_num = reg1_side;
 
-	if (is_memacc && spec->mem_path == -1)
+	if (is_memacc && spec->mem_path == NOT_SET)
 		spec->mem_path = reg1_side;
 
 	return FALSE;
