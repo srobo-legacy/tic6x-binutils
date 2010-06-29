@@ -229,9 +229,17 @@ struct tic64x_insn {
 #define VALID_USES_XPATH1	4
 #define VALID_USES_XPATH2	8
 #define VALID_USES_DPATH_2	0x10
-#define NOTVALID_OP1		0x20
-#define NOTVALID_OP2		0x40
-#define NOTVALID_OP3		0x80
+#define NOTVALID_OP1_S1		0x20
+#define NOTVALID_OP2_S1		0x40
+#define NOTVALID_OP3_S1		0x80
+#define NOTVALID_OP1_S2		0x100
+#define NOTVALID_OP2_S2		0x200
+#define NOTVALID_OP3_S2		0x400
+#define NOTVALID_OP1		0x120
+#define NOTVALID_OP2		0x240
+#define NOTVALID_OP3		0x480
+#define NOTVALID_S1		0xE0
+#define NOTVALID_S2		0x700
 
 	/* Final emission, we need to know various bits of information to write
 	 * fixups and relocations - namely what fragment we're in, and the pcrel
@@ -1413,13 +1421,19 @@ beat_instruction_around_the_bush(char **operands, struct tic64x_insn *insn)
 			} else { /* If we didn't match an operand... */
 				switch (i) {
 				case 0:
-					i = NOTVALID_OP1;
+					i = (spec.unit_num == 0)
+							? NOTVALID_OP1_S1
+							: NOTVALID_OP1_S2;
 					break;
 				case 1:
-					i = NOTVALID_OP2;
+					i = (spec.unit_num == 0)
+							? NOTVALID_OP2_S1
+							: NOTVALID_OP2_S2;
 					break;
 				case 2:
-					i = NOTVALID_OP3;
+					i = (spec.unit_num == 0)
+							? NOTVALID_OP3_S1
+							: NOTVALID_OP3_S2;
 					break;
 				default:
 					as_fatal("Can't have more than 3 "
@@ -1472,19 +1486,32 @@ beat_instruction_around_the_bush(char **operands, struct tic64x_insn *insn)
 
 		cur = insn->possible_templates[idx];
 		/* OK, we have a template to play with. Which instruction? */
-		if (insn->template_validity[idx] & NOTVALID_OP3)
+		if (insn->template_validity[idx] & NOTVALID_OP3) {
 			i = 2;
-		else if (insn->template_validity[idx] & NOTVALID_OP2)
+			if (insn->template_validity[idx] & NOTVALID_OP3_S1)
+				spec.unit_num = 0;
+			else
+				spec.unit_num = 1;
+		 } else if (insn->template_validity[idx] & NOTVALID_OP2) {
 			i = 1;
-		else
+			if (insn->template_validity[idx] & NOTVALID_OP2_S1)
+				spec.unit_num = 0;
+			else
+				spec.unit_num = 1;
+		 } else {
 			i = 0;
+			if (insn->template_validity[idx] & NOTVALID_OP1_S1)
+				spec.unit_num = 0;
+			else
+				spec.unit_num = 1;
+		}
 
 		/* Call validator, permit it to print error */
-		spec.unit = spec.unit_num = spec.mem_path = spec.uses_xpath =-1;
+		spec.unit = spec.mem_path = spec.uses_xpath =-1;
 		if (!insn->operand_values[i].handler->validate(
 				&insn->operand_values[i], TRUE, cur->textops[i],
 				cur, FALSE, &spec))
-			as_fatal("Validator for %s marked operand invalide, but"
+			as_fatal("Validator for %s marked operand invalid, but"
 				"then changed its mind; internal error",
 				insn->operand_values[i].handler->name);
 
