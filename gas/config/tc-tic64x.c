@@ -2724,10 +2724,13 @@ opvalidate_constant (struct read_operand *in, bfd_boolean print_error,
 	int32_t snum;
 	int field_sz, i, max, mask;
 	enum tic64x_operand_type type;
+	bfd_boolean is_nops;
 
-	if (optype != tic64x_optxt_uconstant && optype !=tic64x_optxt_sconstant)
+	if (optype != tic64x_optxt_uconstant && optype != tic64x_optxt_sconstant
+						&& optype != tic64x_optxt_nops)
 		as_fatal("Non-constant reached constant validator routine");
 
+	is_nops = (optype == tic64x_optxt_nops) ? TRUE : FALSE;
 	e = &in->u.constant.expr;
 	snum = e->X_add_number;
 	unum = e->X_add_number;
@@ -2738,6 +2741,9 @@ opvalidate_constant (struct read_operand *in, bfd_boolean print_error,
 			break;
 	}
 
+	if (is_nops)
+		type = tic64x_operand_nops;
+
 	if (type == tic64x_operand_invalid)
 		as_fatal("Insn with constant operand, but no corresponding "
 								"field");
@@ -2746,7 +2752,7 @@ opvalidate_constant (struct read_operand *in, bfd_boolean print_error,
 	max = 1 << field_sz;
 
 	/* There _are_ some instructions that shift their constant operands */
-	if (templ->flags & TIC64X_OP_CONST_SCALE) {
+	if (templ->flags & TIC64X_OP_CONST_SCALE && !is_nops) {
 		int tmp;
 
 		tmp = templ->flags & TIC64X_OP_MEMSZ_MASK;
@@ -2980,9 +2986,13 @@ opwrite_constant(struct read_operand *in, enum tic64x_text_operand optype,
 	enum tic64x_operand_type type;
 	int i, tmp;
 	int32_t val;
+	bfd_boolean is_nops;
 
-	if (optype != tic64x_optxt_sconstant && optype !=tic64x_optxt_uconstant)
+	if (optype != tic64x_optxt_sconstant && optype != tic64x_optxt_uconstant
+						&& optype != tic64x_optxt_nops)
 		as_fatal("Non-constant operand reached constant writer");
+
+	is_nops = (optype == tic64x_optxt_nops) ? TRUE : FALSE;
 
 	/* So the variety of oddities we can experience with constants - the
 	 * usual set of different field sizes that can be extracted from the
@@ -2999,6 +3009,9 @@ opwrite_constant(struct read_operand *in, enum tic64x_text_operand optype,
 			break;
 	}
 
+	if (is_nops)
+		type = tic64x_operand_nops;
+
 	if (type == tic64x_operand_invalid)
 		as_fatal("Instruction with constant text operand, but no "
 				"corresponding constant field operand");
@@ -3007,7 +3020,7 @@ opwrite_constant(struct read_operand *in, enum tic64x_text_operand optype,
 
 		/* Do we scale? */
 		val = e->X_add_number;
-		if (insn->templ->flags & TIC64X_OP_CONST_SCALE) {
+		if (insn->templ->flags & TIC64X_OP_CONST_SCALE && !is_nops) {
 			tmp = insn->templ->flags & TIC64X_OP_MEMSZ_MASK;
 			tmp >>= TIC64X_OP_MEMSZ_SHIFT;
 			val >>= tmp;
