@@ -1059,6 +1059,8 @@ finalise_mv_insn(struct tic64x_insn *insn)
 	unsigned int wanted_opcode;
 	bfd_boolean swap_constant;
 
+	swap_constant = FALSE;
+
 	/* Righty; at this point we should have a tied down unit specifier */
 	if (insn->unitspecs.unit == NOT_SET ||
 					insn->unitspecs.unit_num == NOT_SET ||
