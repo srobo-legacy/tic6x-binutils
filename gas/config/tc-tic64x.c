@@ -2415,7 +2415,7 @@ opvalidate_memaccess(struct read_operand *in, bfd_boolean print_error,
 	}
 
 	field_shift = templ->flags & TIC64X_OP_MEMSZ_MASK;
-	field_shift <<= TIC64X_OP_MEMSZ_SHIFT;
+	field_shift >>= TIC64X_OP_MEMSZ_SHIFT;
 
 	if (templ->flags & TIC64X_OP_MEMACC_SBIT)
 		opt_scale = TRUE;
