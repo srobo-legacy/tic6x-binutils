@@ -285,15 +285,15 @@ size_t md_longopts_size = sizeof(md_longopts);
 const char *md_shortopts = "";
 
 /* Hash tables to store various mappings of names -> info */
-static struct hash_control *tic64x_ops;
-static struct hash_control *tic64x_reg_names;
-static struct hash_control *tic64x_subsyms;
+static struct hash_control *opcode_map;
+static struct hash_control *reg_names;
+static struct hash_control *subsyms;
 
 /* Data picked up by the pre-md-assemble hook about the incoming instruction */
-int tic64x_line_had_parallel_prefix;
-bfd_boolean tic64x_line_had_cond;
-int tic64x_line_had_nz_cond;
-struct tic64x_register *tic64x_line_had_cond_reg;
+static int line_had_parallel_prefix;
+static bfd_boolean line_had_cond;
+static int line_had_nz_cond;
+static struct tic64x_register *line_had_cond_reg;
 
 /* So, with gas at the moment, we can't detect the end of an instruction
  * packet until there's been a line without a || at the start. And we can't
@@ -372,12 +372,12 @@ md_begin()
 	read_insns_index = 0;
 	memset(read_insns, 0, sizeof(read_insns));
 
-	tic64x_ops = hash_new();
-	tic64x_reg_names = hash_new();
-	tic64x_subsyms = hash_new();
+	opcode_map = hash_new();
+	reg_names = hash_new();
+	subsyms = hash_new();
 
 	for (op = tic64x_opcodes; op->mnemonic; op++) {
-		if (hash_insert(tic64x_ops, op->mnemonic, (void *)op))
+		if (hash_insert(opcode_map, op->mnemonic, (void *)op))
 			as_fatal("md_begin: couldn't enter %s in hash table",
 				op->mnemonic);
 
@@ -391,7 +391,7 @@ md_begin()
 	}
 
 	for (reg = tic64x_regs; reg->name; reg++)
-		if (hash_insert(tic64x_reg_names, reg->name, (void *)reg))
+		if (hash_insert(reg_names, reg->name, (void *)reg))
 			as_fatal("md_begin: couldn't enter %s in hash table",
 				reg->name);
 
@@ -504,7 +504,7 @@ tic64x_asg(int x ATTRIBUTE_UNUSED)
 	if (!str || !sym)
 		as_fatal("OOM @ %s %d", __FILE__, __LINE__);
 
-	err = hash_jam(tic64x_subsyms, sym, str);
+	err = hash_jam(subsyms, sym, str);
 	if (err)
 		as_bad("hash_jam failed handling .asg: \"%s\"", err);
 
@@ -768,13 +768,13 @@ tic64x_sym_to_reg(char *regname)
 	char *subsym;
 	struct tic64x_register *reg;
 
-	reg = hash_find(tic64x_reg_names, regname);
+	reg = hash_find(reg_names, regname);
 	if (!reg) {
-		subsym = hash_find(tic64x_subsyms, regname);
+		subsym = hash_find(subsyms, regname);
 		if (!subsym) {
 			return NULL;
 		} else {
-			reg = hash_find(tic64x_reg_names, subsym);
+			reg = hash_find(reg_names, subsym);
 		}
 	}
 
@@ -841,10 +841,10 @@ tic64x_start_line_hook(void)
 	if (*line == '|' && *(line+1) == '|') {
 		*line++ = ' ';
 		*line++ = ' ';
-		tic64x_line_had_parallel_prefix = 1;
+		line_had_parallel_prefix = 1;
 	} else if (*line == '*' || *line == ';' || *line == '#') {
 		/* This is a comment line */
-		tic64x_line_had_parallel_prefix = 0;
+		line_had_parallel_prefix = 0;
 	} else {
 		/* Not a comment, no parallel insn; output instruction */
 		/* packet */
@@ -852,7 +852,7 @@ tic64x_start_line_hook(void)
 		memset(read_insns, 0, sizeof(read_insns));
 		memset(read_insns_loc, 0, sizeof(read_insns));
 		read_insns_index = 0;
-		tic64x_line_had_parallel_prefix = 0;
+		line_had_parallel_prefix = 0;
 	}
 
 	/* Is there a conditional prefix? */
@@ -860,9 +860,9 @@ tic64x_start_line_hook(void)
 		line++;
 
 	if (*line == '[') {
-		tic64x_line_had_cond = TRUE;
+		line_had_cond = TRUE;
 		*line++ = ' ';
-		tic64x_line_had_nz_cond = (*line == '!') ? COND_ZERO : COND_NZ;
+		line_had_nz_cond = (*line == '!') ? COND_ZERO : COND_NZ;
 		*line++ = ' ';
 
 		reg = line;
@@ -876,8 +876,8 @@ tic64x_start_line_hook(void)
 		}
 
 		*line = 0;
-		tic64x_line_had_cond_reg = tic64x_sym_to_reg(reg);
-		if (tic64x_line_had_cond_reg == NULL) {
+		line_had_cond_reg = tic64x_sym_to_reg(reg);
+		if (line_had_cond_reg == NULL) {
 			as_bad("Expected register in conditional prefix");
 			return;
 		}
@@ -889,8 +889,8 @@ tic64x_start_line_hook(void)
 
 		*line = ' ';
 	} else {
-		tic64x_line_had_cond = FALSE;
-		tic64x_line_had_cond_reg = NULL;
+		line_had_cond = FALSE;
+		line_had_cond_reg = NULL;
 	}
 
 	return;
@@ -901,14 +901,14 @@ apply_conditional(struct tic64x_insn *insn)
 {
 
 	/* Did pre-read hook see a condition statement? */
-	if (tic64x_line_had_cond) {
+	if (line_had_cond) {
 		if (insn->templ->flags & TIC64X_OP_NOCOND) {
 			as_bad("Instruction does not have condition field");
 			return 1;
 		}
 
-		insn->cond_nz = tic64x_line_had_nz_cond;
-		insn->cond_reg = tic64x_line_had_cond_reg->num;
+		insn->cond_nz = line_had_nz_cond;
+		insn->cond_reg = line_had_cond_reg->num;
 
 		/* See creg format */
 		switch (insn->cond_reg) {
@@ -1083,7 +1083,7 @@ finalise_mv_insn(struct tic64x_insn *insn)
 		as_fatal("Invalid execution unit in internal record");
 	}
 
-	insn->templ = hash_find(tic64x_ops, "add");
+	insn->templ = hash_find(opcode_map, "add");
 	while (insn->templ->opcode != wanted_opcode &&
 			!strcmp("add", insn->templ->mnemonic))
 		insn->templ++;
@@ -1121,7 +1121,7 @@ md_assemble(char *line)
 	memset(insn, 0, sizeof(*insn));
 
 	/* pre-read hook will tell us if this had parallel double bar */
-	if (tic64x_line_had_parallel_prefix)
+	if (line_had_parallel_prefix)
 		insn->parallel = TRUE;
 
 	mnemonic = line;
@@ -1139,7 +1139,7 @@ md_assemble(char *line)
 	}
 
 	/* Is this an instruction we've heard of? */
-	insn->templ = hash_find(tic64x_ops, mnemonic);
+	insn->templ = hash_find(opcode_map, mnemonic);
 	if (!insn->templ && !insn->mvfail) {
 		as_bad("Unrecognised mnemonic %s", mnemonic);
 		free(insn);
@@ -1198,7 +1198,7 @@ md_assemble(char *line)
 		packet_subseg = now_subseg;
 	}
 
-	if (tic64x_line_had_parallel_prefix) {
+	if (line_had_parallel_prefix) {
 		/* Append this to the list */
 		if (read_insns_index >= 8) {
 			as_bad("Can't have more than 8 insns in an "
