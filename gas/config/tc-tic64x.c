@@ -1030,6 +1030,9 @@ fabricate_mv_insn(struct tic64x_insn *insn, char *op1, char *op2)
 	dst_side = (insn->operand_values[2].u.reg.base->num & TIC64X_REG_UNIT2)
 							? SIDE_2 : SIDE_1;
 
+	insn->operand_values[1].handler = handler;
+	insn->operand_values[2].handler = handler;
+
 	insn->operands = 3;
 	insn->num_possible_templates = 1;
 	insn->possible_templates[0] = &tic64x_mv_template[0];
@@ -1098,8 +1101,10 @@ finalise_mv_insn(struct tic64x_insn *insn)
 		memcpy(&insn->operand_values[0], &insn->operand_values[1],
 					sizeof(insn->operand_values[1]));
 		memcpy(&insn->operand_values[1], &op, sizeof(op));
+		insn->operand_values[1].handler = handler;
 	} else {
 		memcpy(&insn->operand_values[0], &op, sizeof(op));
+		insn->operand_values[0].handler = handler;
 	}
 
 	insn->possible_templates[0] = insn->templ;
