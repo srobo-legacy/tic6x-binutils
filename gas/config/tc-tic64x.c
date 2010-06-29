@@ -1772,6 +1772,9 @@ pick_units_for_insn_packet(struct resource_rec *res)
 	int i, j, idx, flag;
 	uint8_t use1, use2;
 
+	/* Initialise all insns to execute on nothing. */
+	memset(res, 0, sizeof(*res));
+
 	for (i = 0; i < read_insns_index; i++) {
 		insn = read_insns[i];
 		res->units[i] = 0;
