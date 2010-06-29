@@ -1996,12 +1996,12 @@ output_insn_packet()
 		insn->output_frag_offs = out - frag->fr_literal;
 		insn->output_pcoffs = i *4;
 		output_insn(insn, out);
-#if 0
-/* Insn can't be freed, it might be being fixed up. Needs more thought
- * about insn lifetime */
-		free(insn);
-#endif
 	}
+
+	for (i = 0; i < read_insns_index; i++)
+		/* Extremely happily, the insn struct is (on the whole) the only
+		 * piece of dynamically allocated memory for each line */
+		free(read_insns[i]);
 
 	return;
 }
