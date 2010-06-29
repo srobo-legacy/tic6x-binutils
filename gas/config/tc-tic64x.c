@@ -23,8 +23,6 @@
 #include "struc-symbol.h"
 #include "libbfd.h"
 
-#define UNUSED(x) ((x) = (x))
-
 static void pseudo_asg(int x);
 static void pseudo_noop(int x);
 static void pseudo_comm(int x);
@@ -365,12 +363,10 @@ static bfd_boolean beat_instruction_around_the_bush(char **operands,
 			struct tic64x_insn *insn);
 
 int
-md_parse_option(int c, char *arg)
+md_parse_option(int c ATTRIBUTE_UNUSED, char *arg ATTRIBUTE_UNUSED)
 {
 
 	/* We don't have any command line options right now */
-	UNUSED(c);
-	UNUSED(arg);
 	return 1;
 }
 
@@ -593,7 +589,7 @@ md_atof(int type, char *literal, int *size)
 }
 
 symbolS *
-md_undefined_symbol(char *name)
+md_undefined_symbol(char *name ATTRIBUTE_UNUSED)
 {
 
 	/*
@@ -604,17 +600,15 @@ md_undefined_symbol(char *name)
 	 * says there are "subtle differences" in the way symbols are managed.
 	 */
 	/* So for now do nothing */
-	UNUSED(name);
 	return NULL;
 }
 
 int
-md_estimate_size_before_relax(fragS *frag, segT seg)
+md_estimate_size_before_relax(fragS *frag ATTRIBUTE_UNUSED,
+					segT seg ATTRIBUTE_UNUSED)
 {
 
 	/* tic54x doesn't implement this either; we'll see if its needed */
-	UNUSED(frag);
-	UNUSED(seg);
 	return 0;
 }
 
@@ -652,14 +646,11 @@ md_section_align(segT segment, valueT section_size)
 }
 
 void
-md_convert_frag(bfd *b, segT seg, fragS *frag)
+md_convert_frag(bfd *b ATTRIBUTE_UNUSED, segT seg ATTRIBUTE_UNUSED,
+					fragS *frag ATTRIBUTE_UNUSED)
 {
 
-	UNUSED(b);
-	UNUSED(seg);
-	UNUSED(frag);
-	fprintf(stderr, "Unimplemented md_convert_frag in tic64x called\n");
-	exit(1);
+	as_fatal("Unimplemented md_convert_frag in tic64x called");
 }
 
 arelent *
