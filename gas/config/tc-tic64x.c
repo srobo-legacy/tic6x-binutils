@@ -2992,7 +2992,7 @@ opwrite_constant(struct read_operand *in, enum tic64x_text_operand optype,
 	 * scaling (see: bnop) */
 
 	/* So first, find operand type */
-	for (i = 0; type != tic64x_operand_invalid; i++) {
+	for (i = 0; constant_types[i] != tic64x_operand_invalid; i++) {
 		type = constant_types[i];
 		if (type == insn->templ->operands[0] ||
 					type == insn->templ->operands[1])
