@@ -850,7 +850,7 @@ tic64x_start_line_hook(void)
 	} else {
 		/* Not a comment, no parallel insn; output instruction */
 		/* packet */
-		tic64x_output_insn_packet();
+		output_insn_packet();
 		memset(read_insns, 0, sizeof(read_insns));
 		memset(read_insns_loc, 0, sizeof(read_insns));
 		read_insns_index = 0;
@@ -1225,7 +1225,7 @@ void
 md_after_pass_hook()
 {
 
-	tic64x_output_insn_packet();
+	output_insn_packet();
 	memset(read_insns, 0, sizeof(read_insns));
 	memset(read_insns_loc, 0, sizeof(read_insns));
 	read_insns_index = 0;
