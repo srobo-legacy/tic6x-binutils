@@ -452,10 +452,9 @@ print_op_memaccess(const struct tic64x_op_template *t,
 	 * version is */
 
 	/* Offset is always ucst5 or register, no sign extension, or const15 */
-	if (t->operands[0] == tic64x_operand_rcoffset ||
-		t->operands[1] == tic64x_operand_rcoffset)
-		is_memrel15 = 0;
-	else if (t->operands[0] == tic64x_operand_const15 ||
+	is_memrel15 = 0;
+
+	if (t->operands[0] == tic64x_operand_const15 ||
 		t->operands[1] == tic64x_operand_const15)
 		is_memrel15 = 1;
 
