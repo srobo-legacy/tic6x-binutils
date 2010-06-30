@@ -88,7 +88,7 @@ tic64x_pcr_reloc_special_func(bfd *abfd, arelent *rel, struct bfd_symbol *sym,
 				char **error_msg ATTRIBUTE_UNUSED)
 {
 	long val, in_insn_val;
-	bfd_reloc_status_type ret;
+	bfd_reloc_status_type ret = bfd_reloc_notsupported;
 
 	/* So - doffs keep addends in the instruction field. We can convince
 	 * bfd to take this into account, however it won't round the offset to
