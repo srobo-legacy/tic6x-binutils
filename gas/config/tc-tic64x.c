@@ -1779,6 +1779,8 @@ pick_units_for_insn_packet(struct resource_rec *res)
 	int i, j, idx, flag;
 	uint8_t use1, use2;
 
+	use1 = use2 = flag = 0;
+
 	/* Initialise all insns to execute on nothing. */
 	memset(res, 0, sizeof(*res));
 
@@ -3014,6 +3016,8 @@ opwrite_double_register(struct read_operand *in,
 {
 	enum tic64x_operand_type type;
 	int reg;
+
+	type = tic64x_operand_invalid;
 
 	/* Double register writer is slightly nontrivial - there are two forms
 	 * they can be written as, 4 bits identifying the higher 4 bits of the
