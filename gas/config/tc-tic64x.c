@@ -1048,8 +1048,22 @@ fabricate_mv_insn(struct tic64x_insn *insn, char *op1, char *op2)
 
 	/* However, if there's a unit specifier given in the assembly line,
 	 * we should honour that */
-	if (insn->unitspecs.unit != NOT_SET)
+	if (insn->unitspecs.unit != NOT_SET) {
+		/* First check that the units given are actually sane */
+		if (insn->unitspecs.unit == UNIT_M) {
+			as_bad("'mv' pseudo instruction cannot execute on "
+				"unit M");
+			return;
+		}
+
+		if (insn->unitspecs.unit_num != dst_side) {
+			as_bad("Specified side for mv instruction must be the "
+				"same side as the destination register");
+			return;
+		}
+
 		finalise_mv_insn(insn);
+	}
 
 	return;
 }
