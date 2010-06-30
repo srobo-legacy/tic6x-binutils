@@ -1855,7 +1855,7 @@ output_insn_packet()
 	const struct tic64x_op_template *cur;
 	fragS *frag;
 	char *out;
-	int i, idx, err, wanted_unit;
+	int i, idx, err, wanted_unit, test_flag;
 	uint8_t unit_flag;
 	bfd_boolean xpath1_used, xpath2_used, dpath1_used, dpath2_used;
 
@@ -1923,12 +1923,14 @@ output_insn_packet()
 		case CAN_D1:
 		case CAN_M1:
 			insn->unitspecs.unit_num = SIDE_1;
+			test_flag = VALID_ON_UNIT1;
 			break;
 		case CAN_S2:
 		case CAN_L2:
 		case CAN_D2:
 		case CAN_M2:
 			insn->unitspecs.unit_num = SIDE_2;
+			test_flag = VALID_ON_UNIT2;
 			break;
 		default:
 			as_fatal("Unit side selection did not produce a single "
@@ -1939,6 +1941,10 @@ output_insn_packet()
 		 * that matches this in the big list of templates */
 		for (idx = 0; idx < insn->num_possible_templates; idx++) {
 			cur = insn->possible_templates[idx];
+
+			if (!(insn->template_validity[idx] & test_flag))
+				continue;
+
 			if (cur->flags & wanted_unit) {
 				insn->templ = cur;
 				insn->num_possible_templates = 0;
