@@ -1168,10 +1168,6 @@ md_assemble(char *line)
 	ret = read_execution_unit(&line, &insn->unitspecs);
 	if (ret < 0) {
 		return;
-	} else if (ret == 0) {
-		as_warn("You haven't specified an execution unit for "
-			"instruction %s: this is supposed to be supported, but "
-			"expect something to explode, imminently", mnemonic);
 	}
 
 	/* Turn string of operands into array of string pointers */
