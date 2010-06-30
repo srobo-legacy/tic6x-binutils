@@ -1945,28 +1945,27 @@ output_insn_packet()
 			if (!(insn->template_validity[idx] & test_flag))
 				continue;
 
-			if (cur->flags & wanted_unit) {
-				insn->templ = cur;
-				insn->num_possible_templates = 0;
+			if (!(cur->flags & wanted_unit))
+				continue;
 
+			insn->templ = cur;
+			insn->num_possible_templates = 0;
+
+			if (insn->template_validity[idx] &
+				(VALID_USES_XPATH1 | VALID_USES_XPATH2))
+				insn->unitspecs.uses_xpath = USE_XPATH;
+			else
+				insn->unitspecs.uses_xpath = NO_XPATH;
+
+			if (cur->flags & TIC64X_OP_MEMACCESS) {
 				if (insn->template_validity[idx] &
-					(VALID_USES_XPATH1 | VALID_USES_XPATH2))
-					insn->unitspecs.uses_xpath = USE_XPATH;
+						VALID_USES_DPATH_2)
+					insn->unitspecs.mem_path = MEMPATH_2;
 				else
-					insn->unitspecs.uses_xpath = NO_XPATH;
-
-				if (cur->flags & TIC64X_OP_MEMACCESS) {
-					if (insn->template_validity[idx] &
-							VALID_USES_DPATH_2)
-						insn->unitspecs.mem_path =
-								MEMPATH_2;
-					else
-						insn->unitspecs.mem_path =
-								MEMPATH_1;
-				}
-
-				break;
+					insn->unitspecs.mem_path = MEMPATH_1;
 			}
+
+			break;
 		}
 
 		/* Ok, we've fetched the template; anything else? */
