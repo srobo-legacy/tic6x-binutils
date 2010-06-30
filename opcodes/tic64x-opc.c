@@ -699,27 +699,25 @@ const struct tic64x_op_template tic64x_opcodes[] = {
 },
 {"ldb",		0x24,		0x17C,
 	TIC64X_OP_UNIT_D | TIC64X_OP_MEMACCESS | TIC64X_OP_MEMSZ_BYTE |
-	TIC64X_OP_UNITNO | TIC64X_OP_CONST_SCALE,
+	TIC64X_OP_UNITNO | TIC64X_OP_CONST_SCALE | TIC64X_OP_MULTI_MNEMONIC,
 	{ tic64x_optxt_memaccess, tic64x_optxt_dstreg, tic64x_optxt_none },
 	{ tic64x_operand_rcoffset, tic64x_operand_invalid }
 },
 {"ldb",		0x2C,		0x7C,
 	TIC64X_OP_UNIT_D | TIC64X_OP_MEMACCESS | TIC64X_OP_MEMSZ_BYTE |
-	TIC64X_OP_MULTI_MNEMONIC | TIC64X_OP_CONST_SCALE |
-	TIC64X_OP_FIXED_UNITNO | TIC64X_OP_FIXED_UNIT2,
+	TIC64X_OP_CONST_SCALE | TIC64X_OP_FIXED_UNITNO | TIC64X_OP_FIXED_UNIT2,
 	{ tic64x_optxt_memaccess, tic64x_optxt_dstreg, tic64x_optxt_none },
 	{ tic64x_operand_const15, tic64x_operand_invalid }
 },
 {"ldbu",	0x14,		0x17C,
 	TIC64X_OP_UNIT_D | TIC64X_OP_MEMACCESS | TIC64X_OP_MEMSZ_BYTE |
-	TIC64X_OP_UNITNO | TIC64X_OP_CONST_SCALE,
+	TIC64X_OP_UNITNO | TIC64X_OP_CONST_SCALE | TIC64X_OP_MULTI_MNEMONIC,
 	{ tic64x_optxt_memaccess, tic64x_optxt_dstreg, tic64x_optxt_none },
 	{ tic64x_operand_rcoffset, tic64x_operand_invalid }
 },
 {"ldbu",	0x1C,		0x7C,
 	TIC64X_OP_UNIT_D | TIC64X_OP_MEMACCESS | TIC64X_OP_MEMSZ_BYTE |
-	TIC64X_OP_MULTI_MNEMONIC | TIC64X_OP_CONST_SCALE |
-	TIC64X_OP_FIXED_UNITNO | TIC64X_OP_FIXED_UNIT2,
+	TIC64X_OP_CONST_SCALE | TIC64X_OP_FIXED_UNITNO | TIC64X_OP_FIXED_UNIT2,
 	{ tic64x_optxt_memaccess, tic64x_optxt_dstreg, tic64x_optxt_none },
 	{ tic64x_operand_const15, tic64x_operand_invalid }
 },
@@ -731,27 +729,25 @@ const struct tic64x_op_template tic64x_opcodes[] = {
 },
 {"ldh",		0x44,		0x17C,
 	TIC64X_OP_UNIT_D | TIC64X_OP_MEMACCESS | TIC64X_OP_MEMSZ_HWORD |
-	TIC64X_OP_UNITNO | TIC64X_OP_CONST_SCALE,
+	TIC64X_OP_UNITNO | TIC64X_OP_CONST_SCALE | TIC64X_OP_MULTI_MNEMONIC,
 	{ tic64x_optxt_memaccess, tic64x_optxt_dstreg, tic64x_optxt_none },
 	{ tic64x_operand_rcoffset, tic64x_operand_invalid }
 },
 {"ldh",		0x4C,		0x7C,
 	TIC64X_OP_UNIT_D | TIC64X_OP_MEMACCESS | TIC64X_OP_MEMSZ_HWORD |
-	TIC64X_OP_MULTI_MNEMONIC | TIC64X_OP_CONST_SCALE |
-	TIC64X_OP_FIXED_UNITNO | TIC64X_OP_FIXED_UNIT2,
+	TIC64X_OP_CONST_SCALE | TIC64X_OP_FIXED_UNITNO | TIC64X_OP_FIXED_UNIT2,
 	{ tic64x_optxt_memaccess, tic64x_optxt_dstreg, tic64x_optxt_none },
 	{ tic64x_operand_const15, tic64x_operand_invalid }
 },
 {"ldhu",	0x4,		0x17C,
 	TIC64X_OP_UNIT_D | TIC64X_OP_MEMACCESS | TIC64X_OP_MEMSZ_HWORD |
-	TIC64X_OP_UNITNO | TIC64X_OP_CONST_SCALE,
+	TIC64X_OP_UNITNO | TIC64X_OP_CONST_SCALE | TIC64X_OP_MULTI_MNEMONIC,
 	{ tic64x_optxt_memaccess, tic64x_optxt_dstreg, tic64x_optxt_none },
 	{ tic64x_operand_rcoffset, tic64x_operand_invalid }
 },
 {"ldhu",	0xC,		0x7C,
 	TIC64X_OP_UNIT_D | TIC64X_OP_MEMACCESS | TIC64X_OP_MEMSZ_HWORD |
-	TIC64X_OP_MULTI_MNEMONIC | TIC64X_OP_CONST_SCALE |
-	TIC64X_OP_FIXED_UNITNO | TIC64X_OP_FIXED_UNIT2,
+	TIC64X_OP_CONST_SCALE | TIC64X_OP_FIXED_UNITNO | TIC64X_OP_FIXED_UNIT2,
 	{ tic64x_optxt_memaccess, tic64x_optxt_dstreg, tic64x_optxt_none },
 	{ tic64x_operand_const15, tic64x_operand_invalid }
 },
@@ -769,14 +765,13 @@ const struct tic64x_op_template tic64x_opcodes[] = {
 },
 {"ldw",		0x64,		0x17C,
 	TIC64X_OP_UNIT_D | TIC64X_OP_MEMACCESS | TIC64X_OP_MEMSZ_WORD |
-	TIC64X_OP_UNITNO | TIC64X_OP_CONST_SCALE,
+	TIC64X_OP_UNITNO | TIC64X_OP_CONST_SCALE | TIC64X_OP_MULTI_MNEMONIC,
 	{ tic64x_optxt_memaccess, tic64x_optxt_dstreg, tic64x_optxt_none },
 	{ tic64x_operand_rcoffset, tic64x_operand_invalid }
 },
 {"ldw",		0x6C,		0x7C,
 	TIC64X_OP_UNIT_D | TIC64X_OP_MEMACCESS | TIC64X_OP_MEMSZ_WORD |
-	TIC64X_OP_MULTI_MNEMONIC | TIC64X_OP_CONST_SCALE |
-	TIC64X_OP_FIXED_UNITNO | TIC64X_OP_FIXED_UNIT2,
+	TIC64X_OP_CONST_SCALE | TIC64X_OP_FIXED_UNITNO | TIC64X_OP_FIXED_UNIT2,
 	{ tic64x_optxt_memaccess, tic64x_optxt_dstreg, tic64x_optxt_none },
 	{ tic64x_operand_const15, tic64x_operand_invalid }
 },
@@ -1467,14 +1462,13 @@ const struct tic64x_op_template tic64x_opcodes[] = {
 },
 {"stb",		0x34,		0x17C,
 	TIC64X_OP_UNIT_D | TIC64X_OP_UNITNO | TIC64X_OP_MEMACCESS |
-	TIC64X_OP_MEMSZ_BYTE | TIC64X_OP_CONST_SCALE,
+	TIC64X_OP_MEMSZ_BYTE | TIC64X_OP_CONST_SCALE | TIC64X_OP_MULTI_MNEMONIC,
 	{ tic64x_optxt_dstreg, tic64x_optxt_memaccess, tic64x_optxt_none },
 	{ tic64x_operand_rcoffset, tic64x_operand_invalid }
 },
 {"stb",		0x3C,		0x7C,
 	TIC64X_OP_UNIT_D | TIC64X_OP_MEMACCESS | TIC64X_OP_MEMSZ_BYTE |
-	TIC64X_OP_MULTI_MNEMONIC | TIC64X_OP_CONST_SCALE |
-	TIC64X_OP_FIXED_UNITNO | TIC64X_OP_FIXED_UNIT2,
+	TIC64X_OP_CONST_SCALE | TIC64X_OP_FIXED_UNITNO | TIC64X_OP_FIXED_UNIT2,
 	{ tic64x_optxt_dstreg, tic64x_optxt_memaccess,  tic64x_optxt_none },
 	{ tic64x_operand_const15, tic64x_operand_invalid }
 },
@@ -1490,14 +1484,13 @@ const struct tic64x_op_template tic64x_opcodes[] = {
 },
 {"sth",		0x54,		0x17C,
 	TIC64X_OP_UNIT_D | TIC64X_OP_UNITNO | TIC64X_OP_MEMACCESS |
-	TIC64X_OP_MEMSZ_HWORD | TIC64X_OP_CONST_SCALE,
+	TIC64X_OP_MEMSZ_HWORD | TIC64X_OP_CONST_SCALE |TIC64X_OP_MULTI_MNEMONIC,
 	{ tic64x_optxt_dstreg, tic64x_optxt_memaccess, tic64x_optxt_none },
 	{ tic64x_operand_rcoffset, tic64x_operand_invalid }
 },
 {"sth",		0x5C,		0x7C,
 	TIC64X_OP_UNIT_D | TIC64X_OP_MEMACCESS | TIC64X_OP_MEMSZ_HWORD |
-	TIC64X_OP_MULTI_MNEMONIC | TIC64X_OP_CONST_SCALE |
-	TIC64X_OP_FIXED_UNITNO | TIC64X_OP_FIXED_UNIT2,
+	TIC64X_OP_CONST_SCALE | TIC64X_OP_FIXED_UNITNO | TIC64X_OP_FIXED_UNIT2,
 	{ tic64x_optxt_dstreg, tic64x_optxt_memaccess,  tic64x_optxt_none },
 	{ tic64x_operand_const15, tic64x_operand_invalid }
 },
@@ -1515,14 +1508,14 @@ const struct tic64x_op_template tic64x_opcodes[] = {
 },
 {"stw",		0x74,		0x17C,
 	TIC64X_OP_UNIT_D | TIC64X_OP_UNITNO | TIC64X_OP_MEMACCESS |
-	TIC64X_OP_MEMSZ_WORD | TIC64X_OP_MULTI_MNEMONIC | TIC64X_OP_CONST_SCALE,
+	TIC64X_OP_MEMSZ_WORD | TIC64X_OP_MULTI_MNEMONIC | TIC64X_OP_CONST_SCALE
+	| TIC64X_OP_MULTI_MNEMONIC,
 	{ tic64x_optxt_dstreg, tic64x_optxt_memaccess, tic64x_optxt_none },
 	{ tic64x_operand_rcoffset, tic64x_operand_invalid }
 },
 {"stw",		0x7C,		0x7C,
 	TIC64X_OP_UNIT_D | TIC64X_OP_MEMACCESS | TIC64X_OP_MEMSZ_WORD |
-	TIC64X_OP_MULTI_MNEMONIC | TIC64X_OP_CONST_SCALE |
-	TIC64X_OP_FIXED_UNITNO | TIC64X_OP_FIXED_UNIT2,
+	TIC64X_OP_CONST_SCALE | TIC64X_OP_FIXED_UNITNO | TIC64X_OP_FIXED_UNIT2,
 	{ tic64x_optxt_dstreg, tic64x_optxt_memaccess,  tic64x_optxt_none },
 	{ tic64x_operand_const15, tic64x_operand_invalid }
 },
