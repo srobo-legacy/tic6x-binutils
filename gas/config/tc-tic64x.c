@@ -2563,16 +2563,16 @@ opvalidate_memaccess(struct read_operand *in, bfd_boolean print_error,
 			}
 
 			if (val >= max) {
-				NOT_VALID(("Constant operand exceeds field "
-								"size"));
+				NOT_VALID(("Constant memory offset exceeds "
+								"field size"));
 				return TRUE;
 			}
 
 			/* Mkay, it fits in the field; but is it aligned? */
 			mask = (1 << field_shift) - 1;
 			if (do_scale && (val & mask)) {
-				NOT_VALID(("Constant operand not sufficiently "
-								"aligned"));
+				NOT_VALID(("Constant memory offset not "
+						"sufficiently aligned"));
 				return TRUE;
 			}
 
