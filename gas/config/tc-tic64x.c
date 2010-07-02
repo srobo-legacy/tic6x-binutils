@@ -2651,7 +2651,7 @@ opvalidate_register(struct read_operand *in, bfd_boolean print_error,
 		/* Can we xpath? */
 		if (!(templ->flags & flag)) {
 			NOT_VALID(("Register %C%d on wrong side of processor",
-						(reg_side) ? 'A' : 'B',
+						(reg_side) ? 'B' : 'A',
 						in->u.reg.base->num & 0x1F));
 			return TRUE;
 		}
