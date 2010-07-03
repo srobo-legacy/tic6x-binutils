@@ -657,7 +657,7 @@ doff_externalise_section_data(asection *curscn, struct scn_swapout *output)
 	void *cur_pos;
 	uint32_t checksum;
 	unsigned int max_sz, sz, cur_data_offs, num_relocs, reloc_idx, i, idx;
-	unsigned int put_sz;
+	unsigned int put_sz, num_relocs_written;
 
 	rels = NULL;
 	output->raw_scn_data = NULL;
@@ -721,21 +721,28 @@ doff_externalise_section_data(asection *curscn, struct scn_swapout *output)
 			num_relocs = 0;
 		}
 
-		/* Write most of ipkt header, calculate checksum */
-		H_PUT_32(abfd, num_relocs, &ipkt->num_relocs);
+		/* Write part of ipkt header, we leave number of relocs until
+		 * we discover how many we actually wrote out */
 		H_PUT_32(abfd, put_sz, &ipkt->packet_sz);
 		H_PUT_32(abfd, 0, &ipkt->checksum);
-		checksum = doff_checksum(ipkt, sizeof(*ipkt));
 
 		/* Copy in our block of memory */
 		memcpy(cur_pos, doff_tdata->raw_data + cur_data_offs, put_sz);
-		checksum += doff_checksum(cur_pos, put_sz);
+		checksum = doff_checksum(cur_pos, put_sz);
 		cur_pos += put_sz;
 
 		/* And write out relocations. Erk */
+		num_relocs_written = 0;
 		for (i = 0; i < num_relocs; i++) {
 			reloc = cur_pos;
 			memset(reloc, 0, sizeof(*reloc));
+
+			/* don't write relocs that have in fact been fixed up */
+			if ((*rels[reloc_idx + i]->sym_ptr_ptr)->
+				section->output_section == curscn)
+			continue;
+
+			num_relocs_written++;
 
 			/* NB - the address field is the addr _within_ the
 			 * image packet - we always write out 1024 sized pkts,
@@ -792,6 +799,10 @@ doff_externalise_section_data(asection *curscn, struct scn_swapout *output)
 		}
 
 		reloc_idx += i; /* Move past relocs we just wrote out */
+
+		/* Update header with num relocs, update checksum */
+		H_PUT_32(abfd, num_relocs_written, &ipkt->num_relocs);
+		checksum += doff_checksum(ipkt, sizeof(*ipkt));
 
 		/* Mkay, thats the entire packet done, write back checksum */
 		H_PUT_32(abfd, (0xFFFFFFFF - checksum), &ipkt->checksum);
