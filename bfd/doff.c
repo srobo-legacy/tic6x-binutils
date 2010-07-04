@@ -222,8 +222,8 @@ doff_swap_scnhdr_in(bfd *abfd, void *src, void *dst)
 		out->s_flags |= STYP_BSS;
 
 	/* We need to tell bfd about relocs. Unfortunately TI chose not to store
-	 * this information, so we actually have to trawl the section data
-	 * looking for them */
+	 * this information in a sane manner, so we actually have to trawl the
+	 * section data looking for them */
 	if (flags & DOFF_SCN_FLAG_DOWNLOAD) {
 		sect = doff_internalise_sectiondata(abfd, out->s_size,
 							out->s_scnptr);
