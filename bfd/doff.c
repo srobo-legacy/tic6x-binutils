@@ -206,10 +206,9 @@ doff_swap_scnhdr_in(bfd *abfd, void *src, void *dst)
 
 	flags = H_GET_32(abfd, &scnhdr->flags);
 
-	if ((flags & DOFF_SCN_FLAG_ALLOC) && (flags & DOFF_SCN_FLAG_DOWNLOAD))
+	/* NB: from observation (dynbase), the download flag implies alloc */
+	if (flags & DOFF_SCN_FLAG_DOWNLOAD)
 		out->s_flags = STYP_REG;
-	else if (flags & DOFF_SCN_FLAG_DOWNLOAD) /* Download, no alloc? */
-		 out->s_flags = STYP_PAD | STYP_NOLOAD;
 	else if (flags & DOFF_SCN_FLAG_ALLOC)
 		out->s_flags = STYP_NOLOAD;
 	else

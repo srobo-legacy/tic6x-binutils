@@ -90,6 +90,7 @@ struct doff_scnhdr {
 #define DOFF_SCN_TYPE_CINIT	3
 #define DOFF_SCN_FLAG_ALLOC	0x10	/* Allocate space on target for scn */
 #define DOFF_SCN_FLAG_DOWNLOAD	0x20	/* Section to be loaded onto target */
+					/* From observation, implies ALLOC*/
 #define DOFF_SCN_FLAG_ALIGN	0xF00	/* scn alignment: 2^this_field */
 #define DOFF_SCN_FLAGS_ALIGN_SHIFT 8	/* See above */
 	uint32_t first_pkt_offset;	/* Absolute offset into file of data */
