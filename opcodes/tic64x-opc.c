@@ -383,7 +383,22 @@ const struct tic64x_op_template tic64x_opcodes[] = {
 	{ tic64x_optxt_srcreg2, tic64x_optxt_none, tic64x_optxt_none},
 	{ tic64x_operand_invalid, tic64x_operand_invalid }
 },
-/* B IRP and B NRP don't really fall into what's being developed right now */
+/* B IRP - we have no way of naming a _specific_ register that the instruction
+ * must match against (why would we?), so instead the enforcement that this is
+ * IRP will occur in the register validator as a special case. Unpleasent, but
+ * better than hacking something together to allow only matching against named
+ * registers, which will happen no-where else. */
+{"b",		0x1800E0,	0xFFFFFFC,
+	TIC64X_OP_UNIT_S | TIC64X_OP_FIXED_UNITNO | TIC64X_OP_FIXED_UNIT2,
+	{ tic64x_optxt_ctrlreg, tic64x_optxt_none, tic64x_optxt_none },
+	{ tic64x_operand_invalid, tic64x_operand_invalid }
+},
+/* B NRP - same story as B IRP */
+{"b",		0x1C00E0,	0xFFFFFFC,
+	TIC64X_OP_UNIT_S | TIC64X_OP_FIXED_UNITNO | TIC64X_OP_FIXED_UNIT2,
+	{ tic64x_optxt_ctrlreg, tic64x_optxt_none, tic64x_optxt_none },
+	{ tic64x_operand_invalid, tic64x_operand_invalid }
+},
 {"bdec",	0x1020,		0x1FFC,
 	TIC64X_OP_UNIT_S | TIC64X_OP_CONST_SCALE | TIC64X_OP_MEMSZ_WORD |
 	TIC64X_OP_CONST_PCREL,
