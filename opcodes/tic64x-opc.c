@@ -1022,7 +1022,30 @@ const struct tic64x_op_template tic64x_opcodes[] = {
 	{ tic64x_optxt_srcreg1, tic64x_optxt_srcreg2, tic64x_optxt_dwdst },
 	{ tic64x_operand_dwdst5, tic64x_operand_invalid }
 },
-/* XXX mvc not implemented here */
+/* XXX - mvc instruction, has two different forms: those with two 5 bits consts
+ * used to address the target control register, and those with only one five bit
+ * field. I'm just going to implement the single-field one, seeing how c64x has
+ * is (and the other seems c64x+ only). It solves a lot of pain that would occur
+ * otherwise with constant writing to two fields.
+ * Incidently, the TI docs shed no light on whether or not particular control
+ * registers can only be accessed through either form of mvc, or why there
+ * happen to be two kinds in the first place */
+/* XXX: mvc ctrl->dst instruction claims to have xpath, is patently lying */
+/* Don't have labeled side bits, they're hardcoded to 2: this works just as
+ * well with the current configuration, as we'll only permit it to execute on
+ * side 2, so ignore that fact */
+{"mvc",		0x3E0,		0x3FFFC,
+	TIC64X_OP_MULTI_MNEMONIC | TIC64X_OP_UNIT_S | TIC64X_OP_FIXED_UNITNO |
+	TIC64X_OP_FIXED_UNIT2,
+	{ tic64x_optxt_ctrlreg, tic64x_optxt_dstreg, tic64x_optxt_none },
+	{ tic64x_operand_basereg, tic64x_operand_invalid }
+},
+{"mvc",		0x3A0,		0x3EFFC,
+	TIC64X_OP_UNIT_S | TIC64X_OP_FIXED_UNITNO | TIC64X_OP_FIXED_UNIT2 |
+	TIC64X_OP_XPATH_SRC2,
+	{ tic64x_optxt_srcreg2, tic64x_optxt_ctrlreg, tic64x_optxt_none },
+	{ tic64x_operand_dstreg, tic64x_operand_invalid }
+},
 {"mvd",		0x340F0,	0x3EFFC,
 	TIC64X_OP_UNIT_M | TIC64X_OP_XPATH_SRC2,
 	{ tic64x_optxt_srcreg2, tic64x_optxt_dstreg, tic64x_optxt_none },

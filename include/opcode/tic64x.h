@@ -78,6 +78,8 @@ enum tic64x_text_operand {
 	tic64x_optxt_dstreg,
 	tic64x_optxt_srcreg1,
 	tic64x_optxt_srcreg2,
+	tic64x_optxt_ctrlreg,	/* Control register, exact field given in
+				 * indirect operand array */
 	tic64x_optxt_dwdst,
 	tic64x_optxt_dwsrc,
 	tic64x_optxt_dwsrc2,	/* dwsrc, but in src1 position. '2' because
