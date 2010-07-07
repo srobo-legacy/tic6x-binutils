@@ -162,6 +162,7 @@ struct op_handler {
 	enum tic64x_text_operand type1;
 	enum tic64x_text_operand type2;
 	enum tic64x_text_operand type3;
+	enum tic64x_text_operand type4;
 	const char *name;
 	opreader *reader;
 	opvalidate *validate;
@@ -169,6 +170,7 @@ struct op_handler {
 } operand_handlers[] = {
 {
 	tic64x_optxt_memaccess,
+	tic64x_optxt_none,
 	tic64x_optxt_none,
 	tic64x_optxt_none,
 	"memacc",
@@ -180,6 +182,7 @@ struct op_handler {
 	tic64x_optxt_dstreg,
 	tic64x_optxt_srcreg1,
 	tic64x_optxt_srcreg2,
+	tic64x_optxt_ctrlreg,
 	"reg",
 	opread_register,
 	opvalidate_register,
@@ -189,6 +192,7 @@ struct op_handler {
 	tic64x_optxt_dwdst,
 	tic64x_optxt_dwsrc,
 	tic64x_optxt_dwsrc2,
+	tic64x_optxt_none,
 	"dwreg",
 	opread_double_register,
 	opvalidate_double_register,
@@ -198,6 +202,7 @@ struct op_handler {
 	tic64x_optxt_uconstant,
 	tic64x_optxt_sconstant,
 	tic64x_optxt_nops,
+	tic64x_optxt_none,
 	"const",
 	opread_constant,
 	opvalidate_constant,
@@ -1347,7 +1352,8 @@ beat_instruction_around_the_bush(char **operands, struct tic64x_insn *insn)
 			handler = insn->operand_values[i].handler;
 			if (cur->textops[i] != handler->type1 &&
 				cur->textops[i] != handler->type2 &&
-				cur->textops[i] != handler->type3)
+				cur->textops[i] != handler->type3 &&
+				cur->textops[i] != handler->type4)
 				break;
 		}
 
