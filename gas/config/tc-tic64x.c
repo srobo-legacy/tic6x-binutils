@@ -2263,6 +2263,7 @@ opread_memaccess(char *line, bfd_boolean print_error, struct read_operand *out)
 	/* Look for offset register or constant */
 	offsetreg = NULL;
 	bracket = '\0';
+	c = 0;
 	if (*line == '[' || *line == '(') {
 		has_offset = 1;
 		c = (*line++ == '[') ? ']' : ')';
