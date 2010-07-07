@@ -2653,6 +2653,17 @@ opvalidate_register(struct read_operand *in, bfd_boolean print_error,
 			return TRUE;
 		}
 
+		/* Even _worse_, B IRP and B NRP require special cases for
+		 * validating their reg operands... see opcode table for why
+		 * we hack it in here. */
+		if ((templ->opcode == 0x1800E0 && in->u.reg.base->num !=
+			(TIC64X_CTRL_REG | 6)) || (templ->opcode == 0x1C00E0 &&
+			in->u.reg.base->num != (TIC64X_CTRL_REG | 7))) {
+			NOT_VALID(("Operand to 'b ctrlreg' must be IRP or "
+								"IRP\n"));
+			return TRUE;
+		}
+
 		return FALSE;
 	} else {
 		/* Otherwise, if it's _not_ supposed to be a ctrl register,
@@ -3041,9 +3052,11 @@ opwrite_register(struct read_operand *in, enum tic64x_text_operand optype,
 	case tic64x_optxt_ctrlreg:
 		type = insn->templ->operands[0];
 
-		if (type == tic64x_operand_invalid)
-			as_fatal("Register writeing ctrlreg, but instruction "
-				"has no specific operand field\n");
+		if (type == tic64x_operand_invalid) {
+			/* Unfortunately this is valid for B IRP and B NRP.
+			 * In which case we don't actually write anything */
+			return;
+		}
 		break;
 	default:
 		as_fatal("Non-register operand has reached register writer");
