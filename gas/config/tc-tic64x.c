@@ -3038,6 +3038,13 @@ opwrite_register(struct read_operand *in, enum tic64x_text_operand optype,
 	case tic64x_optxt_dstreg:
 		type = tic64x_operand_dstreg;
 		break;
+	case tic64x_optxt_ctrlreg:
+		type = insn->templ->operands[0];
+
+		if (type == tic64x_operand_invalid)
+			as_fatal("Register writeing ctrlreg, but instruction "
+				"has no specific operand field\n");
+		break;
 	default:
 		as_fatal("Non-register operand has reached register writer");
 	}
