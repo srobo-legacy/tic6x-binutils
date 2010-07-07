@@ -59,6 +59,7 @@ struct {
 { tic64x_optxt_dstreg,		print_op_register	},
 { tic64x_optxt_srcreg1,		print_op_register	},
 { tic64x_optxt_srcreg2,		print_op_register	},
+{ tic64x_optxt_ctrlreg,		print_op_register	}, /* XXX */
 { tic64x_optxt_dwdst,		print_op_dwreg		},
 { tic64x_optxt_dwsrc,		print_op_dwreg		},
 { tic64x_optxt_dwsrc2,		print_op_dwreg		},
