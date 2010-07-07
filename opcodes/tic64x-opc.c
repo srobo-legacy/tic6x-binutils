@@ -1023,7 +1023,11 @@ const struct tic64x_op_template tic64x_opcodes[] = {
 	{ tic64x_operand_dwdst5, tic64x_operand_invalid }
 },
 /* XXX mvc not implemented here */
-/* XXX also mvd */
+{"mvd",		0x340F0,	0x3EFFC,
+	TIC64X_OP_UNIT_M | TIC64X_OP_XPATH_SRC2,
+	{ tic64x_optxt_srcreg2, tic64x_optxt_dstreg, tic64x_optxt_none },
+	{ tic64x_operand_invalid, tic64x_operand_invalid }
+},
 {"mvk",		0x28,		0x7C,
 	TIC64X_OP_UNIT_S | TIC64X_OP_MULTI_MNEMONIC,
 	{ tic64x_optxt_sconstant, tic64x_optxt_dstreg, tic64x_optxt_none},
