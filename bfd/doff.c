@@ -737,8 +737,12 @@ doff_externalise_section_data(asection *curscn, struct scn_swapout *output)
 			memset(reloc, 0, sizeof(*reloc));
 
 			/* don't write relocs that have in fact been fixed up */
+			/* UPDATE: that is, PCR relocs. Loading a pointer to a
+			 * function say, still needs to be relocated against
+			 * .text and so forth */
 			if ((*rels[reloc_idx + i]->sym_ptr_ptr)->
-				section->output_section == curscn)
+				section->output_section == curscn &&
+				rels[reloc_idx + i]->howto->pc_relative)
 			continue;
 
 			num_relocs_written++;
