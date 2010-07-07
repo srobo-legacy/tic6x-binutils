@@ -1046,8 +1046,15 @@ fabricate_mv_insn(struct tic64x_insn *insn, char *op1, char *op2)
 		insn->template_validity[0] |= (dst_side) ? VALID_USES_XPATH2
 							: VALID_USES_XPATH1;
 
-	/* However, if there's a unit specifier given in the assembly line,
-	 * we should honour that */
+	/* We don't want control registers under and circumstances */
+	if (insn->operand_values[1].u.reg.base->num & TIC64X_CTRL_REG ||
+		insn->operand_values[2].u.reg.base->num & TIC64X_CTRL_REG) {
+		as_bad("Use 'mvc' to move control registers\n");
+		return;
+	}
+
+	/* If there's a unit specifier given in the assembly line we should
+	 *honour that */
 	if (insn->unitspecs.unit != NOT_SET) {
 		/* First check that the units given are actually sane */
 		if (insn->unitspecs.unit == UNIT_M) {
