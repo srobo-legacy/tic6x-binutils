@@ -22,7 +22,8 @@
 
 struct tic64x_register {
 	char *name;
-#define TIC64X_REG_UNIT2	0x100	/* What unit are we, 1 or 2? */
+#define TIC64X_REG_UNIT2	0x10000	/* What unit are we, 1 or 2? */
+#define TIC64X_CTRL_REG		0x20000 /* This is a control register */
 	int num;
 };
 

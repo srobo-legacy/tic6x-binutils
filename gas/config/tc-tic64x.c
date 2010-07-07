@@ -221,7 +221,7 @@ struct tic64x_insn {
 /* Use "NOT_SET" value of -1 defined above */
 #define COND_ZERO	0
 #define COND_NZ		1
-	int16_t cond_reg;		/* Register for comparison */
+	int32_t cond_reg;		/* Register for comparison */
 
 	/* Template holds everything needed to build the instruction, but
 	 * we need some data to actually build with. Each entry in operands

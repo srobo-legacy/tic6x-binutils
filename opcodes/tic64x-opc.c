@@ -22,6 +22,7 @@
 #include "opcode/tic64x.h"
 
 const struct tic64x_register tic64x_regs[] = {
+/* General purpose registers */
 	{"A0",	0},	{"A1",	1},	{"A2",	2},	{"A3",	3},
 	{"A4",	4},	{"A5",	5},	{"A6",	6},	{"A7",	7},
 	{"A8",	8},	{"A9",	9},	{"A10",	10},	{"A11",	11},
@@ -46,7 +47,21 @@ const struct tic64x_register tic64x_regs[] = {
 	{"B26",	TIC64X_REG_UNIT2 | 26},	{"B27",	TIC64X_REG_UNIT2 | 27},
 	{"B28",	TIC64X_REG_UNIT2 | 28},	{"B29",	TIC64X_REG_UNIT2 | 29},
 	{"B30",	TIC64X_REG_UNIT2 | 30},	{"B31",	TIC64X_REG_UNIT2 | 31},
-	{NULL,	0}
+/* Control registers, accessed via 'mvc' instruction */
+	{"AMR",	TIC64X_CTRL_REG | 0},	{"CSR", TIC64X_CTRL_REG | 1},
+	{"DIER",TIC64X_CTRL_REG | 25},	{"DNUM",TIC64X_CTRL_REG | 17},
+	{"ECR", TIC64X_CTRL_REG | 29},	{"EFR", TIC64X_CTRL_REG | 29},/*same?*/
+	{"GFPGFR", TIC64X_CTRL_REG |24},{"GPLYA",TIC64X_CTRL_REG | 22},
+	{"GPLYB", TIC64X_CTRL_REG |23},	{"ICR", TIC64X_CTRL_REG | 3},
+	{"IER", TIC64X_CTRL_REG | 4},	{"IERR",TIC64X_CTRL_REG | 31},
+	{"IFR", TIC64X_CTRL_REG | 2},	{"ILC", TIC64X_CTRL_REG | 13},
+	{"IRP", TIC64X_CTRL_REG | 6},	{"ISR", TIC64X_CTRL_REG | 2},/* IFR? */
+	{"ISTP",TIC64X_CTRL_REG | 5},	{"ISTR",TIC64X_CTRL_REG | 27},
+	{"NRP", TIC64X_CTRL_REG | 7},	{"NTSR",TIC64X_CTRL_REG | 28},
+	{"PCE1",TIC64X_CTRL_REG | 16},	{"REP", TIC64X_CTRL_REG | 15},
+	{"RILC",TIC64X_CTRL_REG | 14},	{"SSR", TIC64X_CTRL_REG | 21},
+	{"TSCH",TIC64X_CTRL_REG | 11},	{"TSCL",TIC64X_CTRL_REG | 10},
+	{"TSR", TIC64X_CTRL_REG | 26},	{NULL,	0}
 };
 
 const struct tic64x_operand_pos tic64x_operand_positions [] = {
