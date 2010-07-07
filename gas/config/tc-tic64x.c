@@ -2625,7 +2625,32 @@ opvalidate_register(struct read_operand *in, bfd_boolean print_error,
 	 * determine what datapath a load/store instruction takes, by where
 	 * the destination register lies */
 
-	/* So what can we do? Check the side of each register */
+	/* One niggling exception though - control registers break all rules */
+	if (optype == tic64x_optxt_ctrlreg) {
+		/* Ensure we've been handed a ctrl reg */
+		if (!(in->u.reg.base->num & TIC64X_CTRL_REG)) {
+			NOT_VALID(("Operand must be control register\n"));
+			return TRUE;
+		}
+
+		/* Registers value and location is irrelevant; but don't permit
+		 * datapaths in the same instruction */
+		if (spec->mem_path != -1) {
+			NOT_VALID(("Cannot use datapath in control insn\n"));
+			return TRUE;
+		}
+
+		return FALSE;
+	} else {
+		/* Otherwise, if it's _not_ supposed to be a ctrl register,
+		 * don't let them through */
+		if (in->u.reg.base->num & TIC64X_CTRL_REG) {
+			NOT_VALID(("Operand cannot be control register\n"));
+			return TRUE;
+		}
+	}
+
+	/* Contine checks - so what can we do? Check the of each register */
 	switch (optype) {
 	case tic64x_optxt_srcreg1:
 		flag = TIC64X_OP_XPATH_SRC1;
