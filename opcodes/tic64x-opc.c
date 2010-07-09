@@ -628,7 +628,7 @@ const struct tic64x_op_template tic64x_opcodes[] = {
 /* This isn't really an instruction that's useful right now, but it's simple
  * to type in and doesn't require hacks, so what the hell. */
 {"dint",	0x10004000,	0xFFFFFFFC,
-	TIC64X_OP_NOCOND | TIC64X_OP_ALL_UNITS,
+	TIC64X_OP_NOCOND | TIC64X_OP_NOSIDE | TIC64X_OP_ALL_UNITS,
 	{ tic64x_optxt_none, tic64x_optxt_none, tic64x_optxt_none },
 	{ tic64x_operand_invalid, tic64x_operand_invalid }
 },
@@ -1220,7 +1220,7 @@ const struct tic64x_op_template tic64x_opcodes[] = {
 	{ tic64x_operand_invalid, tic64x_operand_invalid }
 },
 {"rint",	0x10006000,	0xFFFFFFFC,
-	TIC64X_OP_NOCOND | TIC64X_OP_ALL_UNITS,
+	TIC64X_OP_NOCOND | TIC64X_OP_NOSIDE | TIC64X_OP_ALL_UNITS,
 	{ tic64x_optxt_none, tic64x_optxt_none, tic64x_optxt_none },
 	{ tic64x_operand_invalid, tic64x_operand_invalid }
 },
