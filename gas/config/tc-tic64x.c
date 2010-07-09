@@ -1158,6 +1158,7 @@ md_assemble(char *line)
 	struct tic64x_insn *insn;
 	char *mnemonic;
 	int i,  ret;
+	char c;
 
 	insn = malloc(sizeof(*insn));
 	memset(insn, 0, sizeof(*insn));
@@ -1169,7 +1170,8 @@ md_assemble(char *line)
 	mnemonic = line;
 	while (!ISSPACE(*line) && !is_end_of_line[(int)*line])
 		line++;
-	*line++ = 0;
+	c = *line;
+	*line = 0;
 
 	/* XXX quirk - TI assembly uses "RET {reg}" instead of "B {reg}". If
 	 * there are more cases of renames like this it should be handled
@@ -1191,10 +1193,17 @@ md_assemble(char *line)
 		insn->templ = &tic64x_mv_template[0];
 	}
 
+	*line = c;
+	while (ISSPACE(*line) && !is_end_of_line[(int)*line])
+		line++;
+
 	ret = read_execution_unit(&line, &insn->unitspecs);
 	if (ret < 0) {
 		return;
 	}
+
+	while (ISSPACE(*line) && !is_end_of_line[(int)*line])
+		line++;
 
 	/* Turn string of operands into array of string pointers */
 	memset(operands, 0, sizeof(operands));
