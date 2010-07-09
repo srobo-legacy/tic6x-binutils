@@ -41,6 +41,8 @@ static inline void doff_swap_reloc_in(bfd *abfd ATTRIBUTE_UNUSED,
 	abort();
 }
 
+#define CALC_ADDEND(abfd, ptr, reloc, cache_ptr) cache_ptr->addend = 0
+
 #include "coffcode.h"
 
 /* We need to hook into section content munging functions, to handle the

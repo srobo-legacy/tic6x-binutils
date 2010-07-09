@@ -50,6 +50,8 @@ reloc_howto_type *tic64x_coff_reloc_name_lookup (bfd *abfd, const char *name);
 
 #define COFF_LONG_SECTION_NAMES 1
 
+#define CALC_ADDEND(abfd, ptr, reloc, cache_ptr) cache_ptr->addend = 0
+
 #include "coffcode.h"
 
 /* FIXME: coffcode defines ticoff{0,1}_swap_table, however we don't use
@@ -147,12 +149,69 @@ calculated:
 	return ret;
 }
 
+static bfd_reloc_status_type
+tic64x_reloc_func(bfd *abfd, arelent *rel, struct bfd_symbol *sym,
+				void *data, asection *input_section,
+				bfd *output_bfd ATTRIBUTE_UNUSED,
+				char **error_msg ATTRIBUTE_UNUSED)
+{
+	long val, insn_val, x;
+	bfd_reloc_status_type ret;
+
+	ret = bfd_reloc_ok;
+
+	if (bfd_is_und_section(sym->section)) {
+		val = 0;
+
+		ret = bfd_reloc_ok;
+		goto calculated;
+	}
+
+	/* So, if it's a defined symbol and it's being moved to somewhere else
+	 * during this link, adjust the contents of the addend field by that
+	 * amount. First, load existing offset */
+	val = bfd_get_32(abfd, data + rel->address);
+	val &= rel->howto->dst_mask;
+	val >>= rel->howto->bitpos;
+	val <<= rel->howto->rightshift;
+
+	/* Adjust by the output offset */
+	val += sym->section->output_offset;
+
+	/* Now we need to write this value into the instruction. This portion
+	 * largely copied from bfd_perform_relocation */
+	if (rel->howto->complain_on_overflow != complain_overflow_dont)
+	ret = bfd_check_overflow (rel->howto->complain_on_overflow,
+				rel->howto->bitsize, rel->howto->rightshift,
+				bfd_arch_bits_per_address (abfd), val);
+	if (ret != bfd_reloc_ok)
+		return ret;
+
+calculated:
+
+	val >>= rel->howto->rightshift;
+	val <<= rel->howto->bitpos;
+
+	/* Update value in instrution field */
+	insn_val = bfd_get_32(abfd, data + rel->address);
+	x = (insn_val & ~rel->howto->dst_mask);
+	insn_val = rel->howto->src_mask & val;
+	insn_val |= x;
+	bfd_put_32(abfd, insn_val, data + rel->address);
+
+	/* Update address of relocation for when it's written out */
+	rel->address += input_section->output_offset;
+
+	return ret;
+}
+
 reloc_howto_type tic64x_howto_table[] = {
 	HOWTO(R_C60BASE, 0, 2, 32, FALSE, 0, complain_overflow_bitfield,
-		NULL, "RBASE", FALSE, 0xFFFFFFFF, 0xFFFFFFFF, FALSE),
+		tic64x_reloc_func, "RBASE", FALSE, 0xFFFFFFFF, 0xFFFFFFFF,
+		FALSE),
 
 	HOWTO(R_C60DIR15, 0, 2, 15, FALSE, 8, complain_overflow_bitfield,
-		NULL, "RDIR15", FALSE, 0x7FFF00, 0x7FFF00, FALSE),
+		tic64x_reloc_func, "RDIR15", FALSE, 0x7FFF00, 0x7FFF00, FALSE),
 
 	/* 21 bits pcrels: must be branch, shr by 2, pcrel_offset stored in
 	 * offset slot... */
@@ -166,15 +225,15 @@ reloc_howto_type tic64x_howto_table[] = {
 		0x7FE000, TRUE),
 
 	HOWTO(R_C60LO16, 0, 2, 16, FALSE, 7, complain_overflow_bitfield,
-		NULL, "RLO16", TRUE, 0x7FFF80, 0x7FFF80, FALSE),
+		tic64x_reloc_func, "RLO16", TRUE, 0x7FFF80, 0x7FFF80, FALSE),
 
 	HOWTO(R_C60HI16, 16, 2, 16, FALSE, 7, complain_overflow_bitfield,
-		NULL, "RHI16", TRUE, 0x7FFF80, 0x7FFF80, FALSE),
+		tic64x_reloc_func, "RHI16", TRUE, 0x7FFF80, 0x7FFF80, FALSE),
 
 /* I don't know what this section offset is supposed to be... */
 
 	HOWTO(R_C60S16, 0, 2, 16, FALSE, 7, complain_overflow_bitfield,
-		NULL, "RS16", TRUE, 0x7FFF80, 0x7FFF80, FALSE),
+		tic64x_reloc_func, "RS16", TRUE, 0x7FFF80, 0x7FFF80, FALSE),
 
 	HOWTO(R_C60PCR7, 2, 2, 7, TRUE, 16, complain_overflow_bitfield,
 		tic64x_pcr_reloc_special_func, "RPCR7", TRUE, 0x7F0000,
@@ -185,13 +244,14 @@ reloc_howto_type tic64x_howto_table[] = {
 		0xFFF0000, TRUE),
 
 	HOWTO(R_RELBYTE, 0, 2, 8, FALSE, 0, complain_overflow_bitfield,
-		NULL, "RELBYTE", FALSE, 0xFF, 0xFF, FALSE),
+		tic64x_reloc_func, "RELBYTE", FALSE, 0xFF, 0xFF, FALSE),
 
 	HOWTO(R_RELWORD, 0, 2, 16, FALSE, 0, complain_overflow_bitfield,
-		NULL, "RELWORD", FALSE, 0xFFFF, 0xFFFF, FALSE),
+		tic64x_reloc_func, "RELWORD", FALSE, 0xFFFF, 0xFFFF, FALSE),
 
 	HOWTO(R_RELLONG, 0, 2, 32, FALSE, 0, complain_overflow_bitfield,
-		NULL, "RELLONG", FALSE, 0xFFFFFFFF, 0xFFFFFFFF, FALSE),
+		tic64x_reloc_func, "RELLONG", FALSE, 0xFFFFFFFF, 0xFFFFFFFF,
+		FALSE),
 
 	HOWTO(RE_ADD, 0, 0, 0, FALSE, 0, complain_overflow_dont, ti_reloc_fail,
 		"RE_ADD", FALSE, 0, 0, FALSE),
