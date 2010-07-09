@@ -1219,7 +1219,11 @@ const struct tic64x_op_template tic64x_opcodes[] = {
 	{ tic64x_optxt_srcreg1, tic64x_optxt_srcreg2, tic64x_optxt_dstreg },
 	{ tic64x_operand_invalid, tic64x_operand_invalid }
 },
-/* XXX not implementing "rint" for now */
+{"rint",	0x10006000,	0xFFFFFFFC,
+	TIC64X_OP_NOCOND | TIC64X_OP_ALL_UNITS,
+	{ tic64x_optxt_none, tic64x_optxt_none, tic64x_optxt_none },
+	{ tic64x_operand_invalid, tic64x_operand_invalid }
+},
 {"rotl",	0x770,		0xFFC,
 	TIC64X_OP_UNIT_M | TIC64X_OP_XPATH_SRC2 | TIC64X_OP_MULTI_MNEMONIC,
 	{ tic64x_optxt_srcreg2, tic64x_optxt_srcreg1, tic64x_optxt_dstreg },
