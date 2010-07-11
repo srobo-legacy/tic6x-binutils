@@ -422,7 +422,7 @@ const struct tic64x_op_template tic64x_opcodes[] = {
 	{ tic64x_operand_const12, tic64x_operand_nops }
 },
 {"bnop",	0x800362,	0x0F800FFE,
-	TIC64X_OP_UNIT_S | TIC64X_OP_NOSIDE |
+	TIC64X_OP_UNIT_S | TIC64X_OP_NOSIDE | TIC64X_OP_XPATH_SRC2 |
 	TIC64X_OP_FIXED_UNITNO | TIC64X_OP_FIXED_UNIT2,
 	{ tic64x_optxt_srcreg2, tic64x_optxt_nops, tic64x_optxt_none },
 	{ tic64x_operand_nops, tic64x_operand_invalid }
