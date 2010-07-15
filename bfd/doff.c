@@ -856,7 +856,9 @@ doff_write_object_contents(bfd *abfd)
 		return FALSE;
 
 	/* Start off by inserting the source file name. Which is a rather
-	 * pointless feature of doff. So fake it */
+	 * pointless feature of doff that doesn't map very well onto what
+	 * ld does. If you're going to have a silly field, I'll fill it with
+	 * a silly value */
 	file_name = "myfaceisonfire.o";
 	strcpy(str_block_pos, file_name);
 	str_block_pos += strlen(file_name) + 1;
