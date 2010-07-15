@@ -1271,12 +1271,6 @@ md_after_pass_hook()
 	memset(read_insns_loc, 0, sizeof(read_insns));
 	read_insns_index = 0;
 
-	/* Ensure that the last section in the file pads out to a size thats
-	 * aligned to 0x20 - linking and recalculating a bunch of PCR addresses
-	 * will not be fun if sections are stitched together and shift by some
-	 * value that changes alignments */
-	frag_align(5, 0, 0);
-
 	return;
 }
 
