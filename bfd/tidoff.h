@@ -76,8 +76,6 @@ doff_mkobject_hook(bfd *abfd, void *filehdr, void *aouthdr)
 	unsigned long size;
 
 	foo = coff_mkobject_hook(abfd, filehdr, aouthdr);
-	abfd->flags |= DYNAMIC;		/* All doff files are dynamic */
-
 	priv = bfd_alloc(abfd, sizeof(struct doff_private_data));
 	foo->ti_doff_private = priv;
 	if (priv == NULL)
