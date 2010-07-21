@@ -575,6 +575,7 @@ struct doff_internal_sectdata *doff_internalise_sectiondata(bfd *abfd,
 			checksum += doff_checksum(&rel, sizeof(rel));
 
 			reloc->vaddr = H_GET_32(abfd, &rel.vaddr);
+			reloc->vaddr += (sz_read - pkt_sz);
 			reloc->type = H_GET_16(abfd, &rel.reloc.r_sym.type);
 			reloc->symidx = H_GET_32(abfd,&rel.reloc.r_sym.sym_idx);
 
