@@ -1400,7 +1400,7 @@ beat_instruction_around_the_bush(char **operands, struct tic64x_insn *insn)
 		}
 
 		strcat(message, "\"");
-		as_bad(message);
+		as_bad("%s", message);
 		return FALSE;
 	}
 
