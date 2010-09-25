@@ -852,9 +852,11 @@ tic64x_start_line_hook(void)
 		*line++ = ' ';
 		*line++ = ' ';
 		line_had_parallel_prefix = 1;
-	} else if (*line == '*' || *line == ';' || *line == '#') {
-		/* This is a comment line */
-		line_had_parallel_prefix = 0;
+	} else if (*line == '*' || *line == ';' || *line == '#' ||*line =='\n'){
+		/* This is a comment line - don't modify value, if we have a
+		 * comment in the middle of a block of parallel insns, we don't
+		 * wish to break the chain of parallel-ness */
+		;
 	} else {
 		/* Not a comment, no parallel insn; output instruction */
 		/* packet */
