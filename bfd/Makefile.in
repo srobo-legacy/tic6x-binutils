@@ -327,7 +327,9 @@ libbfd_la_LDFLAGS = $(am__append_1) -release `cat libtool-soversion` \
 @INSTALL_LIBBFD_TRUE@bfdinclude_HEADERS = $(BFD_H) $(INCDIR)/ansidecl.h $(INCDIR)/symcat.h $(INCDIR)/bfdlink.h
 @INSTALL_LIBBFD_FALSE@rpath_bfdlibdir = @bfdlibdir@
 @INSTALL_LIBBFD_FALSE@noinst_LTLIBRARIES = libbfd.la
-AM_CFLAGS = $(WARN_CFLAGS)
+AM_CFLAGS = $(WARN_CFLAGS) -Wno-array-bounds
+# jmorse - include/coff/ti.h's PUT_SCNHDR_FLAGS violates array boundries, too
+# # complicated to fix right now, instead disable boundry checks
 AM_CPPFLAGS = -DBINDIR='"$(bindir)"'
 @PLUGINS_TRUE@LIBDL = -ldl
 

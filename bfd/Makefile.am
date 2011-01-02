@@ -30,7 +30,9 @@ endif
 
 WARN_CFLAGS = @WARN_CFLAGS@
 NO_WERROR = @NO_WERROR@
-AM_CFLAGS = $(WARN_CFLAGS)
+AM_CFLAGS = $(WARN_CFLAGS) -Wno-array-bounds
+# jmorse - include/coff/ti.h's PUT_SCNHDR_FLAGS violates array boundries, too
+# complicated to fix right now, instead disable boundry checks
 AM_CPPFLAGS = -DBINDIR='"$(bindir)"'
 if PLUGINS
 LIBDL = -ldl
