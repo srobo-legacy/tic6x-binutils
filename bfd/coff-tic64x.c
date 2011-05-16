@@ -175,8 +175,8 @@ tic64x_reloc_func(bfd *abfd, arelent *rel, struct bfd_symbol *sym,
 	val >>= rel->howto->bitpos;
 	val <<= rel->howto->rightshift;
 
-	/* Adjust by the output offset */
-	val += sym->section->output_offset;
+	/* Adjust by symbol address. XXX, probably wrong across several links */
+	val += sym->value;
 
 	/* Now we need to write this value into the instruction. This portion
 	 * largely copied from bfd_perform_relocation */
@@ -224,10 +224,10 @@ reloc_howto_type tic64x_howto_table[] = {
 		tic64x_pcr_reloc_special_func, "RPCR10", TRUE, 0x7FE000,
 		0x7FE000, TRUE),
 
-	HOWTO(R_C60LO16, 0, 2, 16, FALSE, 7, complain_overflow_bitfield,
+	HOWTO(R_C60LO16, 0, 2, 16, FALSE, 7, complain_overflow_dont,
 		tic64x_reloc_func, "RLO16", TRUE, 0x7FFF80, 0x7FFF80, FALSE),
 
-	HOWTO(R_C60HI16, 16, 2, 16, FALSE, 7, complain_overflow_bitfield,
+	HOWTO(R_C60HI16, 16, 2, 16, FALSE, 7, complain_overflow_unsigned,
 		tic64x_reloc_func, "RHI16", TRUE, 0x7FFF80, 0x7FFF80, FALSE),
 
 /* I don't know what this section offset is supposed to be... */
